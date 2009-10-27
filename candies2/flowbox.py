@@ -27,14 +27,14 @@ class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
                     for_height)
             min_width += child_min_width
             natural_width += child_natural_width
-        print ' ->', (min_width, natural_width)
+        #print ' ->', (min_width, natural_width)
         return (min_width, natural_width)
 
     def do_get_preferred_height(self, for_width):
         sys.stdout.write('do_get_preferred_height(%s)' %(for_width))
         lines = self._map_lines(for_width)
         minimal_height = reduce(operator.add, (l['height'] for l in lines))
-        print ' ->', (minimal_height, minimal_height)
+        #print ' ->', (minimal_height, minimal_height)
         return (minimal_height, minimal_height)
     
     def _map_lines(self, box_width):
@@ -57,7 +57,7 @@ class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
 
     def do_allocate(self, box, flags):
         box_width, box_height = self.get_preferred_size()[2:]
-        print box_width, 'x', box_height
+        #print box_width, 'x', box_height
         
         lines = self._map_lines(box_width)
         minimal_height = reduce(operator.add, (l['height'] for l in lines))
