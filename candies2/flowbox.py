@@ -17,7 +17,7 @@ class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
         self._orientation = orientation
 
     def do_get_preferred_width(self, for_height):
-        sys.stdout.write('do_get_preferred_width(%s)' %(for_height))
+        #sys.stdout.write('do_get_preferred_width(%s)' %(for_height))
         min_width = 0
         natural_width = 0
         for child in self._children:
@@ -31,7 +31,7 @@ class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
         return (min_width, natural_width)
 
     def do_get_preferred_height(self, for_width):
-        sys.stdout.write('do_get_preferred_height(%s)' %(for_width))
+        #sys.stdout.write('do_get_preferred_height(%s)' %(for_width))
         lines = self._map_lines(for_width)
         minimal_height = reduce(operator.add, (l['height'] for l in lines))
         #print ' ->', (minimal_height, minimal_height)
