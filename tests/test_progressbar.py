@@ -4,7 +4,7 @@
 import clutter
 import os
 import gobject
-from candies2.progressbar import ProgressBar
+from candies2.progressbar import SkinnedProgressBar as ProgressBar
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
 
