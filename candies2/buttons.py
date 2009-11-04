@@ -4,8 +4,10 @@ import clutter
 from roundrect import RoundRectangle
 
 class ClassicButton(clutter.Actor, clutter.Container):
-    
     __gtype_name__ = 'ClassicButton'
+    default_color = 'LightGray'
+    default_border_color = 'Gray'
+    
     def __init__(self, label):
         clutter.Actor.__init__(self)
         self.text = label
@@ -14,8 +16,8 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.label.set_parent(self)
         
         self.rect = RoundRectangle()
-        self.rect.set_color('LightGray')
-        self.rect.set_border_color('Gray')
+        self.rect.set_color(self.default_color)
+        self.rect.set_border_color(self.default_border_color)
         self.rect.set_border_width(3)
         self.rect.props.radius = 10
         self.rect.set_parent(self)
@@ -78,6 +80,8 @@ class ClassicButton(clutter.Actor, clutter.Container):
     def do_paint(self):
         self.rect.paint()
         self.label.paint()
+
+gobject.type_register(ClassicButton)
 
 if __name__ == '__main__':
     from flowbox import FlowBox
