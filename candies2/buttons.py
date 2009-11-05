@@ -22,18 +22,14 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.rect.props.radius = 10
         self.rect.set_parent(self)
     
-    def do_get_preferred_size(self):
+    def do_get_preferred_width(self, for_height):
         t = clutter.Text()
         t.set_font_name(self.label.get_font_name())
         t.set_text('…')
         min = t.get_preferred_size()[:2]
         t.set_text(self.text)
         nat = t.get_preferred_size()[2:]
-        return min[0] + 10, min[1] + 10, nat[0] + 5, nat[1] * 2
-    
-    def do_get_preferred_width(self, for_height):
-        preferred = self.do_get_preferred_size()
-        return preferred[0], preferred[2]
+        return min[0] + 10, nat[0] + 5
     
     def do_get_preferred_height(self, for_width):
         min, nat = self.label.get_preferred_height(for_width)
@@ -50,7 +46,9 @@ class ClassicButton(clutter.Actor, clutter.Container):
             self._wrap_label(mid, max, width)
     
     def do_allocate(self, box, flags):
-        btn_width, btn_height = self.get_preferred_size()[2:]
+        btn_width = box.x2 - box.x1
+        btn_height = box.y2 - box.y1
+        #btn_width, btn_height = self.get_preferred_size()[2:]
         #print btn_width, 'x', btn_height
         
         cbox = clutter.ActorBox()

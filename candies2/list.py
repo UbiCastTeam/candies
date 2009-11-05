@@ -8,6 +8,11 @@ from buttons import ClassicButton
 
 class ButtonList(clutter.Actor, clutter.Container):
     __gtype_name__ = 'ButtonList'
+    __gproperties__ = {
+        'font_name' : ( \
+            str, 'font', 'Font name', None, gobject.PARAM_READWRITE \
+        ),
+    }
     __gsignals__ = {
         'select-event' : ( \
             gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () \
@@ -22,13 +27,30 @@ class ButtonList(clutter.Actor, clutter.Container):
         self._buttons = list()
         self.spacing = spacing
         self.button_height = button_height
-        self.font_name = font_name
+        self._font_name = font_name
         self.multiselect = multiselect
         self.selection = list()
+        self.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
+    
+    def do_set_property (self, pspec, value):
+        if pspec.name == 'font_name':
+            self._font_name = value
+            for btn in self._buttons:
+                btn.label.set_font_name(value)
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
+    
+    def do_get_property (self, pspec):
+        if pspec.name == 'font_name':
+            return self._font_name
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
     
     def add(self, *labels):
         for label in labels:
             button = self.button_class(label)
+            if self._font_name is not None:
+                button.label.set_font_name(self._font_name)
             button.set_parent(self)
             button.set_reactive(True)
             button.connect('button-press-event', self.on_button_press)
@@ -66,10 +88,7 @@ class ButtonList(clutter.Actor, clutter.Container):
         self.emit('select-event')
         return True
     
-    def on_selection_set(self, button, event):
-        print "SELECTION SET"
-    
-    def do_get_preferred_size(self):
+    def _compute_preferred_size(self):
         min_w = min_h = nat_w = nat_h = 0.0
         for btn in self._buttons:
             s = btn.get_preferred_size()
@@ -88,20 +107,19 @@ class ButtonList(clutter.Actor, clutter.Container):
         return min_w, min_h, nat_w, nat_h
     
     def do_get_preferred_width(self, for_height):
-        preferred = self.do_get_preferred_size()
+        preferred = self._compute_preferred_size()
         return preferred[0], preferred[2]
     
     def do_get_preferred_height(self, for_width):
-        preferred = self.do_get_preferred_size()
+        preferred = self._compute_preferred_size()
         return preferred[1], preferred[3]
     
     def do_allocate(self, box, flags):
-        list_width, list_height = self.get_preferred_size()[2:]
+        list_width = box.x2 - box.x1
+        list_height = box.y2 - box.y1
         
         y = 0.0
         for button in self._buttons:
-            if self.font_name is not None:
-                button.label.set_font_name(self.font_name)
             button.set_width(list_width)
             btnbox = clutter.ActorBox()
             btnbox.x1 = 0.0
