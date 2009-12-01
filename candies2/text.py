@@ -4,6 +4,12 @@
 import clutter
 
 class StretchText(clutter.Text):
+    """
+    StretchText (clutter.Text)
+
+    An enhanced Text actor which resize its font according to the available
+    space.
+    """
     __gtype_name__ = 'StretchText'
     minimal_fontsize = 5
     
@@ -40,6 +46,8 @@ class StretchText(clutter.Text):
         return max(min, min_height), nat
     
     def get_preferred_fontsize(self, for_width=None, for_height=None):
+        """ Compute the nearest fontsize according to the for_* statements.
+        """
         # Build offscreen label
         lbl = clutter.Text()
         text = self.get_text()

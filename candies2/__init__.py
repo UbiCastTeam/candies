@@ -8,3 +8,4 @@ from roundrect import RoundRectangle
 from buttons import ClassicButton
 from list import ButtonList, FileList
 from video import VideoPlayer
+from text import StretchText
