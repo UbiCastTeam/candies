@@ -8,9 +8,10 @@ class ClassicButton(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, label):
+    def __init__(self, label, stretch=False):
         clutter.Actor.__init__(self)
         self.text = label
+        self.is_stretch = stretch
         
         self.label = clutter.Text()
         self.label.set_parent(self)
@@ -61,6 +62,16 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.label.set_text(self.text)
         if self.label.get_preferred_size()[2] > btn_width - 5:
             self._wrap_label(0, len(self.text), btn_width - 5)
+        elif self.is_stretch:
+            from text import StretchText
+            lbl = StretchText()
+            lbl.set_text(self.text)
+            fontface = self.label.get_font_name()
+            lbl.set_font_name(fontface)
+            fontsize = \
+                      lbl.get_preferred_fontsize(btn_width - 5, btn_height - 5)
+            fontface = fontface[:fontface.rindex(' ')]
+            self.label.set_font_name('%s %s' %(fontface, fontsize))
         lbl_width, lbl_height = self.label.get_preferred_size()[2:]
         cbox = clutter.ActorBox()
         cbox.x1 = (btn_width - lbl_width) / 2
@@ -134,6 +145,32 @@ if __name__ == '__main__':
     r = clutter.Rectangle()
     r.set_size(640, 1)
     box0.add(r)
+    
+    # Testing stretch buttons
+    b = ClassicButton('A', stretch=True)
+    b.set_size(15, 15)
+    b.set_position(5, 450)
+    stage.add(b)
+    
+    b = ClassicButton('B', stretch=True)
+    b.set_size(25, 25)
+    b.set_position(50, 425)
+    stage.add(b)
+    
+    b = ClassicButton('C', stretch=True)
+    b.set_size(50, 50)
+    b.set_position(125, 375)
+    stage.add(b)
+    
+    b = ClassicButton('D', stretch=True)
+    b.set_size(100, 100)
+    b.set_position(250, 325)
+    stage.add(b)
+    
+    b = ClassicButton('E', stretch=True)
+    b.set_size(200, 200)
+    b.set_position(425, 275)
+    stage.add(b)
     
     stage.add(box0)
     stage.show()
