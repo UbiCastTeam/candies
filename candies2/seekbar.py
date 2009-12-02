@@ -103,7 +103,8 @@ class Cursor(clutter.Actor):
         self.__paint_cursor(x2 - x1, y2 - y1, pick_color)
 
 class SeekBar(clutter.Actor, clutter.Container):
-    __gsignals__ = {'seek' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
+    __gsignals__ = {'seek_request_realtime' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]), \
+                        'seek_request_lasy' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     __gtype_name__ = 'SeekBar'
     __gproperties__ = {
         'cursor_color' : (
@@ -172,7 +173,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.queue_relayout()
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
-        self.emit('seek', self._progression)
+        self.emit('seek_request_realtime', self._progression)
         return True
 
     def on_press(self, source, event):
@@ -182,24 +183,39 @@ class SeekBar(clutter.Actor, clutter.Container):
     def on_move(self, source, event):
         if self.last_event_x is None: return
         clutter.grab_pointer(self.cursor)
-        delta = event.x - self.last_event_x
-        self._progression += delta / self.widthbar
+        #delta = event.x - self.last_event_x
+        self._progression +=  (event.x - self.last_event_x) / self.widthbar
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
         self.queue_relayout()
         self.last_event_x = event.x
-        self.emit('seek', self._progression)
+        self.emit('seek_request_realtime', self._progression)
 
-    def on_read_request(self, source, current_time, progression, duration):
-        self._progression = progression
-        self.current_time = current_time
-        self.duration = duration
-        self.queue_relayout()
+    def convert_date(self, duration):
+        if int(duration) > 3600:
+            hour = int(duration) / 3600
+        else:
+            hour = 0
+        if int(duration) > 60:
+            min = (int(duration) / 60) % 60
+        else:
+            min = 0
+        sec = int(duration) % 60
+        date = "%02d:%02d:%02d" %(hour, min, sec)
+        return date
+
+    def on_seek(self, source, current_time, progression, duration):
+        if self.last_event_x is None:
+            self._progression = progression
+            self.current_time = self.convert_date(current_time)
+            self.duration = self.convert_date(duration)
+            self.queue_relayout()
 
     def on_release(self, source, event):
         clutter.ungrab_pointer()
         self.last_event_x = None
-        self.emit('seek', self._progression)
+        self.emit('seek_request_realtime', self._progression)
+        self.emit('seek_request_lasy', self._progression)
 
     def do_allocate(self, box, flags):
         bar_width = box.x2 - box.x1
@@ -218,7 +234,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         cursor_box.x2 = cursor_box.x1 + cursor_width
         cursor_box.y2 = cursor_height
         self.cursor.allocate(cursor_box, flags)
-
         clutter.Actor.do_allocate(self, box, flags)
 
     def do_foreach(self, func, data=None):
@@ -235,25 +250,3 @@ class SeekBar(clutter.Actor, clutter.Container):
         children = (self.background, self.cursor)
         for child in children:
             child.paint()
-
-if __name__ == '__main__':
-    def update_label(bar, event, label):
-        label.set_text('%d %%' %(bar.props.progression * 100))
-
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
-    label = clutter.Text()
-    label.set_position(5, 5)
-    label.set_text('Seek bar')
-    stage.add(label)
-
-    bar = SeekBar()
-    bar.set_background_color('DarkGreen')
-    bar.set_cursor_color('Black')
-    bar.set_size(630, 100)
-    bar.set_position(5, 30)
-    bar.set_reactive(True)
-    bar.connect('notify::progression', update_label, label)
-    stage.add(bar)
-    stage.show()
-    clutter.main()
