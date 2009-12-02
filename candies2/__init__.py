@@ -9,3 +9,4 @@ from buttons import ClassicButton
 from list import ButtonList, FileList
 from video import VideoPlayer
 from seekbar import SeekBar
+from text import StretchText
