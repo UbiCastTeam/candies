@@ -9,19 +9,21 @@ Copyright 2008, Florent Thiery, UbiCast
 from __future__ import division
 from cluttergst import VideoTexture
 import gobject
+from seekbar import SeekBar
 
 class VideoPlayer(VideoTexture):
+    __gsignals__ = {'read' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
     """
     Simple VideoPlayer
 
-    This class wraps the clutter base VideoTexture object, itself 
+    This class wraps the clutter base VideoTexture object, itself
     wrapping the gstreamer playbin element.
 
-    It can be called with an optional uri (either http:// or file://), 
+    It can be called with an optional uri (either http:// or file://),
     or media initialization can be called later.
 
     preview_proportion is an optional percentage parameter that, if
-    the media is seekable, lets you specify the place used as preview 
+    the media is seekable, lets you specify the place used as preview
     position.
 
     Available properties are:
@@ -33,7 +35,7 @@ class VideoPlayer(VideoTexture):
         "uri"                      gchar*                : Read / Write
         "volume"                   gdouble               : Read / Write
 
-    Some gobject code lets some time for some properties to 
+    Some gobject code lets some time for some properties to
     get updated, such as duration (would be 0 otherwise).
 
     TODOs:
@@ -60,7 +62,6 @@ class VideoPlayer(VideoTexture):
         self.was_playing_before_seek = False
         self.progress_callback = progress_callback
         self.end_callback = end_callback
-
         self.connect("eos", self.on_eos)
         self.connect("error", self.on_error)
 
@@ -98,8 +99,12 @@ class VideoPlayer(VideoTexture):
         self.set_uri("file://"+path)
         self._get_safe_duration()
 
+    def on_seek_request(self, source, arg):
+        self.set_progress(arg)
+
     def play(self):
         #logger.info("Playing file %s", self.uri)
+        #self.connect("seek", example_callback)
         self.set_playing(True)
         self.was_playing_before_seek = True
         if not self.is_live:
@@ -107,18 +112,17 @@ class VideoPlayer(VideoTexture):
 
     def update_position(self):
         if self.get_playing() and not self.is_live:
-            new_position = self.get_property("position")/self.get_duration()*100
+            new_position = self.get_progress() * self.get_duration()
+            self.emit('read', new_position, self.get_progress(), self.get_duration())
             if self.progress_callback is not None:
                 self.progress_callback(new_position)
-            else:
-                pass#logger.debug("Position update: %s", new_position)
         return True
 
     def stop(self):
         #logger.info("Stopping playback for file %s", self.uri)
         self.set_playing(False)
         self.was_playing_before_seek = False
-    
+
     def seek_percent(self, percentage):
         # seek_percent(50) will set to 50% of the file
         if not self.is_live:
@@ -146,7 +150,7 @@ class VideoPlayer(VideoTexture):
         #logger.info("Rewinding")
         self.set_playing(False)
         self.was_playing_before_seek = False
-        self.set_property('position', 0)
+        self.set_progress(0)
 
     def _get_safe_duration(self):
         # FIXME: apparently get_can_seek doesn't work with provided test file !
@@ -176,7 +180,7 @@ class VideoPlayer(VideoTexture):
 if __name__ == '__main__':
     import sys
     import clutter
-    
+
     def on_button_press(player, event):
         if event.button == 1:
             player.toggle_playing()
@@ -185,16 +189,16 @@ if __name__ == '__main__':
             player.set_filename(player.get_uri())
             if is_playing:
                 player.play()
-    
+
     stage = clutter.Stage()
     stage.connect('destroy', clutter.main_quit)
-    
+
     player = VideoPlayer()
     player.set_filename(sys.argv[1])
     player.set_reactive(True)
     player.connect('button_press_event', on_button_press)
-    
+
     stage.add(player)
     stage.show()
-    
+
     clutter.main()
