@@ -12,7 +12,7 @@ import gobject
 from seekbar import SeekBar
 
 class VideoPlayer(VideoTexture):
-    __gsignals__ = {'read' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
+    __gsignals__ = {'seek' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
     """
     Simple VideoPlayer
 
@@ -104,7 +104,6 @@ class VideoPlayer(VideoTexture):
 
     def play(self):
         #logger.info("Playing file %s", self.uri)
-        #self.connect("seek", example_callback)
         self.set_playing(True)
         self.was_playing_before_seek = True
         if not self.is_live:
@@ -113,7 +112,7 @@ class VideoPlayer(VideoTexture):
     def update_position(self):
         if self.get_playing() and not self.is_live:
             new_position = self.get_progress() * self.get_duration()
-            self.emit('read', new_position, self.get_progress(), self.get_duration())
+            self.emit('seek', new_position, self.get_progress(), self.get_duration())
             if self.progress_callback is not None:
                 self.progress_callback(new_position)
         return True
@@ -176,29 +175,3 @@ class VideoPlayer(VideoTexture):
     def _set_media_position(self, position):
         self.set_property("position", position)
         #logger.debug("Setting media to %ss", position)
-
-if __name__ == '__main__':
-    import sys
-    import clutter
-
-    def on_button_press(player, event):
-        if event.button == 1:
-            player.toggle_playing()
-        else:
-            is_playing = player.get_playing()
-            player.set_filename(player.get_uri())
-            if is_playing:
-                player.play()
-
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
-
-    player = VideoPlayer()
-    player.set_filename(sys.argv[1])
-    player.set_reactive(True)
-    player.connect('button_press_event', on_button_press)
-
-    stage.add(player)
-    stage.show()
-
-    clutter.main()
