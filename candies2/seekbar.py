@@ -192,15 +192,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.emit('seek_request_realtime', self._progression)
 
     def convert_date(self, duration):
-        if int(duration) > 3600:
-            hour = int(duration) / 3600
-        else:
-            hour = 0
-        if int(duration) > 60:
-            min = (int(duration) / 60) % 60
-        else:
-            min = 0
-        sec = int(duration) % 60
+        hour = duration // 3600
+        min = (duration % 3600) // 60
+        sec = duration % 60
         date = "%02d:%02d:%02d" %(hour, min, sec)
         return date
 
@@ -209,6 +203,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             self._progression = progression
             self.current_time = self.convert_date(current_time)
             self.duration = self.convert_date(duration)
+            print self.current_time
             self.queue_relayout()
 
     def on_release(self, source, event):
