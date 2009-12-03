@@ -1,10 +1,26 @@
 # -*- coding: utf-8 -*-
+import sys
 import gobject
 import clutter
 from roundrect import RoundRectangle
 
 class ClassicButton(clutter.Actor, clutter.Container):
     __gtype_name__ = 'ClassicButton'
+    __gproperties__ = {
+        'color' : (
+            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+        ),
+        'font_color' : (
+            str, 'font color', 'Font color', None, gobject.PARAM_READWRITE
+        ),
+        'border_color': (
+            str, 'border color', 'Border color', None, gobject.PARAM_READWRITE
+        ),
+        'border_width' : (
+            gobject.TYPE_FLOAT, 'border width', 'Border width',
+            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
+        ),
+    }
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
@@ -22,6 +38,30 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.rect.set_border_width(3)
         self.rect.props.radius = 10
         self.rect.set_parent(self)
+    
+    def do_set_property(self, pspec, value):
+        if pspec.name == 'color':
+            self.rect.props.color = value
+        elif pspec.name == 'font-color':
+            self.label.props.color = clutter.color_from_string(value)
+        elif pspec.name == 'border-color':
+            self.rect.props.border_color = value
+        elif pspec.name == 'border-width':
+            self.rect.props.border_width = value
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
+
+    def do_get_property(self, pspec):
+        if pspec.name == 'color':
+            return self.rect.props.color
+        elif pspec.name == 'font-color':
+            return self.label.props.color
+        elif pspec.name == 'border-color':
+            return self.rect.props.border_color
+        elif pspec.name == 'border-width':
+            return self.rect.props.border_width
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
     
     def do_get_preferred_width(self, for_height):
         t = clutter.Text()
@@ -158,16 +198,20 @@ if __name__ == '__main__':
     stage.add(b)
     
     b = ClassicButton('C', stretch=True)
+    b.props.font_color = 'Yellow'
     b.set_size(50, 50)
     b.set_position(125, 375)
     stage.add(b)
     
     b = ClassicButton('D', stretch=True)
+    b.props.border_width = 10
+    b.props.border_color = 'Green'
     b.set_size(100, 100)
     b.set_position(250, 325)
     stage.add(b)
     
     b = ClassicButton('E', stretch=True)
+    b.props.color = 'Pink'
     b.set_size(200, 200)
     b.set_position(425, 275)
     stage.add(b)

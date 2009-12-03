@@ -51,9 +51,9 @@ class RoundRectangle(clutter.Actor):
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
             self._color = clutter.color_from_string(value)
-        elif pspec.name == 'border_color':
+        elif pspec.name == 'border-color':
             self._border_color = clutter.color_from_string(value)
-        elif pspec.name == 'border_width':
+        elif pspec.name == 'border-width':
             self._border_width = value
         elif pspec.name == 'radius':
             self._radius = value
@@ -63,9 +63,9 @@ class RoundRectangle(clutter.Actor):
     def do_get_property(self, pspec):
         if pspec.name == 'color':
             return self._color
-        elif pspec.name == 'border_color':
+        elif pspec.name == 'border-color':
             return self._border_color
-        elif pspec.name == 'border_width':
+        elif pspec.name == 'border-width':
             return self._border_width
         elif pspec.name == 'radius':
             return self._radius
