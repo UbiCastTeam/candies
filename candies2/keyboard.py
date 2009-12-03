@@ -251,8 +251,18 @@ if __name__ == '__main__':
             text.set_selection(text.get_cursor_position(), text.get_cursor_position())
         else :
             text_affich=text.insert_text(key, text.get_cursor_position())
-        
-     
+        text_length = len(text.get_text())
+        if text_length == 1 : 
+            if keyboard.map_name =='fr_maj':
+                keyboard.load_profile('fr_min')
+            elif keyboard.map_name =='en_maj':
+                keyboard.load_profile('en_min')
+        if text_length == 0 : 
+            if keyboard.map_name =='fr_min':
+                keyboard.load_profile('fr_maj')
+            elif keyboard.map_name =='en_min':
+                keyboard.load_profile('en_maj')
+ 
     def num_callback(button,event,keyboard):
         if  keyboard.map_name =='numeric':
             keyboard.load_profile('fr_maj')
