@@ -22,7 +22,7 @@ class Key:
 
 KEYBOARD_MAPS = {
     'fr_maj' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'),Key('del',evt='del')),
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
         (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('↤',nb=2,evt='suppr')), 
@@ -30,7 +30,7 @@ KEYBOARD_MAPS = {
             ),
     
     'en_maj' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('del',evt='del')),
         (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L')), 
         (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'), Key('↤',nb=2,evt='suppr')),
@@ -38,7 +38,7 @@ KEYBOARD_MAPS = {
             ),
     
     'fr_min' : (
-         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
+         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'),Key('del',evt='del')),
          (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
          (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
          (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('↤',nb=2,evt='suppr')),
@@ -46,7 +46,7 @@ KEYBOARD_MAPS = {
              ),
     
     'en_min' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'),Key('del',evt='del')),
         (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
         (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('k')), 
         (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'), Key('↤',nb=2,evt='suppr')),
@@ -57,7 +57,7 @@ KEYBOARD_MAPS = {
         (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('§'), Key('%'), Key('$')),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='fr_maj'), Key('\"'), Key('ø'), Key('£'), Key('<'), Key('>'), Key('°'), Key('↤',nb=2,evt='suppr')),
+        (Key('ABC',nb=2,evt='fr_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('↤',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
             ),
     
@@ -65,7 +65,7 @@ KEYBOARD_MAPS = {
         (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('§'), Key('%'), Key('$')),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='en_maj'), Key('\"'), Key('ø'), Key('£'), Key('<'), Key('>'), Key('°'), Key('↤',nb=2,evt='suppr')),
+        (Key('ABC',nb=2,evt='en_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('↤',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='en_min'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
             ),
             
@@ -105,6 +105,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 button.set_parent(self)
                 button.set_reactive(True)
                 button.connect('button-press-event', self.on_button_press)
+                button.connect('button-release-event', self.on_button_release)
                 self.button_map[key] = button
                 nb_reel_line=nb_reel_line+key.width
             self.nb_reel_per_line.append(nb_reel_line)
@@ -119,9 +120,9 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.map_name = None
     
     def on_button_press(self, source, event):
+        source.rect.set_color('Gray')
         for key , button in self.button_map.items():
             if button == source :
-                #print key.event
                 if key.event == 'fr_min':
                     self.load_profile("fr_min")
                 if key.event == 'fr_maj':
@@ -139,9 +140,13 @@ class Keyboard(clutter.Actor, clutter.Container):
                 if key.event == 'enter':
                     self.emit("keyboard", '\n')
                 if key.event == 'suppr':
-                    self.emit("keyboard",'suppr');
-                break
-                
+                    self.emit("keyboard",'suppr')
+                if key.event == 'del':
+                    self.emit("keyboard",'del')
+    
+    def on_button_release(self, source, event):
+        source.rect.set_color('LightGray') 
+                    
     
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
@@ -191,7 +196,7 @@ if __name__ == '__main__':
     stage.add(text)
     
     
-    keyboard = Keyboard('en_maj')
+    keyboard = Keyboard('fr_maj')
     keyboard.set_size(640,360)
     keyboard.set_position(0,40)
     stage.add(keyboard)
@@ -238,6 +243,10 @@ if __name__ == '__main__':
     
     def keyboard_callback(keyboard, key):
         if key == 'suppr':
+            text_retour=text.delete_chars(1)
+            text.set_selection(text.get_cursor_position(), text.get_cursor_position())
+        elif key == 'del':
+            text.set_selection(text.get_cursor_position()+1, text.get_cursor_position()+1)
             text_retour=text.delete_chars(1)
             text.set_selection(text.get_cursor_position(), text.get_cursor_position())
         else :
