@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ''' 
-Keyboard class
+Scrollbar and Clipper class
 author : flavie
 date : dec 3 2009
 version : 0
@@ -14,9 +14,25 @@ import gobject
 import clutter
 from roundrect import RoundRectangle
 
+
 class Scrollbar(clutter.Actor, clutter.Container):
+    '''
+    Scrollbar class :
+        variables :
+            .scrollbar_background : clutter.Rectangle
+            .scroller : clutter.Rectangle
+            .scroller_position : float
+        functions :
+            .on_scroll_press : drag scroller
+            .on_scroll_release : drop scroller
+            .on_scroll_move : move scroller
+            .do_allocate : draw scrollbar, scroller and emit the position of scroller
+            .do_foreach
+            .do_paint
+            .do_pick
+    '''
     __gtype_name__ = 'Scrollbar'
-    __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_INT])}
+    __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
     #keyboard initialisation
     def __init__(self):
@@ -49,7 +65,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
         clutter.grab_pointer(self.scroller)
         self.last_event_y = event.y
         self.scroller_position = event.y
-        print event.y
         self.queue_relayout()
         
     def do_allocate(self, box, flags):
@@ -76,6 +91,9 @@ class Scrollbar(clutter.Actor, clutter.Container):
         scroller_box.y1 = self.scroller_position 
         scroller_box.y2 = scroller_box.y1 + box_width
         self.scroller.allocate(scroller_box,flags)
+        
+        scroll_position_percent=self.scroller_position/(box_height-scroller_width -margin)
+        self.emit("scroll_position",scroll_position_percent)
                 
         clutter.Actor.do_allocate(self, box, flags)
     
@@ -94,6 +112,59 @@ class Scrollbar(clutter.Actor, clutter.Container):
         for child in children :
             child.paint()
 
+
+class Clipper (clutter.Actor, clutter.Container):
+    '''
+    Clipper class
+        need clutter.Actor and gsignals
+        variables :
+            .actor : clutter.Actor object to move
+            .clipper_position = float position of the clipper
+        functions :
+            .callback_position : need float which indicate how to move clipper
+            .do_allocate : move clipper
+            .do_foreach
+            .do_paint
+            .do_pick 
+    '''
+    __gtype_name__ = 'Clipper'
+    
+    def __init__(self,actor):
+        clutter.Actor.__init__(self)
+        self.actor = actor
+        self.actor.set_parent(self)
+        self.clipper_position = 0
+        
+    def callback_position(self,source,position):
+        self.clipper_position=position
+        self.queue_relayout()
+        
+    def do_allocate (self, box, flags):
+        box_width = box.x2 - box.x1
+        box_height = box.y2 - box.y1
+        
+        position = self.clipper_position * (self.actor.get_preferred_size()[3]-box_height) 
+        self.actor.set_anchor_point(0,position)
+        self.actor.set_clip(0,position,box_width,box_height)
+        self.actor.allocate_preferred_size(flags)
+        clutter.Actor.do_allocate(self, box, flags)
+        
+    def do_foreach(self, func, data=None):
+        children = (self.actor,)
+        for child in children :
+            func(child, data)
+    
+    def do_paint(self):
+        children = (self.actor,)
+        for child in children :
+            child.paint()
+
+    def do_pick(self, color):
+        children = (self.actor,)
+        for child in children :
+            child.paint()
+
+
 #main to test scrollbar
 if __name__ == '__main__':
 
@@ -104,6 +175,17 @@ if __name__ == '__main__':
     scrollbar.set_size(40,480)
     stage.add(scrollbar)
 
+    label = clutter.Text()
+    auto_source = open('scrollbar.py')
+    label.set_text(auto_source.read())
+    auto_source.close()
+    
+    clipper = Clipper(label)
+    clipper.set_size(600,400)
+    clipper.set_position(100,40)
+    scrollbar.connect('scroll_position',clipper.callback_position)
+    stage.add(clipper)
+    
     stage.show()
 
     clutter.main() 
