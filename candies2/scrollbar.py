@@ -86,16 +86,18 @@ class Scrollbar(clutter.Actor, clutter.Container):
         scroller_box=clutter.ActorBox()
         scroller_box.x1 = margin 
         scroller_box.x2 = scroller_box.x1 + scroller_width
-        if self.scroller_position >= box_height-scroller_width +margin :
-            self.scroller_position = box_height-scroller_width +margin 
+        if self.scroller_position >= box_height-scroller_width :
+            self.scroller_position = box_height-scroller_width  
+        scroll_position_percent=(self.scroller_position)/(box_height-scroller_width)
         if self.scroller_position <= scroller_width/2 :
             self.scroller_position = scroller_width/2
+            scroll_positioon_percent =0 
         scroller_box.y1 = self.scroller_position - scroller_width/2 + margin
         scroller_box.y2 = scroller_box.y1 + scroller_width  
         self.scroller.allocate(scroller_box,flags)
         
-        
-        scroll_position_percent=(self.scroller_position-scroller_width/2)/(box_height-scroller_width -margin)
+        #scroll_position_percent=(self.scroller_position-scroller_width/2)/(box_height-scroller_width)
+        print scroll_position_percent
         self.emit("scroll_position",scroll_position_percent)
                 
         clutter.Actor.do_allocate(self, box, flags)
@@ -178,12 +180,14 @@ if __name__ == '__main__':
     scrollbar.set_size(40,480)
     stage.add(scrollbar)
 
+    image=clutter.Texture('grr.jpg')
+    
     label = clutter.Text()
     auto_source = open('scrollbar.py')
     label.set_text(auto_source.read())
     auto_source.close()
     
-    clipper = Clipper(label)
+    clipper = Clipper(image)
     clipper.set_size(600,400)
     clipper.set_position(100,40)
     scrollbar.connect('scroll_position',clipper.callback_position)
