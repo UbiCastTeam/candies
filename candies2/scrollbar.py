@@ -12,7 +12,6 @@ import sys
 import operator
 import gobject
 import clutter
-from roundrect import RoundRectangle
 
 
 class Scrollbar(clutter.Actor, clutter.Container):
@@ -86,13 +85,13 @@ class Scrollbar(clutter.Actor, clutter.Container):
         scroller_box=clutter.ActorBox()
         scroller_box.x1 = margin
         scroller_box.x2 = scroller_box.x1 + box_width
-        if self.scroller_position >= box_height-scroller_width -margin:
-            self.scroller_position = box_height-scroller_width -margin
+        if self.scroller_position >= box_height-scroller_width -2*margin:
+            self.scroller_position = box_height-scroller_width -2*margin
         scroller_box.y1 = self.scroller_position 
         scroller_box.y2 = scroller_box.y1 + box_width
         self.scroller.allocate(scroller_box,flags)
         
-        scroll_position_percent=self.scroller_position/(box_height-scroller_width -margin)
+        scroll_position_percent=self.scroller_position/(box_height-scroller_width -2*margin)
         self.emit("scroll_position",scroll_position_percent)
                 
         clutter.Actor.do_allocate(self, box, flags)
