@@ -60,10 +60,20 @@ class VideoPlayer(VideoTexture):
         self.preview_proportion = preview_proportion
         self.is_ready = False
         self.was_playing_before_seek = False
-        self.progress_callback = progress_callback
         self.end_callback = end_callback
         self.connect("eos", self.on_eos)
         self.connect("error", self.on_error)
+        self.connect("notify::progress", self.on_progress)
+        self.connect("notify::duration", self.on_duration)
+
+    def on_duration(self, source, duration):
+        duration = source.get_duration()
+        if duration > 0:
+            print duration
+            if self.got_duration_callback is not None:
+                self.got_duration_callback(duration)
+                self.is_ready = True
+                self.is_live = False
 
     def on_eos(self, source):
         #logger.info("EOS: Stream playback ended after %ss, media location: %s",
@@ -76,6 +86,8 @@ class VideoPlayer(VideoTexture):
     def on_error(self, source, gerror):
         # FIXME: how to get the error contents ?
         #logger.error("Unkown playback error, media location: %s", self.uri)
+        print dir(gerror)
+        print str(gerror)
         pass
 
     def set_filename(self, path):
@@ -84,9 +96,10 @@ class VideoPlayer(VideoTexture):
         if self.uri is None:
             self.duration_attempt = 0
             self.is_live = False
-            self.uri = "file://"+path
+            self.uri = "file://" + path
             self.set_uri(self.uri)
-            self._get_safe_duration()
+            self.play()
+            self.stop()
         else:
             self.change_filename(path)
 
@@ -96,48 +109,43 @@ class VideoPlayer(VideoTexture):
         self.is_live = False
         if self.get_playing():
             self.stop()
-        self.set_uri("file://"+path)
-        self._get_safe_duration()
+        self.set_uri("file://" + path)
 
     def on_seek_request(self, source, arg):
         self.set_progress(arg)
+
+    def on_seek_relative(self, arg):
+        new_position = self.get_progress() * self.get_duration()
+        if arg > 0:
+            if  new_position + arg < self.get_duration():
+                new_position = new_position + arg
+                self.set_progress(new_position / self.get_duration())
+            else:
+                self.set_progress(1)
+        else:
+            if  new_position + arg > 0:
+                new_position = new_position + arg
+                self.set_progress(new_position / self.get_duration())
+            else:
+                self.set_progress(0)
+        gobject.timeout_add(1000, self.emit_seek)
+        return True
 
     def play(self):
         #logger.info("Playing file %s", self.uri)
         self.set_playing(True)
         self.was_playing_before_seek = True
-        if not self.is_live:
-            gobject.timeout_add(1000, self.update_position)
 
-    def update_position(self):
-        if self.get_playing() and not self.is_live:
-            new_position = self.get_progress() * self.get_duration()
-            self.emit('seek', new_position, self.get_progress(), self.get_duration())
-            if self.progress_callback is not None:
-                self.progress_callback(new_position)
-        return True
+    def on_progress(self, source, position):
+        new_position = self.get_progress() * self.get_duration()
+        print new_position
+        if new_position > 0:
+            self.emit('seek', new_position, source.get_progress(), source.get_duration())
 
     def stop(self):
         #logger.info("Stopping playback for file %s", self.uri)
         self.set_playing(False)
         self.was_playing_before_seek = False
-
-    def seek_percent(self, percentage):
-        # seek_percent(50) will set to 50% of the file
-        if not self.is_live:
-            #logger.info("Trying to seek to %s", percentage)
-            if self.get_playing():
-                self.set_playing(False)
-                gobject.timeout_add(200, self.seek_percent, percentage)
-            elif self.is_ready:
-                new_position = percentage/100 * self.get_duration()
-                self._set_media_position(new_position)
-                if self.was_playing_before_seek:
-                    self.play()
-            else:
-                self._get_safe_duration()
-        else:
-            pass#logger.info("Media is not seekable, discarding seeking request")
 
     def toggle_playing(self):
         if self.get_playing():
@@ -150,28 +158,3 @@ class VideoPlayer(VideoTexture):
         self.set_playing(False)
         self.was_playing_before_seek = False
         self.set_progress(0)
-
-    def _get_safe_duration(self):
-        # FIXME: apparently get_can_seek doesn't work with provided test file !
-        #if self.get_can_seek():
-        #logger.debug("Trying to get real duration")
-        if self.duration_attempt <= 4:
-            duration = self.get_duration()
-            if duration == 0:
-                #logger.debug("Media hasn't been initialized yet, getting duration later")
-                self.play()
-                self.stop()
-                self.duration_attempt += 1
-                gobject.timeout_add(200, self._get_safe_duration)
-            else:
-                self.is_ready = True
-                #logger.debug("Got real duration, we can now use percentages")
-                if self.got_duration_callback is not None:
-                    self.got_duration_callback(duration)
-        else:
-            self.is_live = True
-            #logger.info("Media is not seekable, discarding preview procedure")
-
-    def _set_media_position(self, position):
-        self.set_property("position", position)
-        #logger.debug("Setting media to %ss", position)
