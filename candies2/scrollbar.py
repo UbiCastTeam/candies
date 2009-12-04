@@ -83,7 +83,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
         bar_box.y2 = bar_box.y1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
         
-        #self.scroller.set_anchor_point(0,scroller_width/2)
         scroller_box=clutter.ActorBox()
         scroller_box.x1 = margin 
         scroller_box.x2 = scroller_box.x1 + scroller_width
