@@ -75,23 +75,28 @@ class Scrollbar(clutter.Actor, clutter.Container):
         bar_width = box_width/4
         bar_height = box_height - 2*margin - scroller_width      
         
+      
         bar_box = clutter.ActorBox()  
-        bar_box.x1 = box_width/2
+        bar_box.x1 = box_width/2 -bar_width/2
         bar_box.y1 = margin + scroller_width/2 
         bar_box.x2 = bar_box.x1 + bar_width
         bar_box.y2 = bar_box.y1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
         
+        #self.scroller.set_anchor_point(0,scroller_width/2)
         scroller_box=clutter.ActorBox()
-        scroller_box.x1 = margin
-        scroller_box.x2 = scroller_box.x1 + box_width
-        if self.scroller_position >= box_height-scroller_width -2*margin:
-            self.scroller_position = box_height-scroller_width -2*margin
-        scroller_box.y1 = self.scroller_position 
-        scroller_box.y2 = scroller_box.y1 + box_width
+        scroller_box.x1 = margin 
+        scroller_box.x2 = scroller_box.x1 + scroller_width
+        if self.scroller_position >= box_height-scroller_width +margin :
+            self.scroller_position = box_height-scroller_width +margin 
+        if self.scroller_position <= scroller_width/2 :
+            self.scroller_position = scroller_width/2
+        scroller_box.y1 = self.scroller_position - scroller_width/2 + margin
+        scroller_box.y2 = scroller_box.y1 + scroller_width  
         self.scroller.allocate(scroller_box,flags)
         
-        scroll_position_percent=self.scroller_position/(box_height-scroller_width -2*margin)
+        
+        scroll_position_percent=(self.scroller_position-scroller_width/2)/(box_height-scroller_width -margin)
         self.emit("scroll_position",scroll_position_percent)
                 
         clutter.Actor.do_allocate(self, box, flags)
