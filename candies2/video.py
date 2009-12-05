@@ -69,7 +69,6 @@ class VideoPlayer(VideoTexture):
     def on_duration(self, source, duration):
         duration = source.get_duration()
         if duration > 0:
-            print duration
             if self.got_duration_callback is not None:
                 self.got_duration_callback(duration)
                 self.is_ready = True
@@ -86,8 +85,6 @@ class VideoPlayer(VideoTexture):
     def on_error(self, source, gerror):
         # FIXME: how to get the error contents ?
         #logger.error("Unkown playback error, media location: %s", self.uri)
-        print dir(gerror)
-        print str(gerror)
         pass
 
     def set_filename(self, path):
@@ -138,7 +135,6 @@ class VideoPlayer(VideoTexture):
 
     def on_progress(self, source, position):
         new_position = self.get_progress() * self.get_duration()
-        print new_position
         if new_position > 0:
             self.emit('seek', new_position, source.get_progress(), source.get_duration())
 
