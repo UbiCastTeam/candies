@@ -104,7 +104,48 @@ class Cursor(clutter.Actor):
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__paint_cursor(x2 - x1, y2 - y1, pick_color)
 '''
+
 class SeekBar(clutter.Actor, clutter.Container):
+    '''
+    SeekBar class :
+
+    * Properties :
+        - background :          clutter.Rectangle       background seekbar
+        - cursor :              clutter.Rectangle       cursor
+        - widthbar :            float                   width size of seekbar
+        - cursor_width :        float                   width size of cursor
+        - duration :            float                   total time of video
+        - current_time :        float                   real time of video
+
+    * Functions :
+        - finish :              Update progression to set 1.
+
+        - on_background_click : Update cursor where you click
+                                and send signal to video to update
+                                progression of video.
+
+        - on_press :            Moment or you click to do drag and drop.
+
+        - on_move :             Moment where you have clicked, you move
+                                your cursor, this update your cursor and
+                                send signal to update the progression of video.
+
+        - convert_date :        To convert float date in conventional date 00:00:00.
+
+        - update_position :     To get progression of video, real time of video and total time
+
+        - on_release :          For the drag and drop when you unclick
+                                to finish the drag and drop, update cursor
+                                and send a signal to update video progression.
+        - do_allocate
+        - do_foreach
+        - do_paint
+        - do_pick
+
+    * Signal :
+        - seek_request_realtime : progression   gfloat  during on_move in drag and drop.
+        - seek_request_lazy : progression   gfloat  after drag and drop in on_release.
+    '''
     __gsignals__ = {'seek_request_realtime' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]), \
                         'seek_request_lazy' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     __gtype_name__ = 'SeekBar'
@@ -140,7 +181,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
         self.last_event_x = None
         self.widthbar = 0.0
-        self.radius = 0.0
+        #self.radius = 0.0
         self.cursor_width = 0.0
         self.duration = 0.0
         self.current_time = 0.0
@@ -181,7 +222,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def on_background_click(self, source, event):
         x1, y1, x2, y2 = self.get_allocation_box()
         bar_width = x2 - x1
-#self._progression = (event.x - self.radius - self.cursor_width / 2) / bar_width
         self._progression = (event.x - self.cursor_width / 2) / bar_width
         self.queue_relayout()
         self._progression = max(self._progression, 0.0)
@@ -213,7 +253,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         date = "%02d:%02d:%02d" %(hour, min, sec)
         return date
 
-    def on_seek(self, source, current_time, progression, duration):
+    def update_position(self, source, current_time, progression, duration):
         if self.last_event_x is None:
             self._progression = progression
             self.current_time = self.convert_date(current_time)

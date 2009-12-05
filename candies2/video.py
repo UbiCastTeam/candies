@@ -9,10 +9,13 @@ Copyright 2008, Florent Thiery, UbiCast
 from __future__ import division
 from cluttergst import VideoTexture
 import gobject
+import gst
 from seekbar import SeekBar
 
+import logging
+logger = logging.getLogger("videoplayer")
+
 class VideoPlayer(VideoTexture):
-    __gsignals__ = {'seek' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
     """
     Simple VideoPlayer
 
@@ -35,64 +38,73 @@ class VideoPlayer(VideoTexture):
         "uri"                      gchar*                : Read / Write
         "volume"                   gdouble               : Read / Write
 
-    Some gobject code lets some time for some properties to
-    get updated, such as duration (would be 0 otherwise).
-
+    Available signals are:
+        Position_update:
+                        new_position    gfloat          : current_time
+                        get_progress    gfloat          : pourcent of video
+                        get_duration    gfloat          : total time of video
     TODOs:
-    * handle remote sources
     * handle volume
     """
+    __gsignals__ = {'position_update' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
 
     def __init__(self, uri=None, preview_proportion=0.5,
-                 progress_callback=None, end_callback=None, is_live=False, got_duration_callback=None):
+                 progress_callback=None, end_callback=None, is_seekable=False, got_duration_callback=None):
         VideoTexture.__init__(self)
 
         self.uri = uri
-        self.is_live = is_live
-        self.duration_attempt = 0
-        self.got_duration_callback=got_duration_callback
+        self.is_seekable = is_seekable
+        self.got_duration_callback = got_duration_callback
+        self.end_callback = end_callback
+        self.preview_proportion = preview_proportion
 
         if uri is not None:
             self.set_uri(uri)
-            if not is_live:
-                self._get_safe_duration()
 
-        self.preview_proportion = preview_proportion
-        self.is_ready = False
         self.was_playing_before_seek = False
-        self.end_callback = end_callback
-        self.connect("eos", self.on_eos)
-        self.connect("error", self.on_error)
+
+        self._init_gst_bus()
+
         self.connect("notify::progress", self.on_progress)
         self.connect("notify::duration", self.on_duration)
+
+    def _init_gst_bus(self):
+        playbin = self.get_playbin()
+        bus = playbin.get_bus()
+        bus.add_signal_watch()
+        bus.connect('message', self._on_gst_message)
+
+    def _on_gst_message(self, bus, message):
+        '''
+        Callback function that is called every time when message occurs on
+        Gstreamer messagebus.
+        '''
+        if message.type == gst.MESSAGE_ERROR:
+            error, debug = message.parse_error()
+            logger.error("Gstreamer playback error: %s" %str(error))
+            logger.debug("Gstreamer playback debug: %s" %str(debug))
+        elif message.type == gst.MESSAGE_EOS:
+            logger.info("Media playback end")
+            logger.debug("EOS")
+            if self.end_callback is not None:
+                logger.debug("Calling end callback")
+                self.end_callback()
+            else:
+                self.rewind()
+                self.stop()
 
     def on_duration(self, source, duration):
         duration = source.get_duration()
         if duration > 0:
             if self.got_duration_callback is not None:
                 self.got_duration_callback(duration)
-                self.is_ready = True
-                self.is_live = False
-
-    def on_eos(self, source):
-        #logger.info("EOS: Stream playback ended after %ss, media location: %s",
-        #            self.get_duration(), self.uri)
-        if self.end_callback is not None:
-            self.end_callback()
-        else:
-            self.rewind()
-
-    def on_error(self, source, gerror):
-        # FIXME: how to get the error contents ?
-        #logger.error("Unkown playback error, media location: %s", self.uri)
-        pass
+                self.is_seekable = False
 
     def set_filename(self, path):
         if self.get_playing():
             self.stop()
         if self.uri is None:
-            self.duration_attempt = 0
-            self.is_live = False
+            self.is_seekable = False
             self.uri = "file://" + path
             self.set_uri(self.uri)
             self.play()
@@ -101,15 +113,16 @@ class VideoPlayer(VideoTexture):
             self.change_filename(path)
 
     def change_filename(self, path):
-        self.is_ready = False
-        self.duration_attempt = 0
-        self.is_live = False
+        self.is_seekable = False
         if self.get_playing():
             self.stop()
         self.set_uri("file://" + path)
 
     def on_seek_request(self, source, arg):
         self.set_progress(arg)
+
+    def emit_position_update(self, new_position):
+        self.emit('position_update', new_position, self.get_progress(), self.get_duration())
 
     def on_seek_relative(self, arg):
         new_position = self.get_progress() * self.get_duration()
@@ -125,21 +138,21 @@ class VideoPlayer(VideoTexture):
                 self.set_progress(new_position / self.get_duration())
             else:
                 self.set_progress(0)
-        gobject.timeout_add(1000, self.emit_seek)
+        gobject.timeout_add(1000, self.emit_position_update, new_position)
         return True
 
     def play(self):
-        #logger.info("Playing file %s", self.uri)
+        logger.info("Playing file %s", self.uri)
         self.set_playing(True)
         self.was_playing_before_seek = True
 
     def on_progress(self, source, position):
         new_position = self.get_progress() * self.get_duration()
         if new_position > 0:
-            self.emit('seek', new_position, source.get_progress(), source.get_duration())
+            self.emit_position_update(new_position)
 
     def stop(self):
-        #logger.info("Stopping playback for file %s", self.uri)
+        logger.info("Stopping playback for file %s", self.uri)
         self.set_playing(False)
         self.was_playing_before_seek = False
 
@@ -150,7 +163,8 @@ class VideoPlayer(VideoTexture):
             self.play()
 
     def rewind(self):
-        #logger.info("Rewinding")
+        logger.debug("Rewinding")
         self.set_playing(False)
         self.was_playing_before_seek = False
         self.set_progress(0)
+        self.emit_position_update(0)

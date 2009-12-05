@@ -2,6 +2,14 @@ from candies2 import VideoPlayer, SeekBar, ClassicButton
 import clutter
 import sys
 
+import logging, sys
+
+logging.basicConfig(
+    level=getattr(logging, "DEBUG"),
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    stream=sys.stderr
+)
+
 def show_time(self, current_time, progression, duration, time_label):
     hour = duration // 3600
     min = (duration % 3600) // 60
@@ -38,7 +46,7 @@ player.connect('button_press_event', on_button_press)
 
 
 seek = SeekBar()
-player.end_callback = seek.finish
+#player.end_callback = seek.finish
 
 seek.set_background_color('DarkGreen')
 seek.set_cursor_color('Black')
@@ -46,7 +54,7 @@ seek.set_size(630, 50)
 seek.set_position(5, 500)
 seek.set_reactive(True)
 seek.connect('seek_request_realtime', player.on_seek_request)
-player.connect('seek', seek.on_seek)
+player.connect('position_update', seek.update_position)
 
 
 seek2 = SeekBar()
@@ -56,19 +64,22 @@ seek2.set_size(630, 50)
 seek2.set_position(5, 555)
 seek2.set_reactive(True)
 seek2.connect('seek_request_lazy', player.on_seek_request)
-player.connect('seek', seek2.on_seek)
+player.connect('position_update', seek2.update_position)
 
-b = ClassicButton('seek', stretch=True)
-b.set_size(50, 50)
+b = ClassicButton('seek +5s', stretch=True)
+b.set_size(100, 50)
 b.set_position(50, 350)
 b.set_reactive(True)
 b.connect('button_press_event', on_button_seek, player)
 
 time_label = clutter.Text()
-player.connect('seek', show_time, time_label)
+player.connect('position_update', show_time, time_label)
 
 stage.set_size(800, 600)
 stage.add(player, seek, seek2, b, time_label)
 stage.show()
+
+#import gobject
+#gobject.timeout_add(10000, player.set_filename, "/home/anthony/src/candies/mine/test2.ogg")
 
 clutter.main()
