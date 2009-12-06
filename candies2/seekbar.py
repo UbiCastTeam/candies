@@ -222,7 +222,7 @@ class SeekBar(clutter.Actor, clutter.Container):
     def on_background_click(self, source, event):
         x1, y1, x2, y2 = self.get_allocation_box()
         bar_width = x2 - x1
-        self._progression = (event.x - self.cursor_width / 2 - x1) / bar_width
+        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / bar_width
         self.queue_relayout()
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
