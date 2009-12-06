@@ -57,7 +57,7 @@ class VideoPlayer(VideoTexture):
         self.got_duration_callback = got_duration_callback
         self.end_callback = end_callback
         self.preview_proportion = preview_proportion
-
+        self.set_position(100, 50)
         if uri is not None:
             self.set_uri(uri)
 
