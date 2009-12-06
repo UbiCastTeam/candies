@@ -24,10 +24,11 @@ class ClassicButton(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, label, stretch=False):
+    def __init__(self, label, stretch=False, border=6.0):
         clutter.Actor.__init__(self)
         self.text = label
         self.is_stretch = stretch
+        self.border = border
         
         self.label = clutter.Text()
         self.label.set_parent(self)
@@ -67,14 +68,14 @@ class ClassicButton(clutter.Actor, clutter.Container):
         t = clutter.Text()
         t.set_font_name(self.label.get_font_name())
         t.set_text('…')
-        min = t.get_preferred_size()[:2]
+        min = t.get_preferred_size()[0]
         t.set_text(self.text)
-        nat = t.get_preferred_size()[2:]
-        return min[0] + 10, nat[0] + 5
+        nat = t.get_preferred_size()[2]
+        return min + 2*self.border, nat + 2*self.border
     
     def do_get_preferred_height(self, for_width):
         min, nat = self.label.get_preferred_height(for_width)
-        return min, nat * 2
+        return min + 2*self.border, nat + 2*self.border
     
     def _wrap_label(self, min, max, width):
         mid = (min + max) / 2
@@ -89,6 +90,8 @@ class ClassicButton(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
+        inner_width = btn_width - 2*self.border
+        inner_height = btn_height - 2*self.border
         #btn_width, btn_height = self.get_preferred_size()[2:]
         #print btn_width, 'x', btn_height
         
@@ -100,24 +103,24 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.rect.allocate(cbox, flags)
         
         self.label.set_text(self.text)
-        if self.label.get_preferred_size()[2] > btn_width - 5:
-            self._wrap_label(0, len(self.text), btn_width - 5)
+        if self.label.get_preferred_size()[2] > inner_width:
+            self._wrap_label(0, len(self.text), inner_width)
         elif self.is_stretch:
             from text import StretchText
             lbl = StretchText()
             lbl.set_text(self.text)
             fontface = self.label.get_font_name()
             lbl.set_font_name(fontface)
-            fontsize = \
-                      lbl.get_preferred_fontsize(btn_width - 5, btn_height - 5)
+            fontsize = lbl.get_preferred_fontsize(inner_width, inner_height)
             fontface = fontface[:fontface.rindex(' ')]
             self.label.set_font_name('%s %s' %(fontface, fontsize))
-        lbl_width, lbl_height = self.label.get_preferred_size()[2:]
+        lbl_width = self.label.get_preferred_size()[2]
+        lbl_height = self.label.get_preferred_size()[3]
         cbox = clutter.ActorBox()
-        cbox.x1 = (btn_width - lbl_width) / 2
-        cbox.y1 = (btn_height - lbl_height) / 2
-        cbox.x2 = box.x1 + lbl_width
-        cbox.y2 = box.y1 + lbl_height
+        cbox.x1 = int(self.border + (inner_width - lbl_width) / 2)
+        cbox.y1 = int(self.border + (inner_height - lbl_height) / 2)
+        cbox.x2 = int(cbox.x1 + lbl_width)
+        cbox.y2 = int(cbox.y1 + lbl_height)
         self.label.allocate(cbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
