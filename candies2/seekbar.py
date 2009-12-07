@@ -280,9 +280,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         cursor_width = bar_height
         cursor_height = bar_height
         cursor_box = clutter.ActorBox()
-        cursor_box.x1 = self._progression * (bar_width - cursor_width)
+        cursor_box.x1 = int(self._progression * (bar_width - cursor_width))
         cursor_box.y1 = 0
-        cursor_box.x2 = cursor_box.x1 + cursor_width
+        cursor_box.x2 = int(cursor_box.x1 + cursor_width)
         cursor_box.y2 = cursor_height
         self.cursor.allocate(cursor_box, flags)
         clutter.Actor.do_allocate(self, box, flags)
