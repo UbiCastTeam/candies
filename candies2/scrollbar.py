@@ -62,8 +62,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def on_scroll_move(self, source, event):
         if self.last_event_y is None: return
         clutter.grab_pointer(self.scroller)
-        self.last_event_y = event.y
-        self.scroller_position = event.y
+        self.last_event_y = event.y - self.get_transformed_position()[1]
+        self.scroller_position = event.y - self.get_transformed_position()[1]
         self.queue_relayout()
         
     def do_allocate(self, box, flags):
