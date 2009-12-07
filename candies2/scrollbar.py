@@ -62,10 +62,16 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def on_scroll_move(self, source, event):
         if self.last_event_y is None: return
         clutter.grab_pointer(self.scroller)
-        self.last_event_y = event.y
-        self.scroller_position = event.y
+        self.last_event_y = event.y - self.get_transformed_position()[1]
+        self.scroller_position = event.y - self.get_transformed_position()[1]
         self.queue_relayout()
-        
+    
+    def do_get_preferred_height(self, for_width):
+        return 200, 200
+    
+    def do_get_preferred_width(self, for_height):
+        return 40, 40
+    
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
@@ -132,13 +138,14 @@ class Clipper (clutter.Actor, clutter.Container):
     '''
     __gtype_name__ = 'Clipper'
     
-    def __init__(self,actor):
+    def __init__(self, actor, expand=False):
         clutter.Actor.__init__(self)
         self.actor = actor
         self.actor.set_parent(self)
         self.clipper_position = 0
+        self.expand = expand
         
-    def callback_position(self,source,position):
+    def callback_position(self, source, position):
         self.clipper_position=position
         self.queue_relayout()
         
@@ -146,11 +153,23 @@ class Clipper (clutter.Actor, clutter.Container):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
         
-        position = self.clipper_position * (self.actor.get_preferred_size()[3]-box_height) 
-        self.actor.set_anchor_point(0,position)
-        self.actor.set_clip(0,position,box_width,box_height)
-        self.actor.allocate_preferred_size(flags)
-        clutter.Actor.do_allocate(self, box, flags)
+        if self.expand == True:
+            position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
+            self.actor.set_anchor_point(0,position)
+            self.actor.set_clip(0,position,box_width,box_height)
+            objbox = clutter.ActorBox()
+            objbox.x1 = 0
+            objbox.y1 = 0
+            objbox.x2 = box_width
+            objbox.y2 = box_height
+            self.actor.allocate(objbox, flags)
+            clutter.Actor.do_allocate(self, box, flags)
+        else:
+            position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
+            self.actor.set_anchor_point(0,position)
+            self.actor.set_clip(0,position,box_width,box_height)
+            self.actor.allocate_preferred_size(flags)
+            clutter.Actor.do_allocate(self, box, flags)
         
     def do_foreach(self, func, data=None):
         children = (self.actor,)

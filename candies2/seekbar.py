@@ -265,7 +265,13 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.last_event_x = None
         self.emit('seek_request_realtime', self._progression)
         self.emit('seek_request_lazy', self._progression)
-
+    
+    def do_get_preferred_height(self, for_width):
+        return 40, 40
+    
+    def do_get_preferred_width(self, for_height):
+        return 200, 200
+    
     def do_allocate(self, box, flags):
         bar_width = box.x2 - box.x1
         bar_height = box.y2 - box.y1
@@ -274,9 +280,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         cursor_width = bar_height
         cursor_height = bar_height
         cursor_box = clutter.ActorBox()
-        cursor_box.x1 = self._progression * (bar_width - cursor_width)
+        cursor_box.x1 = int(self._progression * (bar_width - cursor_width))
         cursor_box.y1 = 0
-        cursor_box.x2 = cursor_box.x1 + cursor_width
+        cursor_box.x2 = int(cursor_box.x1 + cursor_width)
         cursor_box.y2 = cursor_height
         self.cursor.allocate(cursor_box, flags)
         clutter.Actor.do_allocate(self, box, flags)
