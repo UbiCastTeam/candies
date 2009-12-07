@@ -111,8 +111,8 @@ class Box(clutter.Actor, clutter.Container):
                 resizable_count += 1
                 resizable_elements.append(element)
             else:
-                resizable_width -= element['object'].get_width()
-                resizable_height -= element['object'].get_height()
+                resizable_width -= element['object'].get_preferred_size()[2]
+                resizable_height -= element['object'].get_preferred_size()[3]
             resizable_width -= self.spacing
             resizable_height -= self.spacing
         resizable_width += self.spacing
@@ -125,8 +125,12 @@ class Box(clutter.Actor, clutter.Container):
         x += self.border
         y += self.border
         for element in self.elements:
-            obj_width = element['object'].get_width()
-            obj_height = element['object'].get_height()
+            obj_width, obj_height = element['object'].get_preferred_size()[2:]
+            if 'expand' in element and element['expand'] == True:
+                if self._horizontal == True:
+                    obj_height = main_height
+                else:
+                    obj_width = main_width
             if element in resizable_elements:
                 if element['resizable'] > 1:
                     element['resizable'] = 1
@@ -208,6 +212,7 @@ if __name__ == '__main__':
     line.add({'name': 'rect1',
         'object': rect1},
         {'name': 'rect2',
+        'expand': True,
         'resizable': 0.8,
         'object': rect2},
         {'name': 'rect3',
