@@ -23,6 +23,9 @@ class Box(clutter.Actor, clutter.Container):
         - keep_ratio (bool) : if True, the element resized because of the
           resizable or expand properties while keep its natural aspect ratio.
           (Please don't set it to True when resizable and expand are both set!)
+        
+        - center (bool) : if True, the element is centered (vertically for
+          horizontal box and vice-versa).
     """
     __gtype_name__ = 'Box'
     
@@ -177,12 +180,20 @@ class Box(clutter.Actor, clutter.Container):
                     if element.get('keep_ratio') is True and original_height != 0:
                         ratio = float(obj_height/original_height)
                         obj_width = int(obj_width*ratio)
+            # Manage centering
+            x_offset = 0
+            y_offset = 0
+            if element.get('center') is True:
+                if self._horizontal is True:
+                    y_offset = max(0, (inner_height - obj_height) / 2)
+                else:
+                    x_offset = max(0, (inner_width - obj_width) / 2)
             
             objbox = clutter.ActorBox()
-            objbox.x1 = x
-            objbox.y1 = y
-            objbox.x2 = x + obj_width
-            objbox.y2 = y + obj_height
+            objbox.x1 = x + x_offset
+            objbox.y1 = y + y_offset
+            objbox.x2 = objbox.x1 + obj_width
+            objbox.y2 = objbox.y1 + obj_height
             element['object'].allocate(objbox, flags)
             if self._horizontal is True:
                 x += obj_width + self.spacing
