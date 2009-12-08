@@ -10,6 +10,7 @@ class Box(clutter.Actor, clutter.Container):
     def __init__(self, horizontal=True, spacing=0.0, border=0.0):
         clutter.Actor.__init__(self)
         self.elements = list()
+        self.background = None
         self.spacing = spacing
         self.border = border
         if horizontal == True:
@@ -22,6 +23,10 @@ class Box(clutter.Actor, clutter.Container):
             if element['name'] == name:
                 return element
         return None
+    
+    def set_background(self, background):
+        self.background = background
+        background.set_parent(self)
     
     def do_set_property (self, pspec, value):
         if pspec.name == 'elements':
@@ -98,14 +103,25 @@ class Box(clutter.Actor, clutter.Container):
         return preferred[1], preferred[3]
     
     def do_allocate(self, box, flags):
-        main_width = box.x2 - box.x1 - 2*self.border
-        main_height = box.y2 - box.y1 - 2*self.border
+        main_width = box.x2 - box.x1
+        main_height = box.y2 - box.y1
+        inner_width = main_width - 2*self.border
+        inner_height = main_height - 2*self.border
+        
+        #box background
+        if self.background:
+            bgbox = clutter.ActorBox()
+            bgbox.x1 = 0
+            bgbox.y1 = 0
+            bgbox.x2 = main_width
+            bgbox.y2 = main_height
+            self.background.allocate(bgbox, flags)
         
         #find number of resizable elements and size available for resizable elements
         resizable_count = 0
         resizable_elements = list()
-        resizable_width = main_width
-        resizable_height = main_height
+        resizable_width = inner_width
+        resizable_height = inner_height
         for element in self.elements:
             if 'resizable' in element and element['resizable'] != 0:
                 resizable_count += 1
@@ -129,13 +145,13 @@ class Box(clutter.Actor, clutter.Container):
             if 'expand' in element and element['expand'] == True:
                 if self._horizontal == True:
                     original_height = obj_height
-                    obj_height = main_height
+                    obj_height = inner_height
                     if 'keep_ratio' in element and element['keep_ratio'] == True and original_height != 0:
                         ratio = float(obj_height/original_height)
                         obj_width = int(obj_width*ratio)
                 else:
                     original_width = obj_width
-                    obj_width = main_width
+                    obj_width = inner_width
                     if 'keep_ratio' in element and element['keep_ratio'] == True and original_width != 0:
                         ratio = float(obj_width/original_width)
                         obj_height = int(obj_height*ratio)
@@ -162,10 +178,14 @@ class Box(clutter.Actor, clutter.Container):
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
+        if self.background:
+            func(self.background, data)
         for element in self.elements:
             func(element['object'], data)
     
     def do_paint(self):
+        if self.background:
+            self.background.paint()
         for element in self.elements:
             element['object'].paint()
     
@@ -195,9 +215,7 @@ if __name__ == '__main__':
     rect_bg_width = 400
     rect_bg_height = 400
     rect_bg = clutter.Rectangle()
-    rect_bg.set_size(rect_bg_width, rect_bg_height)
     rect_bg.set_color('#ffffffff')
-    stage.add(rect_bg)
     
     
     rect1 = clutter.Rectangle()
@@ -217,6 +235,7 @@ if __name__ == '__main__':
     rect4.set_color(clutter.color_from_string('Red'))
     
     line = Box(horizontal=False, spacing=10.0, border=20.0)
+    line.set_background(rect_bg)
     line.add({'name': 'rect1',
         'object': rect1},
         {'name': 'rect2',
