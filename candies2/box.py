@@ -28,26 +28,6 @@ class Box(clutter.Actor, clutter.Container):
         self.background = background
         background.set_parent(self)
     
-    def do_set_property (self, pspec, value):
-        if pspec.name == 'elements':
-            self.elements = value
-        elif pspec.name == 'spacing':
-            self.spacing = value
-        elif pspec.name == 'border':
-            self.border = value
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-    
-    def do_get_property (self, pspec):
-        if pspec.name == 'elements':
-            return self.elements
-        elif pspec.name == 'spacing':
-            return self.spacing
-        elif pspec.name == 'border':
-            return self.border
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-    
     def add(self, *new_elements):
         for new_ele in new_elements:
             if 'name' not in new_ele or 'object' not in new_ele:
