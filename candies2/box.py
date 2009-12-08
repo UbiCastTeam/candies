@@ -130,13 +130,13 @@ class Box(clutter.Actor, clutter.Container):
                 if self._horizontal == True:
                     original_height = obj_height
                     obj_height = main_height
-                    if 'keep_ratio' in element and element['keep_ratio'] == True:
+                    if 'keep_ratio' in element and element['keep_ratio'] == True and original_height != 0:
                         ratio = float(obj_height/original_height)
                         obj_width = int(obj_width*ratio)
                 else:
                     original_width = obj_width
                     obj_width = main_width
-                    if 'keep_ratio' in element and element['keep_ratio'] == True:
+                    if 'keep_ratio' in element and element['keep_ratio'] == True and original_width != 0:
                         ratio = float(obj_width/original_width)
                         obj_height = int(obj_height*ratio)
             if element in resizable_elements:
