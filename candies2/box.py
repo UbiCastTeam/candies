@@ -190,10 +190,10 @@ class Box(clutter.Actor, clutter.Container):
                     x_offset = max(0, (inner_width - obj_width) / 2)
             
             objbox = clutter.ActorBox()
-            objbox.x1 = x + x_offset
-            objbox.y1 = y + y_offset
-            objbox.x2 = objbox.x1 + obj_width
-            objbox.y2 = objbox.y1 + obj_height
+            objbox.x1 = round(x + x_offset)
+            objbox.y1 = round(y + y_offset)
+            objbox.x2 = round(x + x_offset + obj_width)
+            objbox.y2 = round(y + y_offset + obj_height)
             element['object'].allocate(objbox, flags)
             if self._horizontal is True:
                 x += obj_width + self.spacing
