@@ -55,6 +55,12 @@ class Box(clutter.Actor, clutter.Container):
             self.elements.append(new_ele)
             self.get_by_name(new_ele['name'])['object'].set_parent(self)
     
+    def add_element(self, obj, name, **kw):
+        element = kw.copy()
+        element['name'] = name
+        element['object'] = obj
+        self.add(element)
+    
     def do_remove(self, *children):
         for child in children:
             if element in self.elements:
@@ -201,6 +207,15 @@ class Box(clutter.Actor, clutter.Container):
         for element in self.elements:
             element['object'].paint()
 
+class HBox(Box):
+    
+    def __init__(self, *args, **kw):
+        Box.__init__(self, horizontal=True, *args, **kw)
+
+class VBox(Box):
+    
+    def __init__(self, *args, **kw):
+        Box.__init__(self, horizontal=False, *args, **kw)
 
 if __name__ == '__main__':
     import buttons
