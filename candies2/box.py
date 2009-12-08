@@ -63,11 +63,10 @@ class Box(clutter.Actor, clutter.Container):
         element['object'] = obj
         self.add(element)
     
-    def do_remove(self, *children):
-        for child in children:
-            if element in self.elements:
-                element['object'].remove(child)
-                child.unparent()
+    def remove_element(self, name):
+        if self.get_by_name(name):
+            self.get_by_name(name)['object'].unparent()
+            self.elements.remove(self.get_by_name(name))
     
     def clear(self):
         for element in self.elements:
