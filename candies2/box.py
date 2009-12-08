@@ -18,7 +18,7 @@ class Box(clutter.Actor, clutter.Container):
         else:
             self._horizontal = False
     
-    def get_element(self, name):
+    def get_by_name(self, name):
         for element in self.elements:
             if element['name'] == name:
                 return element
@@ -53,7 +53,7 @@ class Box(clutter.Actor, clutter.Container):
             if 'name' not in new_ele or 'object' not in new_ele:
                 raise KeyError('Element must contain name and object')
             self.elements.append(new_ele)
-            self.get_element(new_ele['name'])['object'].set_parent(self)
+            self.get_by_name(new_ele['name'])['object'].set_parent(self)
     
     def do_remove(self, *children):
         for child in children:
@@ -161,9 +161,17 @@ class Box(clutter.Actor, clutter.Container):
                 elif element['resizable'] < 0:
                     element['resizable'] = 0
                 if self._horizontal == True:
+                    original_width = obj_width
                     obj_width = element['resizable'] * resizable_width
+                    if 'keep_ratio' in element and element['keep_ratio'] == True and original_width != 0:
+                        ratio = float(obj_width/original_width)
+                        obj_height = int(obj_height*ratio)
                 else:
+                    original_height = obj_height
                     obj_height = element['resizable'] * resizable_height
+                    if 'keep_ratio' in element and element['keep_ratio'] == True and original_height != 0:
+                        ratio = float(obj_height/original_height)
+                        obj_width = int(obj_width*ratio)
             
             objbox = clutter.ActorBox()
             objbox.x1 = x
@@ -253,11 +261,11 @@ if __name__ == '__main__':
     def on_click(btn_test, event):
         color_a = '#ff000088'
         color_b = '#ff0000ff'
-        current_color = line.get_element('rect4')['object'].get_color()
+        current_color = line.elements('rect4')['object'].get_color()
         if str(current_color) == color_a:
-            line.get_element('rect4')['object'].set_color(color_b)
+            line.elements('rect4')['object'].set_color(color_b)
         else:
-            line.get_element('rect4')['object'].set_color(color_a)
+            line.elements('rect4')['object'].set_color(color_a)
     btn_test = buttons.ClassicButton('test')
     btn_test.set_position(0, 430)
     btn_test.set_size(50, 50)
