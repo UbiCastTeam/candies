@@ -3,7 +3,26 @@ import clutter
 
 class Box(clutter.Actor, clutter.Container):
     """
-    A Box container.
+    A stacking box container.
+    
+    Works horizontally and vertically (see HBox and VBox for shortcut classes).
+    
+    The elements contained in a box are defined by a clutter actor (the
+    children of the container), a name (str) and optional properties.
+    
+    Element properties can be :
+    
+        - resizable (float) : if set, defines the proportion an element take in
+          the available place (value is between 0 and 1). It applies to width
+          in horizontal box and to height in vertical one.
+        
+        - expand (bool) : if True, the element size is expanded on the whole
+          box height (for horizontal boxes) and on the whole box width (for
+          vertical ones).
+        
+        - keep_ratio (bool) : if True, the element resized because of the
+          resizable or expand properties while keep its natural aspect ratio.
+          (Please don't set it to True when resizable and expand are both set!)
     """
     __gtype_name__ = 'Box'
     
@@ -35,8 +54,8 @@ class Box(clutter.Actor, clutter.Container):
             self.elements.append(new_ele)
             self.get_by_name(new_ele['name'])['object'].set_parent(self)
     
-    def add_element(self, obj, name, **kw):
-        element = kw.copy()
+    def add_element(self, obj, name, **properties):
+        element = properties.copy()
         element['name'] = name
         element['object'] = obj
         self.add(element)
@@ -184,8 +203,7 @@ class Box(clutter.Actor, clutter.Container):
             element['object'].paint()
     
     def do_pick(self, color):
-        for element in self.elements:
-            element['object'].paint()
+        self.do_paint()
 
 class HBox(Box):
     
