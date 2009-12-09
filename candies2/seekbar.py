@@ -161,18 +161,28 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self):
+    def __init__(self, bar_image_path=None, cursor_image_path=None):
         clutter.Actor.__init__(self)
         self._progression = 0.0
 
         #self.background = Background()
-        self.background = clutter.Rectangle()
+        if bar_image_path != None and os.path.exists(bar_image_path):
+            self.background = clutter.Texture()
+            self.background.set_from_file(bar_image_path)
+        else:
+            self.background = clutter.Rectangle()
+            self.background.set_color('LightBlue')
         self.background.set_reactive(True)
         self.background.connect('button-release-event', self.on_background_click)
         self.background.set_parent(self)
 
         #self.cursor = Cursor()
-        self.cursor = clutter.Rectangle()
+        if cursor_image_path != None and os.path.exists(cursor_image_path):
+            self.cursor = clutter.Texture()
+            self.cursor.set_from_file(cursor_image_path)
+        else:
+            self.cursor = clutter.Rectangle()
+            self.cursor.set_color('Gray')
         self.cursor.set_reactive(True)
         self.cursor.connect('button-press-event', self.on_press)
         self.cursor.connect('button-release-event', self.on_release)
@@ -239,7 +249,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         clutter.grab_pointer(self.cursor)
         x1, y1, x2, y2 = self.get_allocation_box()
         bar_width = x2 - x1
-        self._progression += (event.x - self.last_event_x) / bar_width
+        self._progression = (event.x - self.get_transformed_position()[0]) / bar_width
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
         self.queue_relayout()
