@@ -40,10 +40,10 @@ class StretchText(clutter.Text):
         if for_width > -1 and text.split():
             fontsize = self.get_preferred_fontsize(for_width=for_width)
             lbl.set_font_name('%s %s' %(fontface, fontsize))
-            min, nat = lbl.get_preferred_height(-1)
+            min, nat_height = lbl.get_preferred_height(-1)
         else:
-            min, nat = clutter.Text.do_get_preferred_height(self, for_width)
-        return max(min, min_height), nat
+            min, nat_height = clutter.Text.do_get_preferred_height(self, for_width)
+        return min_height, nat_height
     
     def get_preferred_fontsize(self, for_width=None, for_height=None):
         """ Compute the nearest fontsize according to the for_* statements.
