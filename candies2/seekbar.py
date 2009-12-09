@@ -230,9 +230,9 @@ class SeekBar(clutter.Actor, clutter.Container):
             raise TypeError('Unknown property ' + pspec.name)
 
     def on_background_click(self, source, event):
-        x1, y1, x2, y2 = self.get_allocation_box()
-        bar_width = x2 - x1
-        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / bar_width
+        bar_x1, bar_y1, bar_x2, bar_y2 = self.get_allocation_box()
+        bar_width = bar_x2 - bar_x1
+        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / (bar_width - self.cursor_width)
         self.queue_relayout()
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
@@ -247,9 +247,9 @@ class SeekBar(clutter.Actor, clutter.Container):
     def on_move(self, source, event):
         if self.last_event_x is None: return
         clutter.grab_pointer(self.cursor)
-        x1, y1, x2, y2 = self.get_allocation_box()
-        bar_width = x2 - x1
-        self._progression = (event.x - self.get_transformed_position()[0]) / bar_width
+        bar_x1, bar_y1, bar_x2, bar_y2 = self.get_allocation_box()
+        bar_width = bar_x2 - bar_x1
+        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / (bar_width - self.cursor_width)
         self._progression = max(self._progression, 0.0)
         self._progression = min(self._progression, 1.0)
         self.queue_relayout()
@@ -289,6 +289,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.background.allocate(bg_box, flags)
         cursor_width = bar_height
         cursor_height = bar_height
+        self.cursor_width = cursor_width
         cursor_box = clutter.ActorBox()
         cursor_box.x1 = int(self._progression * (bar_width - cursor_width))
         cursor_box.y1 = 0
