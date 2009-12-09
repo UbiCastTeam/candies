@@ -7,6 +7,9 @@ from roundrect import RoundRectangle
 class ClassicButton(clutter.Actor, clutter.Container):
     __gtype_name__ = 'ClassicButton'
     __gproperties__ = {
+        'text' : (
+            str, 'text', 'Text', None, gobject.PARAM_READWRITE
+        ),
         'color' : (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
         ),
@@ -46,6 +49,9 @@ class ClassicButton(clutter.Actor, clutter.Container):
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
             self.rect.props.color = value
+        elif pspec.name == 'text':
+            self.text = value
+            self.queue_relayout()
         elif pspec.name == 'font-color':
             self.label.props.color = clutter.color_from_string(value)
         elif pspec.name == 'border-color':
@@ -54,10 +60,13 @@ class ClassicButton(clutter.Actor, clutter.Container):
             self.rect.props.border_width = value
         else:
             raise TypeError('Unknown property ' + pspec.name)
+        self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'color':
             return self.rect.props.color
+        elif pspec.name == 'text':
+            return self.text
         elif pspec.name == 'font-color':
             return self.label.props.color
         elif pspec.name == 'border-color':
@@ -242,12 +251,11 @@ class ImageButton(ClassicButton):
             self.set_active(value)
         elif pspec.name == 'active-color':
             self.default_active_color = clutter.color_from_string(value)
-            self.queue_redraw()
         elif pspec.name == 'image-proportion':
             self.image_proportion = value
-            self.queue_redraw()
         else:
             ClassicButton.do_set_property(self, pspec, value)
+        self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'active':
