@@ -38,15 +38,19 @@ class RoundRectangle(clutter.Actor):
 
     def set_color(self, color):
         self._color = clutter.color_from_string(color)
+        self.queue_redraw()
     
     def set_border_color(self, color):
         self._border_color = clutter.color_from_string(color)
+        self.queue_redraw()
     
     def set_border_width(self, width):
         self._border_width = width
+        self.queue_redraw()
 
     def set_radius(self, radius):
         self._radius = radius
+        self.queue_redraw()
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
@@ -59,6 +63,7 @@ class RoundRectangle(clutter.Actor):
             self._radius = value
         else:
             raise TypeError('Unknown property ' + pspec.name)
+        self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'color':
