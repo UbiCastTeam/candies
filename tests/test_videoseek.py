@@ -40,10 +40,15 @@ def on_button_press(player, event):
 
 
 player = VideoPlayer()
-player.set_filename(sys.argv[1])
+try:
+    player.set_filename(sys.argv[1])
+except IndexError, e:
+    print "Please provide a video file as argument\nExample: python test_videoseek.py test.ogg"
+    sys.exit()
+
 player.set_reactive(True)
 player.connect('button_press_event', on_button_press)
-
+player.set_size(320, 240)
 
 seek = SeekBar()
 #player.end_callback = seek.finish
