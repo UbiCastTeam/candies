@@ -8,6 +8,7 @@ date : dec 3 2009
 version : 0
 '''
 
+import os
 import sys
 import operator
 import gobject
@@ -18,9 +19,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
     '''
     Scrollbar class :
         variables :
-            .scrollbar_background : clutter.Rectangle
-            .scroller : clutter.Rectangle
+            .scrollbar_background : clutter.Rectangle or clutter.Texture if bar_image_path set
+            .scroller : clutter.Rectangle or clutter.Texture if scroller_image_path set
             .scroller_position : float
+            .border : float
         functions :
             .on_scroll_press : drag scroller
             .on_scroll_release : drop scroller
@@ -33,15 +35,24 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    #keyboard initialisation
-    def __init__(self):
+    def __init__(self, border=8.0, bar_image_path=None, scroller_image_path=None):
         clutter.Actor.__init__(self)
-        self.scrollbar_background=clutter.Rectangle()
+        self.border = border
+        
+        if bar_image_path != None and os.path.exists(bar_image_path):
+            self.scrollbar_background=clutter.Texture()
+            self.scrollbar_background.set_from_file(bar_image_path)
+        else:
+            self.scrollbar_background=clutter.Rectangle()
+            self.scrollbar_background.set_color('LightBlue')
         self.scrollbar_background.set_parent(self)
-        self.scrollbar_background.set_color('LightBlue')
-      
-        self.scroller=clutter.Rectangle()
-        self.scroller.set_color('Gray')
+        
+        if scroller_image_path != None and os.path.exists(scroller_image_path):
+            self.scroller=clutter.Texture()
+            self.scroller.set_from_file(scroller_image_path)
+        else:
+            self.scroller=clutter.Rectangle()
+            self.scroller.set_color('Gray')
         self.scroller.set_parent(self)
         self.scroller.set_reactive(True)
         self.scroller.connect('button-press-event', self.on_scroll_press)
@@ -62,62 +73,62 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def on_scroll_move(self, source, event):
         if self.last_event_y is None: return
         clutter.grab_pointer(self.scroller)
-        self.last_event_y = event.y - self.get_transformed_position()[1]
-        self.scroller_position = event.y - self.get_transformed_position()[1]
+        self.last_event_y = event.y - self.get_transformed_position()[1] - self.border
+        self.scroller_position = event.y - self.get_transformed_position()[1] - self.border
         self.queue_relayout()
     
     def do_get_preferred_height(self, for_width):
         return 200, 200
     
     def do_get_preferred_width(self, for_height):
-        return 40, 40
+        return 80, 80
     
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
-        margin = box_width/8
         
-        scroller_width = box_width - 2*margin        
+        scroller_width = box_width - 2*self.border
+        scroller_height = scroller_width
         bar_width = box_width/4
-        bar_height = box_height - 2*margin - scroller_width      
+        bar_height = box_height - 2*self.border - scroller_height + bar_width
         
-      
         bar_box = clutter.ActorBox()  
-        bar_box.x1 = box_width/2 -bar_width/2
-        bar_box.y1 = margin + scroller_width/2 
+        bar_box.x1 = box_width/2 - bar_width/2
+        bar_box.y1 = box_height/2 - bar_height/2 
         bar_box.x2 = bar_box.x1 + bar_width
         bar_box.y2 = bar_box.y1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
         
-        scroller_box=clutter.ActorBox()
-        scroller_box.x1 = margin 
+        scroller_box = clutter.ActorBox()
+        scroller_box.x1 = self.border 
         scroller_box.x2 = scroller_box.x1 + scroller_width
-        if self.scroller_position >= box_height-scroller_width :
-            self.scroller_position = box_height-scroller_width  
-        scroll_position_percent=(self.scroller_position)/(box_height-scroller_width)
-        if self.scroller_position <= scroller_width/2 :
-            self.scroller_position = scroller_width/2
-            scroll_position_percent =0 
-        scroller_box.y1 = self.scroller_position - scroller_width/2 + margin
-        scroller_box.y2 = scroller_box.y1 + scroller_width  
+        self.scroller_position -= scroller_height/2
+        if self.scroller_position >= box_height - 2*self.border - scroller_height:
+            self.scroller_position = box_height - 2*self.border - scroller_height
+        if self.scroller_position <= 0:
+            self.scroller_position = 0
+            scroll_position_percent = 0
+        scroller_box.y1 = self.border + self.scroller_position
+        scroller_box.y2 = scroller_box.y1 + scroller_height  
         self.scroller.allocate(scroller_box,flags)
         
+        scroll_position_percent = (self.scroller_position)/(box_height - 2*self.border - scroller_height)
         self.emit("scroll_position",scroll_position_percent)
-                
+        
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
-        children = (self.scrollbar_background,self.scroller)
+        children = (self.scrollbar_background, self.scroller)
         for child in children :
             func(child, data)
     
     def do_paint(self):
-        children = (self.scrollbar_background,self.scroller)
+        children = (self.scrollbar_background, self.scroller)
         for child in children :
             child.paint()
 
     def do_pick(self, color):
-        children = (self.scrollbar_background,self.scroller)
+        children = (self.scrollbar_background, self.scroller)
         for child in children :
             child.paint()
 
