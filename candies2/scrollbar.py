@@ -23,6 +23,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             .scroller : clutter.Rectangle or clutter.Texture if scroller_image_path set
             .scroller_position : float
             .border : float
+            .thin_scroller : boolean
         functions :
             .on_scroll_press : drag scroller
             .on_scroll_release : drop scroller
@@ -35,9 +36,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, border=8.0, bar_image_path=None, scroller_image_path=None):
+    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None):
         clutter.Actor.__init__(self)
         self.border = border
+        self.thin_scroller = thin_scroller
         
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.scrollbar_background=clutter.Texture()
@@ -89,7 +91,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
         
         scroller_width = box_width - 2*self.border
         scroller_height = scroller_width
-        bar_width = box_width/4
+        if self.thin_scroller:
+            bar_width = box_width/4
+        else:
+            bar_width = box_width - 2*self.border
         bar_height = box_height - 2*self.border - scroller_height + bar_width
         
         bar_box = clutter.ActorBox()  
