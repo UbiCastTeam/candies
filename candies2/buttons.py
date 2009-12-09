@@ -26,6 +26,9 @@ class ClassicButton(clutter.Actor, clutter.Container):
     
     def __init__(self, label, stretch=False, border=6.0):
         clutter.Actor.__init__(self)
+
+        self.set_reactive(True)
+
         self.text = label
         self.is_stretch = stretch
         self.border = border
@@ -135,6 +138,137 @@ class ClassicButton(clutter.Actor, clutter.Container):
 
 gobject.type_register(ClassicButton)
 
+class ImageButton(ClassicButton):
+    __gtype_name__ = 'ImageButton'
+    __gproperties__ = {
+        'active' : (
+            gobject.TYPE_BOOLEAN, 'active', 'Active', 0, gobject.PARAM_READWRITE
+        ),
+        'image_proportion' : (
+            gobject.TYPE_FLOAT, 'image proportion', 'Proportional space occupied by the image', 0, 1, 1, gobject.PARAM_READWRITE
+        ),
+        'active_color' : (
+            str, 'active color', 'Background color when active', None, gobject.PARAM_READWRITE
+        ),
+    }
+    default_active_color = 'Red'
+
+    def __init__(self, label, image_location, stretch=False, border=6.0, image_proportion=0.9, activable=False):
+        ClassicButton.__init__(self, label, stretch, border)
+
+        self.image_proportion = image_proportion
+        self.image = clutter.Texture(image_location)
+        self.image.set_parent(self)
+        self.image.set_keep_aspect_ratio(True)
+
+        self._activated = False
+        if activable:
+            self.connect("button-release-event", self.toggle_activate)
+
+    def toggle_activate(self, source=None, event=None):
+        if self._activated:
+            self.set_active(False)
+        else:
+            self.set_active(True)
+
+    def set_active(self, value):
+        if value:
+            self.last_color = self.rect.props.color
+            self.rect.props.color = self.default_active_color
+            self._activated = True
+        else:
+            self.rect.props.color = self.last_color
+            self._activated = False
+
+    def do_allocate(self, box, flags):
+        btn_width = box.x2 - box.x1
+        btn_height = box.y2 - box.y1
+        inner_width = btn_width - 2*self.border
+        inner_height = btn_height - 2*self.border
+
+        label_height = self.label.get_preferred_size()[3]
+        image_width = btn_width*self.image_proportion
+        image_height = self.image.get_preferred_height(image_width)[1] 
+        is_horizontal = True
+        if image_height > btn_height:
+            image_height = btn_height*self.image_proportion - label_height
+            image_width = self.image.get_preferred_width(image_height)[1]
+            is_horizontal = False
+
+        cbox = clutter.ActorBox()
+        cbox.x1 = 0
+        cbox.y1 = self.border
+        if is_horizontal:
+            cbox.y1 = (btn_height - image_height - label_height)/2 
+        cbox.x1 = (btn_width - image_width)/2
+        cbox.x2 = image_width + cbox.x1
+        cbox.y2 = image_y2 = image_height + cbox.y1
+        if not is_horizontal:
+            cbox.y2 = image_y2 = image_height + cbox.y1 - label_height
+        self.image.allocate(cbox, flags)
+
+        cbox = clutter.ActorBox()
+        cbox.x1 = 0
+        cbox.y1 = 0
+        cbox.x2 = btn_width
+        cbox.y2 = btn_height
+        self.rect.allocate(cbox, flags)
+
+        self.label.set_text(self.text)
+        if self.label.get_preferred_size()[2] > inner_width:
+            self._wrap_label(0, len(self.text), inner_width)
+        elif self.is_stretch:
+            from text import StretchText
+            lbl = StretchText()
+            lbl.set_text(self.text)
+            fontface = self.label.get_font_name()
+            lbl.set_font_name(fontface)
+            fontsize = lbl.get_preferred_fontsize(inner_width, inner_height)
+            fontface = fontface[:fontface.rindex(' ')]
+            self.label.set_font_name('%s %s' %(fontface, fontsize))
+        lbl_width = self.label.get_preferred_size()[2]
+        lbl_height = self.label.get_preferred_size()[3]
+        cbox = clutter.ActorBox()
+        cbox.x1 = int(self.border + (inner_width - lbl_width) / 2) 
+        cbox.y1 = int(self.border + image_y2)
+        cbox.x2 = int(cbox.x1 + lbl_width)
+        cbox.y2 = int(cbox.y1 + lbl_height)
+        self.label.allocate(cbox, flags)
+
+        clutter.Actor.do_allocate(self, box, flags)
+
+    def do_set_property(self, pspec, value):
+        if pspec.name == 'active':
+            self.set_active(value)
+        elif pspec.name == 'active-color':
+            self.default_active_color = clutter.color_from_string(value)
+            self.queue_redraw()
+        elif pspec.name == 'image-proportion':
+            self.image_proportion = value
+            self.queue_redraw()
+        else:
+            ClassicButton.do_set_property(self, pspec, value)
+
+    def do_get_property(self, pspec):
+        if pspec.name == 'active':
+            return self._activated
+        elif pspec.name == 'active-color':
+            return self.default_active_color
+        elif pspec.name == 'image-proportion':
+            return self.image_proportion
+        else:
+            ClassicButton.do_get_property(self, pspec, value)
+
+    def do_paint(self):
+        ClassicButton.do_paint(self)
+        self.image.paint()
+
+    def do_foreach(self, func, data=None):
+        ClassicButton.do_foreach(self, func, data)
+        func(self.image, data)
+
+gobject.type_register(ImageButton)
+
 if __name__ == '__main__':
     from flowbox import FlowBox
     stage = clutter.Stage()
@@ -142,7 +276,7 @@ if __name__ == '__main__':
     
     # Main flowbox
     box0 = FlowBox()
-    box0.set_size(640, 480)
+    box0.set_size(640, 640)
     
     # Invisible rectangle for top margin
     r = clutter.Rectangle()
@@ -215,10 +349,27 @@ if __name__ == '__main__':
     
     b = ClassicButton('E', stretch=True)
     b.props.color = 'Pink'
-    b.set_size(200, 200)
-    b.set_position(425, 275)
+    b.set_size(170, 170)
+    b.set_position(425, 210)
     stage.add(b)
-    
+
+    b = ImageButton("Test image", "../tests/candies.png", stretch=False, image_proportion=0.5)
+    b.props.color = 'Pink'
+    b.set_size(100, 100)
+    b.set_position(425, 380)
+    stage.add(b)
+
+    def callback(source, event):
+        print "Button clicked"
+
+    b = ImageButton("Test vertical image", "../tests/candies_vert.png", stretch=False, image_proportion=0.8, activable=True)
+    b.props.color = 'Pink'
+    b.set_size(100, 100)
+    b.set_position(530, 380)
+    stage.add(b)
+    b.connect("button-press-event", callback)
+
+
     stage.add(box0)
     stage.show()
 
