@@ -11,3 +11,4 @@ from video import VideoPlayer
 from seekbar import SeekBar
 from text import StretchText
 from clicking import SimpleClick, LongClick
+from keyboard import Keyboard
