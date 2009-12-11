@@ -13,7 +13,6 @@ import operator
 import gobject
 import clutter
 from buttons import ClassicButton
-import easyevent
 
 
 # class Key : name , width , event default event = char width = 1
@@ -31,7 +30,7 @@ KEYBOARD_MAPS = {
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
         (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('.'), Key('←',nb=2,evt='suppr')), 
-        (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6),Key('↵',nb=2,evt='enter'))
+        (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6),Key('num',nb=2,evt='num'))
             ),
     
     'en_maj' : (
@@ -39,7 +38,7 @@ KEYBOARD_MAPS = {
         (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L')), 
         (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'),Key('.'), Key('←',nb=2,evt='suppr')),
-        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
+        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'fr_min' : (
@@ -47,7 +46,7 @@ KEYBOARD_MAPS = {
          (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
          (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
          (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'),Key('.'), Key('←',nb=2,evt='suppr')),
-         (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
+         (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
              ),
     
     'en_min' : (
@@ -55,7 +54,7 @@ KEYBOARD_MAPS = {
         (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
         (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('k')), 
         (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'),Key('.'), Key('←',nb=2,evt='suppr')),
-        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
+        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'caract_fr' :  (
@@ -63,7 +62,7 @@ KEYBOARD_MAPS = {
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
         (Key('ABC',nb=2,evt='fr_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
-        (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
+        (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'caract_en' :  (
@@ -71,7 +70,7 @@ KEYBOARD_MAPS = {
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
         (Key('ABC',nb=2,evt='en_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
-        (Key('abc',nb=2,evt='en_min'), Key(' ',nb=6), Key('↵',nb=2,evt='enter'))
+        (Key('abc',nb=2,evt='en_min'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
             
     'numeric' : (
@@ -94,17 +93,18 @@ Keyboard Class
     .on_button_release = function wich describe action on button release
     .do_allocate = place each buttons in the container
 '''
-class Keyboard(clutter.Actor, clutter.Container,easyevent.User):
+class Keyboard(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Keyboard'
-    #__gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
+    __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
    
     #keyboard init
-    def __init__(self, map_name) : 
+    def __init__(self, map_name,font_name=None) : 
         clutter.Actor.__init__(self)
-        easyevent.User.__init__(self)
         self.keyboard = None
         self.map_name = None
+        self.key_font_name=font_name
         self.load_profile(map_name)
+
     
     #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
@@ -121,7 +121,11 @@ class Keyboard(clutter.Actor, clutter.Container,easyevent.User):
             one_line_width = 0
             nb_button = len(line)
             for key in line:
-                button = ClassicButton(key.txt,stretch=True)    
+                if self.key_font_name is None:
+                    button = ClassicButton(key.txt,stretch=True)
+                else:
+                    button = ClassicButton(key.txt)
+                    button.label.set_font_name(self.key_font_name)
                 button.set_parent(self)
                 button.set_reactive(True)
                 button.connect('button-press-event', self.on_button_press)
@@ -157,19 +161,17 @@ class Keyboard(clutter.Actor, clutter.Container,easyevent.User):
                     self.load_profile("caract_en")
                 if key.event == 'caract_fr':
                     self.load_profile("caract_fr")
+                if key.event == 'num':
+                    self.load_profile("numeric")
                 if key.event == 'car':
                     print key.txt
-                    self.launch_event('keyboard_input',key.txt)
-                    #self.emit("keyboard", key.txt)
+                    self.emit("keyboard", key.txt)
                 if key.event == 'enter':
-                    #self.emit("keyboard", '\n')
-                    self.launch_event('keyboard_input','enter')
+                    self.emit("keyboard", 'enter')
                 if key.event == 'suppr':
-                    #self.emit("keyboard",'suppr')
-                    self.launch_event('keyboard_input','suppr')
+                    self.emit("keyboard",'suppr')
                 #if key.event == 'del':
                     #self.emit("keyboard",'del')
-                 #   launch.event('keyboard_input','del')
     
     # on button_release 
     def on_button_release(self, source, event):
@@ -179,6 +181,8 @@ class Keyboard(clutter.Actor, clutter.Container,easyevent.User):
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
+        
+        
         
         nb_line = len(self.keyboard)
         taillemax=min(box_width/self.nb_col, box_height/nb_line)
