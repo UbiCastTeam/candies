@@ -162,13 +162,14 @@ class ImageButton(ClassicButton):
     }
     default_active_color = 'Red'
 
-    def __init__(self, label, image_location, stretch=False, border=6.0, image_proportion=0.9, activable=False):
+    def __init__(self, label, image_location, stretch=False, border=6.0, image_proportion=0.9, use_native_image_size=False, activable=False):
         ClassicButton.__init__(self, label, stretch, border)
 
         self.image_proportion = image_proportion
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
         self.image.set_keep_aspect_ratio(True)
+        self.use_native_image_size = use_native_image_size
 
         self._activated = False
         if activable:
@@ -196,14 +197,20 @@ class ImageButton(ClassicButton):
         inner_height = btn_height - 2*self.border
 
         label_height = self.label.get_preferred_size()[3]
-        image_width = btn_width*self.image_proportion
-        image_height = self.image.get_preferred_height(image_width)[1] 
-        is_horizontal = True
-        if image_height > btn_height:
-            image_height = btn_height*self.image_proportion - label_height
-            image_width = self.image.get_preferred_width(image_height)[1]
-            is_horizontal = False
-
+        
+        if self.use_native_image_size:
+            image_width = self.image.get_preferred_size()[2] 
+            image_height = self.image.get_preferred_size()[3]
+            is_horizontal = True
+        else:
+            image_width = btn_width*self.image_proportion
+            image_height = self.image.get_preferred_height(image_width)[1] 
+            is_horizontal = True
+            if image_height > btn_height:
+                image_height = btn_height*self.image_proportion - label_height
+                image_width = self.image.get_preferred_width(image_height)[1]
+                is_horizontal = False
+        
         cbox = clutter.ActorBox()
         cbox.x1 = 0
         cbox.y1 = self.border
@@ -371,7 +378,8 @@ if __name__ == '__main__':
         print "Button clicked"
 
     b = ImageButton("Test vertical image", "../tests/candies_vert.png", stretch=False, image_proportion=0.8, activable=True)
-    b.props.color = 'Pink'
+    b.props.color = '#00ffff44'
+    b.props.border_color = '#ff00ff44'
     b.set_size(100, 100)
     b.set_position(530, 380)
     stage.add(b)
