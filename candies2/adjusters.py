@@ -54,9 +54,9 @@ class NumberAdjuster(Box):
             self.add({'name': 'text', 'center': True, 'object': label})
 
         self.add(
-            {'name': 'minus', 'object': minus},
+            {'name': 'minus', 'center': True, 'object': minus},
             {'name': 'value','expand': True, 'resizable': 1.0, 'object': self.value_btn},
-            {'name': 'plus', 'object': plus})
+            {'name': 'plus', 'center': True, 'object': plus})
 
     def inc(self, *args):
         if self.value + self.increment <= self.max:

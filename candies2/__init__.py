@@ -12,3 +12,4 @@ from seekbar import SeekBar
 from text import StretchText
 from clicking import SimpleClick, LongClick
 from keyboard import Keyboard
+from adjusters import NumberAdjuster
