@@ -276,6 +276,13 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.emit('seek_request_realtime', self._progression)
         self.emit('seek_request_lazy', self._progression)
     
+    def set_progression(self, new_progression):
+        self._progression = new_progression
+        self._progression = max(self._progression, 0.0)
+        self._progression = min(self._progression, 1.0)
+        self.emit('seek_request_realtime', self._progression)
+        self.emit('seek_request_lazy', self._progression)
+    
     def do_get_preferred_height(self, for_width):
         return 40, 40
     

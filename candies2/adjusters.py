@@ -27,29 +27,36 @@ class NumberAdjuster(Box):
         self.max = max
         self.value = default
         self.increment = increment
+        self.button_size = 50
+        self.button_font_size = '20'
+        self.label_font_size = '16'
 
-        minus = ClassicButton("-", stretch=True)
-        minus.set_size(minus.get_width(), minus.get_width())
+        minus = ClassicButton("-")
+        minus.label.set_font_name(self.button_font_size)
+        minus.set_size(self.button_size, self.button_size)
         minus.connect("button-release-event", self.dec)
 
-        self.value_btn = value_btn = ClassicButton(str(default), stretch=True)
+        self.value_btn = ClassicButton(str(default))
+        self.value_btn.label.set_font_name(self.button_font_size)
+        self.value_btn.set_width(2*self.button_size) #minimum size
         #value.connect("button-release-event", self.launch_vkb)
 
-        plus = ClassicButton("+", stretch=True)
+        plus = ClassicButton("+")
+        plus.label.set_font_name(self.button_font_size)
         plus.connect("button-release-event", self.inc)
-        plus.set_size(plus.get_width(), plus.get_width())
+        plus.set_size(self.button_size, self.button_size)
 
         if text is not None:
-            label = StretchText()
-            label.set_text(text)
-            label_width = label.get_preferred_width(minus.get_height())[1]
-            label.set_width(label_width)
+            label = ClassicButton(str(text), stretch=False, border=0.0)
+            label.label.set_font_name(self.label_font_size)
+            label.rect.set_color('#00000000')
+            label.rect.set_border_color('#00000000')
             self.add({'name': 'text', 'center': True, 'object': label})
 
         self.add(
-            {'name': 'minus', 'expand': True, 'object': minus, 'keep_ratio': True},
-            {'name': 'value','expand': True,'resizable': 0.7,'object': value_btn},
-            {'name': 'plus', 'expand': True, 'object': plus, 'keep_ratio': True})
+            {'name': 'minus', 'object': minus},
+            {'name': 'value','expand': True, 'resizable': 1.0, 'object': self.value_btn},
+            {'name': 'plus', 'object': plus})
 
     def inc(self, *args):
         if self.value + self.increment <= self.max:
@@ -98,17 +105,19 @@ if __name__ == '__main__':
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', clutter.main_quit)
 
+    r = clutter.Rectangle()
+    r.set_color('#ff0000ff')
+
     def update_callback(source, value):
         print "Test value has been updated", value
 
     test = NumberAdjuster(0, 10, 5, 1, "Test value")
     test.connect("value-updated", update_callback)
-    test.set_size(300, 50)
     stage.add(test)
+    test.set_background(r)
 
 
     test = NumberAdjuster(0, 10, 5.0, 0.1)
-    test.set_size(300, 50)
     test.queue_relayout()
     stage.add(test)
     test.set_position(0, 200)

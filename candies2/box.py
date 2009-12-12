@@ -94,7 +94,7 @@ class Box(clutter.Actor, clutter.Container):
         else:
             min_h -= self.spacing
             nat_h -= self.spacing
-        # ajouter le bord
+        # add border
         min_w += 2*self.border
         nat_w += 2*self.border
         min_h += 2*self.border
@@ -124,14 +124,17 @@ class Box(clutter.Actor, clutter.Container):
             bgbox.y2 = main_height
             self.background.allocate(bgbox, flags)
         
-        #find number of resizable elements and size available for resizable elements
-        resizable_count = 0
+        
+        #find size available for resizable elements
         resizable_elements = list()
         resizable_width = inner_width
         resizable_height = inner_height
         for element in self.elements:
             if element.get('resizable', 0) != 0:
-                resizable_count += 1
+                if element['resizable'] > 1:
+                    element['resizable'] = 1
+                elif element['resizable'] < 0:
+                    element['resizable'] = 0
                 resizable_elements.append(element)
             else:
                 resizable_width -= element['object'].get_preferred_size()[2]
@@ -141,12 +144,33 @@ class Box(clutter.Actor, clutter.Container):
         resizable_width += self.spacing
         resizable_height += self.spacing
         
+        #find resizable elements who will bypass box size
+        for element in self.elements:
+            if element.get('resizable', 0) != 0:
+                original_width, original_height = element['object'].get_preferred_size()[2:]
+                if self._horizontal is True:
+                    if element.get('keep_ratio') is True and original_width != 0:
+                        obj_width = element['resizable'] * resizable_width
+                        ratio = float(obj_width/original_width)
+                        obj_height = int(original_height*ratio)
+                        if obj_height > inner_height:
+                            # reduce resizable property
+                            ratio = float(inner_height/original_height)
+                            obj_width = int(original_width*ratio)
+                            element['resizable'] = float(obj_width/resizable_width)
+                else:
+                    if element.get('keep_ratio') is True and original_height != 0:
+                        obj_height = element['resizable'] * resizable_height
+                        ratio = float(obj_height/original_height)
+                        obj_width = int(original_width*ratio)
+                        if obj_width > inner_width:
+                            # reduce resizable property
+                            ratio = float(inner_width/original_width)
+                            obj_height = int(original_height*ratio)
+                            element['resizable'] = float(obj_height/resizable_height)
         
-        x = 0.0
-        y = 0.0
-        #ajouter le bord
-        x += self.border
-        y += self.border
+        x = self.border
+        y = self.border
         for element in self.elements:
             obj_width, obj_height = element['object'].get_preferred_size()[2:]
             if element.get('expand') is True:
@@ -163,10 +187,6 @@ class Box(clutter.Actor, clutter.Container):
                         ratio = float(obj_width/original_width)
                         obj_height = int(obj_height*ratio)
             if element in resizable_elements:
-                if element['resizable'] > 1:
-                    element['resizable'] = 1
-                elif element['resizable'] < 0:
-                    element['resizable'] = 0
                 if self._horizontal is True:
                     original_width = obj_width
                     obj_width = element['resizable'] * resizable_width
@@ -229,8 +249,8 @@ if __name__ == '__main__':
     import buttons
     
     # stage
-    stage_width = 640
-    stage_height = 480
+    stage_width = 1200
+    stage_height = 800
     stage = clutter.Stage()
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', clutter.main_quit)
@@ -243,8 +263,6 @@ if __name__ == '__main__':
     stage.add(global_bg)
     
     
-    rect_bg_width = 400
-    rect_bg_height = 400
     rect_bg = clutter.Rectangle()
     rect_bg.set_color('#ffffffff')
     
@@ -254,7 +272,7 @@ if __name__ == '__main__':
     rect1.set_color(clutter.color_from_string('Black'))
     
     rect2 = clutter.Rectangle()
-    rect2.set_size(30, 30)
+    rect2.set_size(100, 30)
     rect2.set_color(clutter.color_from_string('Blue'))
     
     rect3 = clutter.Rectangle()
@@ -268,33 +286,64 @@ if __name__ == '__main__':
     line = Box(horizontal=False, spacing=10.0, border=20.0)
     line.set_background(rect_bg)
     line.add({'name': 'rect1',
+        'center': True,
         'object': rect1},
         {'name': 'rect2',
         'expand': True,
         'resizable': 0.8,
+        'keep_ratio': True,
         'object': rect2},
         {'name': 'rect3',
         'resizable': 0.2,
         'object': rect3},
         {'name': 'rect4',
         'object': rect4})
-    line.set_size(rect_bg_width, rect_bg_height)
+    line.set_size(400, 400)
+    line.set_position(30, 30)
     stage.add(line)
     
     def on_click(btn_test, event):
         color_a = '#ff000088'
         color_b = '#ff0000ff'
-        current_color = line.elements('rect4')['object'].get_color()
+        current_color = line.get_by_name('rect4')['object'].get_color()
         if str(current_color) == color_a:
-            line.elements('rect4')['object'].set_color(color_b)
+            line.get_by_name('rect4')['object'].set_color(color_b)
         else:
-            line.elements('rect4')['object'].set_color(color_a)
+            line.get_by_name('rect4')['object'].set_color(color_a)
     btn_test = buttons.ClassicButton('test')
-    btn_test.set_position(0, 430)
+    btn_test.set_position(80, 480)
     btn_test.set_size(50, 50)
     btn_test.set_reactive(True)
     btn_test.connect('button-press-event', on_click)
     stage.add(btn_test)
+    
+    
+    
+    other_box = Box(horizontal=True, spacing=10.0, border=20.0)
+    
+    rect5 = clutter.Rectangle()
+    rect5.set_size(250, 150)
+    rect5.set_color(clutter.color_from_string('Black'))
+    
+    rect6 = clutter.Rectangle()
+    rect6.set_size(5, 5)
+    rect6.set_color(clutter.color_from_string('Blue'))
+    
+    rect_bg_2 = clutter.Rectangle()
+    rect_bg_2.set_color('#ffffffff')
+    
+    other_box.set_background(rect_bg_2)
+    other_box.add({'name': 'rect5',
+        'expand': True,
+        'object': rect5},
+        {'name': 'rect6',
+        #'expand': True,
+        'resizable': 1.0,
+        'keep_ratio': True,
+        'object': rect6})
+    other_box.set_size(400, 300)
+    other_box.set_position(500, 30)
+    stage.add(other_box)
     
     stage.show()
     clutter.main()
