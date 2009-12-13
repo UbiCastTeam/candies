@@ -50,6 +50,11 @@ class Box(clutter.Actor, clutter.Container):
         self.background = background
         background.set_parent(self)
     
+    def remove_background(self):
+        if self.background != None:
+            self.background.unparent()
+            self.background = None
+    
     def add(self, *new_elements):
         for new_ele in new_elements:
             if 'name' not in new_ele or 'object' not in new_ele:
@@ -72,6 +77,8 @@ class Box(clutter.Actor, clutter.Container):
         for element in self.elements:
             element['object'].destroy()
         self.elements = list()
+        self.background.destroy()
+        self.background = None
     
     def _compute_preferred_size(self):
         min_w = min_h = nat_w = nat_h = 0.0
@@ -244,6 +251,141 @@ class VBox(Box):
     
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
+
+class AlignedElement(clutter.Actor, clutter.Container):
+    __gtype_name__ = 'AlignedElement'
+
+    def __init__(self, align='center', border=0.0):
+        clutter.Actor.__init__(self)
+        if align == 'top_left':
+            self.align = 'top_left'
+        elif align == 'top':
+            self.align = 'top'
+        elif align == 'top_right':
+            self.align = 'top_right'
+        elif align == 'left':
+            self.align = 'left'
+        elif align == 'center':
+            self.align = 'center'
+        elif align == 'right':
+            self.align = 'right'
+        elif align == 'bottom_left':
+            self.align = 'bottom_left'
+        elif align == 'bottom':
+            self.align = 'bottom'
+        elif align == 'bottom_right':
+            self.align = 'bottom_right'
+        else:
+            self.align = 'center'
+        self.border = border
+        self.element = None
+        self.background = None
+    
+    def set_background(self, background):
+        if self.background:
+            self.background.unparent()
+        self.background = background
+        background.set_parent(self)
+    
+    def remove_background(self):
+        if self.background:
+            self.background.unparent()
+            self.background = None
+    
+    def set_element(self, new_element):
+        if self.element:
+            self.element.unparent()
+        self.element = new_element
+        self.element.set_parent(self)
+    
+    def remove_element(self):
+        if self.element:
+            self.element.unparent()
+            self.element = None
+    
+    def clear(self):
+        if self.element:
+            self.element.destroy()
+            self.element = None
+        if self.background:
+            self.background.destroy()
+            self.background = None
+    
+    def _compute_preferred_size(self):
+        if self.element:
+            return self.element.get_preferred_size()
+        else:
+            return 0, 0, 0, 0
+    
+    def do_get_preferred_width(self, for_height):
+        preferred = self._compute_preferred_size()
+        return preferred[0], preferred[2]
+    
+    def do_get_preferred_height(self, for_width):
+        preferred = self._compute_preferred_size()
+        return preferred[1], preferred[3]
+    
+    def do_allocate(self, box, flags):
+        main_width = box.x2 - box.x1
+        main_height = box.y2 - box.y1
+        inner_width = main_width - 2*self.border
+        inner_height = main_height - 2*self.border
+        
+        #box background
+        if self.background:
+            bgbox = clutter.ActorBox()
+            bgbox.x1 = 0
+            bgbox.y1 = 0
+            bgbox.x2 = main_width
+            bgbox.y2 = main_height
+            self.background.allocate(bgbox, flags)
+        
+        if self.element:
+            element_width, element_height = self.element.get_preferred_size()[2:]
+            ele_x1 = self.border
+            ele_y1 = self.border
+            ele_x2 = self.border
+            ele_y2 = self.border
+            if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
+                ele_x1 = self.border
+                ele_x2 = self.border + element_width
+            if self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
+                ele_x1 = main_width - self.border - element_width
+                ele_x2 = main_width - self.border
+            if self.align == 'top_left' or self.align == 'top' or self.align == 'top_right':
+                ele_y1 = self.border
+                ele_y2 = self.border + element_height
+            if self.align == 'bottom_left' or self.align == 'bottom' or self.align == 'bottom_right':
+                ele_y1 = main_height - self.border - element_height
+                ele_y2 = main_height - self.border
+            if self.align == 'center':
+                ele_x1 = self.border + int((inner_width-element_width)/2)
+                ele_y1 = self.border + int((inner_width-element_width)/2) + element_width
+                ele_x2 = self.border + int((inner_height-element_height)/2)
+                ele_y2 = self.border + int((inner_height-element_height)/2) + element_height
+            elebox = clutter.ActorBox()
+            elebox.x1 = ele_x1
+            elebox.y1 = ele_y1
+            elebox.x2 = ele_x2
+            elebox.y2 = ele_y2
+            self.element.allocate(elebox, flags)
+        
+        clutter.Actor.do_allocate(self, box, flags)
+    
+    def do_foreach(self, func, data=None):
+        if self.background:
+            func(self.background, data)
+        if self.element:
+            func(self.element, data)
+    
+    def do_paint(self):
+        if self.background:
+            self.background.paint()
+        if self.element:
+            self.element.paint()
+    
+    def do_pick(self, color):
+        self.do_paint()
 
 if __name__ == '__main__':
     import buttons
