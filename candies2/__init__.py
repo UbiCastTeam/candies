@@ -5,9 +5,9 @@ from flowbox import FlowBox
 from progressbar import SimpleProgressBar, SkinnedProgressBar
 from circle import Circle
 from roundrect import RoundRectangle
-from buttons import ClassicButton
+from buttons import ClassicButton, ImageButton
 from list import ButtonList, FileList
-from video import VideoPlayer
+from video import VideoPlayer 
 from seekbar import SeekBar
 from text import StretchText
 from clicking import SimpleClick, LongClick

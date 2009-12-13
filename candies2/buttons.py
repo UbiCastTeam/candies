@@ -171,6 +171,8 @@ class ImageButton(ClassicButton):
         self.image.set_keep_aspect_ratio(True)
         self.use_native_image_size = use_native_image_size
 
+        self.last_color = self.rect.props.color
+
         self._activated = False
         if activable:
             self.connect("button-release-event", self.toggle_activate)
