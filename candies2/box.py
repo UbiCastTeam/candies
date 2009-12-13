@@ -360,8 +360,8 @@ class AlignedElement(clutter.Actor, clutter.Container):
                 ele_y2 = main_height - self.border
             if self.align == 'center':
                 ele_x1 = self.border + int((inner_width-element_width)/2)
-                ele_y1 = self.border + int((inner_width-element_width)/2) + element_width
-                ele_x2 = self.border + int((inner_height-element_height)/2)
+                ele_x2 = self.border + int((inner_width-element_width)/2) + element_width
+                ele_y1 = self.border + int((inner_height-element_height)/2)
                 ele_y2 = self.border + int((inner_height-element_height)/2) + element_height
             elebox = clutter.ActorBox()
             elebox.x1 = ele_x1
