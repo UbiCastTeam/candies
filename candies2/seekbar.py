@@ -291,6 +291,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.emit('seek_request_lazy', self._progression)
         if self._progression == 0 and self.callback != None:
             self.callback(self, 0.0, 0.0, 0.0, None)
+        self.queue_relayout()
     
     def do_get_preferred_height(self, for_width):
         return 40, 40
