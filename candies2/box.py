@@ -60,7 +60,7 @@ class Box(clutter.Actor, clutter.Container):
             if 'name' not in new_ele or 'object' not in new_ele:
                 raise KeyError('Element must contain name and object')
             self.elements.append(new_ele)
-            self.get_by_name(new_ele['name'])['object'].set_parent(self)
+            new_ele['object'].set_parent(self)
     
     def add_element(self, obj, name, **properties):
         element = properties.copy()

@@ -42,18 +42,18 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.thin_scroller = thin_scroller
         
         if bar_image_path != None and os.path.exists(bar_image_path):
-            self.scrollbar_background=clutter.Texture()
+            self.scrollbar_background = clutter.Texture()
             self.scrollbar_background.set_from_file(bar_image_path)
         else:
-            self.scrollbar_background=clutter.Rectangle()
+            self.scrollbar_background = clutter.Rectangle()
             self.scrollbar_background.set_color('LightBlue')
         self.scrollbar_background.set_parent(self)
         
         if scroller_image_path != None and os.path.exists(scroller_image_path):
-            self.scroller=clutter.Texture()
+            self.scroller = clutter.Texture()
             self.scroller.set_from_file(scroller_image_path)
         else:
-            self.scroller=clutter.Rectangle()
+            self.scroller = clutter.Rectangle()
             self.scroller.set_color('Gray')
         self.scroller.set_parent(self)
         self.scroller.set_reactive(True)
@@ -118,7 +118,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.scroller.allocate(scroller_box,flags)
         
         scroll_position_percent = (self.scroller_position)/(box_height - 2*self.border - scroller_height)
-        self.emit("scroll_position",scroll_position_percent)
+        self.emit("scroll_position", scroll_position_percent)
         
         clutter.Actor.do_allocate(self, box, flags)
     
