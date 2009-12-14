@@ -30,7 +30,7 @@ KEYBOARD_MAPS = {
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
         (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('.'), Key('←',nb=2,evt='suppr')), 
-        (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6),Key('num',nb=2,evt='num'))
+        (Key('#+-,',nb=2,evt='caract_fr'), Key(' ',nb=6),Key('num',nb=2,evt='num'))
             ),
     
     'en_maj' : (
@@ -38,7 +38,7 @@ KEYBOARD_MAPS = {
         (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
         (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L')), 
         (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'),Key('.'), Key('←',nb=2,evt='suppr')),
-        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
+        (Key('#+-,',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'fr_min' : (
@@ -46,7 +46,7 @@ KEYBOARD_MAPS = {
          (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
          (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
          (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'),Key('.'), Key('←',nb=2,evt='suppr')),
-         (Key('〾',nb=2,evt='caract_fr'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
+         (Key('#+-,',nb=2,evt='caract_fr'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
              ),
     
     'en_min' : (
@@ -54,7 +54,7 @@ KEYBOARD_MAPS = {
         (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
         (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('k')), 
         (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'),Key('.'), Key('←',nb=2,evt='suppr')),
-        (Key('〾',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
+        (Key('#+-,',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'caract_fr' :  (
