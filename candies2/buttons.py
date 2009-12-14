@@ -2,7 +2,7 @@
 import sys
 import gobject
 import clutter
-from roundrect import RoundRectangle
+from roundrect import RoundRectangle, OutlinedRoundRectangle
 
 class ClassicButton(clutter.Actor, clutter.Container):
     __gtype_name__ = 'ClassicButton'
@@ -129,10 +129,10 @@ class ClassicButton(clutter.Actor, clutter.Container):
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
         cbox = clutter.ActorBox()
-        cbox.x1 = int(self.border + (inner_width - lbl_width) / 2)
-        cbox.y1 = int(self.border + (inner_height - lbl_height) / 2)
-        cbox.x2 = int(cbox.x1 + lbl_width)
-        cbox.y2 = int(cbox.y1 + lbl_height)
+        cbox.x1 = round(self.border + (inner_width - lbl_width) / 2)
+        cbox.y1 = round(self.border + (inner_height - lbl_height) / 2)
+        cbox.x2 = round(cbox.x1 + lbl_width)
+        cbox.y2 = round(cbox.y1 + lbl_height)
         self.label.allocate(cbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -145,7 +145,172 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.rect.paint()
         self.label.paint()
 
-gobject.type_register(ClassicButton)
+
+class ItemButton(clutter.Actor, clutter.Container):
+    __gtype_name__ = 'ItemButton'
+    __gproperties__ = {
+        'text' : (
+            str, 'text', 'Text', None, gobject.PARAM_READWRITE
+        ),
+        'color' : (
+            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+        ),
+        'font_color' : (
+            str, 'font color', 'Font color', None, gobject.PARAM_READWRITE
+        ),
+        'border_color': (
+            str, 'border color', 'Border color', None, gobject.PARAM_READWRITE
+        ),
+        'active_color' : (
+            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+        ),
+        'active': (
+            bool, 'active', 'Is active status?', False, gobject.PARAM_READWRITE
+        ),
+    }
+    default_color = 'LightGray'
+    default_active_color = 'Yellow'
+    default_border_color = 'Gray'
+    
+    def __init__(self, label, picture=None, border=6.0):
+        clutter.Actor.__init__(self)
+
+        self.set_reactive(True)
+
+        self.text = label
+        self.border_size = border
+        self._is_active = False
+        
+        self.label = clutter.Text()
+        self.label.set_parent(self)
+        
+        self.picture = None
+        if picture is not None:
+            self.picture = clutter.Texture(picture)
+            self.picture.set_keep_aspect_ratio(True)
+            self.picture.set_parent(self)
+        
+        self.border = OutlinedRoundRectangle()
+        self.border.set_color(self.default_border_color)
+        self.border.props.radius = 10
+        self.border.set_parent(self)
+        
+        self.back = RoundRectangle()
+        self.back.set_color(self.default_color)
+        self.back.props.radius = 10
+        self.back.set_parent(self)
+    
+    def toggle_status(self):
+        self.props.active = not self.props.active
+    
+    def do_set_property(self, pspec, value):
+        if pspec.name == 'color':
+            self.default_color = value
+            if not self._is_active:
+                self.back.props.color = value
+        elif pspec.name == 'active-color':
+            self.default_active_color = value
+            if self._is_active:
+                self.back.props.color = value
+        elif pspec.name == 'text':
+            self.text = value
+            self.queue_relayout()
+        elif pspec.name == 'font-color':
+            self.label.props.color = clutter.color_from_string(value)
+        elif pspec.name == 'border-color':
+            self.border.props.color = value
+        elif pspec.name == 'active':
+            self._is_active = value
+            if value:
+                self.back.props.color = self.default_active_color
+            else:
+                self.back.props.color = self.default_color
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
+
+    def do_get_property(self, pspec):
+        if pspec.name == 'color':
+            return self.default_color
+        elif pspec.name == 'active-color':
+            return self.default_active_color
+        elif pspec.name == 'text':
+            return self.text
+        elif pspec.name == 'font-color':
+            return self.label.props.color
+        elif pspec.name == 'border-color':
+            return self.rect.props.border_color
+        elif pspec.name == 'active':
+            return self._is_active
+        else:
+            raise TypeError('Unknown property ' + pspec.name)
+    
+    def do_allocate(self, box, flags):
+        btn_width = box.x2 - box.x1
+        btn_height = box.y2 - box.y1
+        inner_width = btn_width - 2*self.border_size
+        inner_height = btn_height - 2*self.border_size
+        
+        bgbox = clutter.ActorBox()
+        bgbox.x1 = 0
+        bgbox.y1 = 0
+        bgbox.x2 = btn_width
+        bgbox.y2 = btn_height
+        self.back.allocate(bgbox, flags)
+        self.border.allocate(bgbox, flags)
+        
+        self.label.set_text(self.text)
+        if self.label.get_preferred_size()[2] > inner_width:
+            self._wrap_label(0, len(self.text), inner_width)
+        lbl_width = self.label.get_preferred_size()[2]
+        lbl_height = self.label.get_preferred_size()[3]
+        lblbox = clutter.ActorBox()
+        lblbox.x1 = round(self.border_size + (inner_width - lbl_width) / 2)
+        lblbox.y1 = round(self.border_size)
+        lblbox.x2 = round(lblbox.x1 + lbl_width)
+        lblbox.y2 = round(lblbox.y1 + lbl_height)
+        self.label.allocate(lblbox, flags)
+        
+        if self.picture is not None:
+            pictbox = clutter.ActorBox()
+            pict_width, pict_height = self.picture.get_preferred_size()[2:]
+            remain_height = inner_height - lbl_height
+            pict_top = lblbox.y2
+            if pict_width > inner_width or pict_height > inner_height:
+                pict_width = inner_width
+                pict_height = self.picture.get_preferred_height(inner_width)[1]
+                if pict_height > remain_height:
+                    pict_width = \
+                             self.picture.get_preferred_width(remain_height)[1]
+                    pict_height = remain_height
+            elif pict_height > remain_height:
+                remain_height = inner_height
+                pict_top = self.border_size
+            
+            pictbox.x1 = \
+                       round(self.border_size + (inner_width - pict_width) / 2)
+            pictbox.y1 = round(pict_top + (remain_height - pict_height) / 2)
+            pictbox.x2 = round(pictbox.x1 + pict_width)
+            pictbox.y2 = round(pictbox.y1 + pict_height)
+            self.picture.allocate(pictbox, flags)
+        
+        clutter.Actor.do_allocate(self, box, flags)
+    
+    @property
+    def _children(self):
+        children = [self.back, self.border]
+        if self.picture is not None:
+            children.append(self.picture)
+        children.append(self.label)
+        return children
+    
+    def do_foreach(self, func, data=None):
+        for child in self._children:
+            func(child, data)
+    
+    def do_paint(self):
+        for child in self._children:
+            child.paint()
+
 
 class ImageButton(ClassicButton):
     __gtype_name__ = 'ImageButton'
@@ -247,10 +412,10 @@ class ImageButton(ClassicButton):
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
         cbox = clutter.ActorBox()
-        cbox.x1 = int(self.border + (inner_width - lbl_width) / 2) 
-        cbox.y1 = int(self.border + image_y2)
-        cbox.x2 = int(cbox.x1 + lbl_width)
-        cbox.y2 = int(cbox.y1 + lbl_height)
+        cbox.x1 = round(self.border + (inner_width - lbl_width) / 2) 
+        cbox.y1 = round(self.border + image_y2)
+        cbox.x2 = round(cbox.x1 + lbl_width)
+        cbox.y2 = round(cbox.y1 + lbl_height)
         self.label.allocate(cbox, flags)
 
         clutter.Actor.do_allocate(self, box, flags)
@@ -369,23 +534,6 @@ if __name__ == '__main__':
     b.set_size(170, 170)
     b.set_position(425, 210)
     stage.add(b)
-
-    b = ImageButton("Test image", "../tests/candies.png", stretch=False, image_proportion=0.5)
-    b.props.color = 'Pink'
-    b.set_size(100, 100)
-    b.set_position(425, 380)
-    stage.add(b)
-
-    def callback(source, event):
-        print "Button clicked"
-
-    b = ImageButton("Test vertical image", "../tests/candies_vert.png", stretch=False, image_proportion=0.8, activable=True)
-    b.props.color = '#00ffff44'
-    b.props.border_color = '#ff00ff44'
-    b.set_size(100, 100)
-    b.set_position(530, 380)
-    stage.add(b)
-    b.connect("button-press-event", callback)
 
 
     stage.add(box0)
