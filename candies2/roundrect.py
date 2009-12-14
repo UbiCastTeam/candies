@@ -31,12 +31,11 @@ class OutlinedRoundRectangle(clutter.Actor):
     
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
-            self._color = clutter.color_from_string(value)
+            self.set_color(value)
         elif pspec.name == 'radius':
-            self._radius = value
+            self.set_radius(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
-        self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'color':
@@ -102,13 +101,12 @@ class RoundRectangle(OutlinedRoundRectangle):
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'border-color':
-            self._border_color = clutter.color_from_string(value)
+            self.set_border_color(value)
         elif pspec.name == 'border-width':
-            self._border_width = value
+            self.set_border_width(value)
         else:
             OutlinedRoundRectangle.do_set_property(self, pspec, value)
             return
-        self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'border-color':
