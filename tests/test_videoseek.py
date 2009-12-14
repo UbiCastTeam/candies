@@ -10,7 +10,7 @@ logging.basicConfig(
     stream=sys.stderr
 )
 
-def show_time(self, current_time, progression, duration, time_label):
+def show_time(player, current_time, progression, duration, time_label):
     hour = duration // 3600
     min = (duration % 3600) // 60
     sec = duration % 60

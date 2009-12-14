@@ -161,10 +161,11 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_image_path=None, cursor_image_path=None):
+    def __init__(self, bar_image_path=None, cursor_image_path=None, callback=None):
         clutter.Actor.__init__(self)
         self._progression = 0.0
-
+        self.callback = callback
+        
         #self.background = Background()
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.background = clutter.Texture()
@@ -238,6 +239,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._progression = min(self._progression, 1.0)
         self.emit('seek_request_realtime', self._progression)
         self.emit('seek_request_lazy', self._progression)
+        if self._progression == 0 and self.callback != None:
+            self.callback(self, 0.0, 0.0, 0.0, None)
         return True
 
     def on_press(self, source, event):
@@ -255,6 +258,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.queue_relayout()
         self.last_event_x = event.x
         self.emit('seek_request_realtime', self._progression)
+        if self._progression == 0 and self.callback != None:
+            self.callback(self, 0.0, 0.0, 0.0, None)
 
     def convert_date(self, duration):
         hour = duration // 3600
@@ -275,6 +280,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.last_event_x = None
         self.emit('seek_request_realtime', self._progression)
         self.emit('seek_request_lazy', self._progression)
+        if self._progression == 0 and self.callback != None:
+            self.callback(self, 0.0, 0.0, 0.0, None)
     
     def seek_at_progression(self, new_progression):
         self._progression = new_progression
@@ -282,6 +289,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._progression = min(self._progression, 1.0)
         self.emit('seek_request_realtime', self._progression)
         self.emit('seek_request_lazy', self._progression)
+        if self._progression == 0 and self.callback != None:
+            self.callback(self, 0.0, 0.0, 0.0, None)
     
     def do_get_preferred_height(self, for_width):
         return 40, 40
