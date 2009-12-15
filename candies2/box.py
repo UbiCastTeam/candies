@@ -68,10 +68,20 @@ class Box(clutter.Actor, clutter.Container):
         element['object'] = obj
         self.add(element)
     
+    def do_remove(self, actor):
+        if self.background == actor:
+            actor.unparent()
+            self.background = None
+        for element in self.elements:
+            if element['object'] == actor:
+                actor.unparent()
+                self.elements.remove(element)
+    
     def remove_element(self, name):
-        if self.get_by_name(name):
-            self.get_by_name(name)['object'].unparent()
-            self.elements.remove(self.get_by_name(name))
+        element = self.get_by_name(name)
+        if element:
+            element['object'].unparent()
+            self.elements.remove(element)
     
     def clear(self):
         for element in self.elements:
@@ -233,6 +243,12 @@ class Box(clutter.Actor, clutter.Container):
         for element in self.elements:
             func(element['object'], data)
     
+    def do_destroy(self):
+        if self.background:
+            self.background.destroy()
+        for element in self.elements:
+            element['object'].destroy()
+    
     def do_paint(self):
         if self.background:
             self.background.paint()
@@ -302,6 +318,14 @@ class AlignedElement(clutter.Actor, clutter.Container):
         if self.element:
             self.element.unparent()
             self.element = None
+    
+    def do_remove(self, actor):
+        if self.background == actor:
+            actor.unparent()
+            self.background = None
+        if self.element == actor:
+            actor.unparent()
+            self.elements = None
     
     def clear(self):
         if self.element:
@@ -377,6 +401,12 @@ class AlignedElement(clutter.Actor, clutter.Container):
             func(self.background, data)
         if self.element:
             func(self.element, data)
+    
+    def do_destroy(self):
+        if self.background:
+            self.background.destroy()
+        if self.element:
+            self.element.destroy()
     
     def do_paint(self):
         if self.background:
