@@ -254,9 +254,6 @@ class Box(clutter.Actor, clutter.Container):
             self.background.paint()
         for element in self.elements:
             element['object'].paint()
-    
-    def do_pick(self, color):
-        self.do_paint()
 
 class HBox(Box):
     
@@ -413,16 +410,13 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.background.paint()
         if self.element:
             self.element.paint()
-    
-    def do_pick(self, color):
-        self.do_paint()
 
 if __name__ == '__main__':
     import buttons
     
     # stage
     stage_width = 1200
-    stage_height = 800
+    stage_height = 600
     stage = clutter.Stage()
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', clutter.main_quit)
@@ -475,6 +469,7 @@ if __name__ == '__main__':
     stage.add(line)
     
     def on_click(btn_test, event):
+        print 'click'
         color_a = '#ff000088'
         color_b = '#ff0000ff'
         current_color = line.get_by_name('rect4')['object'].get_color()
@@ -482,7 +477,10 @@ if __name__ == '__main__':
             line.get_by_name('rect4')['object'].set_color(color_b)
         else:
             line.get_by_name('rect4')['object'].set_color(color_a)
-    btn_test = buttons.ClassicButton('test')
+    btn_test = AlignedElement()
+    btn_rect = clutter.Rectangle()
+    btn_rect.set_color('#ff00ffff')
+    btn_test.set_background(btn_rect)
     btn_test.set_position(80, 480)
     btn_test.set_size(50, 50)
     btn_test.set_reactive(True)
