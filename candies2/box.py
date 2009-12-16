@@ -254,6 +254,9 @@ class Box(clutter.Actor, clutter.Container):
             self.background.paint()
         for element in self.elements:
             element['object'].paint()
+    
+    def do_pick(self, color):
+        self.do_paint()
 
 class HBox(Box):
     
