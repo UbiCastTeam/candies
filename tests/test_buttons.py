@@ -48,13 +48,22 @@ if __name__ == '__main__':
     stage.add(item4)
     
     # Test button with a picture really too big
-    item4 = candies2.ItemButton('Item4', os.path.join(__path__, 'logo.png'))
-    item4.props.color = '#00000000'
-    item4.props.active_color = '#80808040'
-    item4.set_size(90, 90)
-    item4.set_position(359, 225)
-    item4.connect('button-press-event', lambda s,e: item4.toggle_status())
-    stage.add(item4)
+    item5 = candies2.ItemButton('Item5', os.path.join(__path__, 'logo.png'))
+    item5.props.color = '#00000000'
+    item5.props.active_color = '#80808040'
+    item5.set_size(90, 90)
+    item5.set_position(359, 225)
+    item5.connect('button-press-event', lambda s,e: item5.toggle_status())
+    stage.add(item5)
+    
+    # Test button with a label too long
+    item6 = candies2.ItemButton('Anticonstutionnally', os.path.join(__path__, 'logo.png'))
+    item6.props.color = '#00000000'
+    item6.props.active_color = '#80808040'
+    item6.set_size(90, 90)
+    item6.set_position(474, 225)
+    item6.connect('button-press-event', lambda s,e: item6.toggle_status())
+    stage.add(item6)
 
     image_path = os.path.join(__path__, 'candies.png')
     b = candies2.ImageButton('Test image', image_path, stretch=False,

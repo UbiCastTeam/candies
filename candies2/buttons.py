@@ -244,6 +244,30 @@ class ItemButton(clutter.Actor, clutter.Container):
         else:
             raise TypeError('Unknown property ' + pspec.name)
     
+    def do_get_preferred_width(self, for_height):
+        t = clutter.Text()
+        t.set_font_name(self.label.get_font_name())
+        t.set_text('…')
+        min = t.get_preferred_size()[0]
+        t.set_text(self.text)
+        nat = t.get_preferred_size()[2]
+        if self.picture is not None:
+            pict_width = self.picture.get_preferred_width(-1)[1]
+            nat = max(nat, pict_width)
+        return min + 2*self.border_size, nat + 2*self.border_size
+    
+    def do_get_preferred_height(self, for_width):
+        min, nat = self.label.get_preferred_height(for_width)
+        if self.picture is not None:
+            t = clutter.Text()
+            t.set_font_name(self.label.get_font_name())
+            t.set_text('…')
+            min_width = t.get_preferred_size()[0]
+            min += self.picture.get_preferred_height(min_width)[0]
+            nat += self.picture.get_preferred_height(-1)[1]
+        return min + 2*self.border_size, nat + 2*self.border_size
+    
+    
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
@@ -259,10 +283,11 @@ class ItemButton(clutter.Actor, clutter.Container):
         self.border.allocate(bgbox, flags)
         
         self.label.set_text(self.text)
-        if self.label.get_preferred_size()[2] > inner_width:
-            self._wrap_label(0, len(self.text), inner_width)
-        lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
+        lbl_width = self.label.get_preferred_size()[2]
+        if self.label.get_preferred_size()[2] > inner_width:
+            self.label.set_clip(0, 0, inner_width, lbl_height)
+            lbl_width = inner_width
         lblbox = clutter.ActorBox()
         lblbox.x1 = round(self.border_size + (inner_width - lbl_width) / 2)
         lblbox.y1 = round(self.border_size)
