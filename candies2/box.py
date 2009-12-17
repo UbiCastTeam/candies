@@ -403,21 +403,24 @@ class AlignedElement(clutter.Actor, clutter.Container):
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
-        if self.background:
+        if self.background is not None:
             func(self.background, data)
-        if self.element:
+        if self.element is not None:
             func(self.element, data)
     
     def do_destroy(self):
-        if self.background:
-            self.background.destroy()
-        if self.element:
-            self.element.destroy()
+        try:
+            if self.background is not None:
+                self.background.destroy()
+            if self.element is not None:
+                self.element.destroy()
+        except:
+            pass
     
     def do_paint(self):
-        if self.background:
+        if self.background is not None:
             self.background.paint()
-        if self.element:
+        if self.element is not None:
             self.element.paint()
 
 if __name__ == '__main__':

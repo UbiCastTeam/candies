@@ -352,9 +352,9 @@ class ImageButton(ClassicButton):
     }
     default_font_size = '16'
     default_font_color = '#ffffffff'
-    default_inner_color = '#ffffff44'
+    default_inner_color = '#ffffff11'
     default_highlight_color = '#ffffff88'
-    default_border_color = '#ffffff44'
+    default_border_color = '#ffffff33'
     default_active_color = '#00000088'
 
     def __init__(self, label, image_location, stretch=False, border=6.0, image_proportion=0.9, use_native_image_size=False, activable=False):
