@@ -83,12 +83,18 @@ class Box(clutter.Actor, clutter.Container):
             element['object'].unparent()
             self.elements.remove(element)
     
+    def remove_all_elements(self):
+        while len(self.elements) > 0:
+            self.elements[0]['object'].unparent()
+            self.elements.remove(self.elements[0])
+    
     def clear(self):
         for element in self.elements:
             element['object'].destroy()
         self.elements = list()
-        self.background.destroy()
-        self.background = None
+        if self.background:
+            self.background.destroy()
+            self.background = None
     
     def _compute_preferred_size(self):
         min_w = min_h = nat_w = nat_h = 0.0
