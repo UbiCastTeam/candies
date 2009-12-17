@@ -52,24 +52,24 @@ KEYBOARD_MAPS = {
     'en_min' : (
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
         (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
-        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('k')), 
+        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l')), 
         (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'),Key('.'), Key('←',nb=2,evt='suppr')),
         (Key('#+-,',nb=2,evt='caract_en'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'caract_fr' :  (
-        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('§'), Key('%'), Key('$')),
-        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
+        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'),),
+        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='fr_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
+        (Key('ABC',nb=2,evt='fr_maj'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
     
     'caract_en' :  (
-        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('§'), Key('%'), Key('$')),
-        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('€'), Key('\\'), Key('_')),
+        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'), ),
+        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='en_maj'), Key('é'), Key('è'), Key('à'), Key('ù'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
+        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='en_min'), Key(' ',nb=6), Key('num',nb=2,evt='num'))
             ),
             
