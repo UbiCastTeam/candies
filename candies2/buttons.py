@@ -343,9 +343,6 @@ class ImageButton(ClassicButton):
         'active' : (
             gobject.TYPE_BOOLEAN, 'active', 'Active', 0, gobject.PARAM_READWRITE
         ),
-        'image_proportion' : (
-            gobject.TYPE_FLOAT, 'image proportion', 'Proportional space occupied by the image', 0, 1, 1, gobject.PARAM_READWRITE
-        ),
         'active_color' : (
             str, 'active color', 'Background color when active', None, gobject.PARAM_READWRITE
         ),
@@ -357,14 +354,14 @@ class ImageButton(ClassicButton):
     default_border_color = '#ffffff33'
     default_active_color = '#00000088'
 
-    def __init__(self, label, image_location, stretch=False, border=6.0, image_proportion=0.9, use_native_image_size=False, activable=False):
+    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False):
         ClassicButton.__init__(self, label, stretch, border)
 
-        self.image_proportion = image_proportion
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
         self.image.set_keep_aspect_ratio(True)
         self.use_native_image_size = use_native_image_size
+        self.spacing = spacing
         
         self.label.set_font_name(self.default_font_size)
         self.label.set_color(self.default_font_color)
@@ -397,41 +394,16 @@ class ImageButton(ClassicButton):
         btn_height = box.y2 - box.y1
         inner_width = btn_width - 2*self.border
         inner_height = btn_height - 2*self.border
-
-        label_height = self.label.get_preferred_size()[3]
         
-        if self.use_native_image_size:
-            image_width = self.image.get_preferred_size()[2] 
-            image_height = self.image.get_preferred_size()[3]
-            is_horizontal = True
-        else:
-            image_width = btn_width*self.image_proportion
-            image_height = self.image.get_preferred_height(image_width)[1] 
-            is_horizontal = True
-            if image_height > btn_height:
-                image_height = btn_height*self.image_proportion - label_height
-                image_width = self.image.get_preferred_width(image_height)[1]
-                is_horizontal = False
+        # round rect
+        rbox = clutter.ActorBox()
+        rbox.x1 = 0
+        rbox.y1 = 0
+        rbox.x2 = btn_width
+        rbox.y2 = btn_height
+        self.rect.allocate(rbox, flags)
         
-        cbox = clutter.ActorBox()
-        cbox.x1 = 0
-        cbox.y1 = self.border
-        if is_horizontal:
-            cbox.y1 = (btn_height - image_height - label_height)/2 
-        cbox.x1 = (btn_width - image_width)/2
-        cbox.x2 = image_width + cbox.x1
-        cbox.y2 = image_y2 = image_height + cbox.y1
-        if not is_horizontal:
-            cbox.y2 = image_y2 = image_height + cbox.y1 - label_height
-        self.image.allocate(cbox, flags)
-
-        cbox = clutter.ActorBox()
-        cbox.x1 = 0
-        cbox.y1 = 0
-        cbox.x2 = btn_width
-        cbox.y2 = btn_height
-        self.rect.allocate(cbox, flags)
-
+        # label
         self.label.set_text(self.text)
         if self.label.get_preferred_size()[2] > inner_width:
             self._wrap_label(0, len(self.text), inner_width)
@@ -446,13 +418,40 @@ class ImageButton(ClassicButton):
             self.label.set_font_name('%s %s' %(fontface, fontsize))
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
-        cbox = clutter.ActorBox()
-        cbox.x1 = round(self.border + (inner_width - lbl_width) / 2) 
-        cbox.y1 = round(self.border + image_y2)
-        cbox.x2 = round(cbox.x1 + lbl_width)
-        cbox.y2 = round(cbox.y1 + lbl_height)
-        self.label.allocate(cbox, flags)
-
+        
+        # image
+        if self.use_native_image_size:
+            image_width = self.image.get_preferred_size()[2]
+            image_height = self.image.get_preferred_size()[3]
+        else:
+            max_width = self.image.get_preferred_size()[2]
+            max_height = self.image.get_preferred_size()[3]
+            image_ratio = float(self.image.get_preferred_size()[2])/float(self.image.get_preferred_size()[3])
+            
+            image_height = inner_height - lbl_height - self.spacing
+            if image_height > max_height:
+                image_height = max_height
+            if image_height > inner_height:
+                image_height = inner_height
+            image_width = image_height * image_ratio
+            if image_width > inner_width:
+                image_width = inner_width
+                image_height = image_width/image_ratio
+        
+        lbox = clutter.ActorBox()
+        lbox.x1 = round(self.border + (inner_width - lbl_width)/2)
+        lbox.y1 = round(self.border + (inner_height - lbl_height - self.spacing - image_height)/2 + image_height + self.spacing)
+        lbox.x2 = round(lbox.x1 + lbl_width)
+        lbox.y2 = round(lbox.y1 + lbl_height)
+        self.label.allocate(lbox, flags)
+        
+        ibox = clutter.ActorBox()
+        ibox.x1 = round(self.border + (inner_width - image_width)/2)
+        ibox.y1 = round(self.border + (inner_height - lbl_height - self.spacing - image_height)/2)
+        ibox.x2 = round(ibox.x1 + image_width)
+        ibox.y2 = round(ibox.y1 + image_height)
+        self.image.allocate(ibox, flags)
+        
         clutter.Actor.do_allocate(self, box, flags)
 
     def do_set_property(self, pspec, value):
@@ -460,8 +459,6 @@ class ImageButton(ClassicButton):
             self.set_active(value)
         elif pspec.name == 'active-color':
             self.default_active_color = clutter.color_from_string(value)
-        elif pspec.name == 'image-proportion':
-            self.image_proportion = value
         else:
             ClassicButton.do_set_property(self, pspec, value)
         self.queue_redraw()
@@ -471,8 +468,6 @@ class ImageButton(ClassicButton):
             return self._activated
         elif pspec.name == 'active-color':
             return self.default_active_color
-        elif pspec.name == 'image-proportion':
-            return self.image_proportion
         else:
             ClassicButton.do_get_property(self, pspec, value)
 
