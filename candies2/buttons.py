@@ -38,6 +38,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
         
         self.label = clutter.Text()
         self.label.set_parent(self)
+        self.label.set_text(self.text)
         
         self.rect = RoundRectangle()
         self.rect.set_color(self.default_color)
