@@ -20,7 +20,7 @@ class NumberAdjuster(Box):
     __gsignals__ = {'value_updated' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]),
     }
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=0.0):
+    def __init__(self, min, max, default, increment=1, text=None, factor=None):
         Box.__init__(self, horizontal=True, spacing=5, border=5)
 
         self.min = min
@@ -33,7 +33,7 @@ class NumberAdjuster(Box):
         self.button_size = 50
         self.label_font_size = '16'
         self.button_font_size = '20'
-        self.button_font_color = '#ffffffff'
+        self.button_font_color = '#000000ff'
         self.button_inner_color = '#ffffff44'
         self.button_highlight_color = '#ffffff88'
         self.button_border_color = '#ffffff44'
@@ -54,7 +54,10 @@ class NumberAdjuster(Box):
         self.value_btn.rect.set_border_color(self.button_border_color)
         self.value_btn.set_width(2*self.button_size) #minimum size
         # set default value
-        value_to_display = self.value * self.factor
+        if self.factor is not None:
+            value_to_display = float(self.value * self.factor)
+        else:
+            value_to_display = float(self.value)
         decimal = round(float(value_to_display) - int(value_to_display), 1)
         if decimal == 0.0:
             self.value_btn.props.text = str(int(value_to_display))
@@ -90,7 +93,7 @@ class NumberAdjuster(Box):
             self.value += self.increment
             self.update()
         elif self.value != self.max:
-            self.value = float(self.max)
+            self.value = self.max
             self.update()
         gobject.timeout_add(200, button.rect.set_color, self.button_inner_color)
 
@@ -100,12 +103,15 @@ class NumberAdjuster(Box):
             self.value -= self.increment
             self.update()
         elif self.value != self.min:
-            self.value = float(self.min)
+            self.value = self.min
             self.update()
         gobject.timeout_add(200, button.rect.set_color, self.button_inner_color)
 
     def update(self):
-        value_to_display = self.value * self.factor
+        if self.factor is not None:
+            value_to_display = float(self.value * self.factor)
+        else:
+            value_to_display = float(self.value)
         decimal = round(float(value_to_display) - int(value_to_display), 1)
         if decimal == 0.0:
             self.value_btn.props.text = str(int(value_to_display))
@@ -156,7 +162,7 @@ if __name__ == '__main__':
     stage.add(test)
     
     r = clutter.Rectangle()
-    r.set_color('#0000ffff')
+    r.set_color('#8888ffff')
     test.set_background(r)
 
 
@@ -166,7 +172,7 @@ if __name__ == '__main__':
     test.set_position(0, 200)
     
     r = clutter.Rectangle()
-    r.set_color('#0000ffff')
+    r.set_color('#8888ffff')
     test.set_background(r)
 
     t = clutter.Text()
