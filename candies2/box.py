@@ -82,6 +82,9 @@ class Box(clutter.Actor, clutter.Container):
         if element:
             element['object'].unparent()
             self.elements.remove(element)
+            return True
+        else:
+            return False
     
     def remove_all_elements(self):
         while len(self.elements) > 0:
