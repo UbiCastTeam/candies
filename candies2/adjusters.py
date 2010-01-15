@@ -27,6 +27,8 @@ class NumberAdjuster(Box):
         self.max = max
         self.value = default
         self.increment = increment
+        if factor is None:
+            factor = 1
         self.factor = factor
         
         # skin
@@ -53,18 +55,9 @@ class NumberAdjuster(Box):
         self.value_btn.rect.set_color(self.button_inner_color)
         self.value_btn.rect.set_border_color(self.button_border_color)
         self.value_btn.set_width(2*self.button_size) #minimum size
+
+        self.update_rounded_value()
         # set default value
-        if self.factor is not None:
-            value_to_display = float(self.value * self.factor)
-        else:
-            value_to_display = float(self.value)
-        decimal = round(float(value_to_display) - int(value_to_display), 1)
-        if decimal == 0.0:
-            self.value_btn.props.text = str(int(value_to_display))
-        elif decimal == 1.0:
-            self.value_btn.props.text = str(int(value_to_display)+1)
-        else:
-            self.value_btn.props.text = str(value_to_display)
 
         plus = ClassicButton("+")
         plus.label.set_font_name(self.button_font_size)
@@ -108,17 +101,7 @@ class NumberAdjuster(Box):
         gobject.timeout_add(200, button.rect.set_color, self.button_inner_color)
 
     def update(self):
-        if self.factor is not None:
-            value_to_display = float(self.value * self.factor)
-        else:
-            value_to_display = float(self.value)
-        decimal = round(float(value_to_display) - int(value_to_display), 1)
-        if decimal == 0.0:
-            self.value_btn.props.text = str(int(value_to_display))
-        elif decimal == 1.0:
-            self.value_btn.props.text = str(int(value_to_display)+1)
-        else:
-            self.value_btn.props.text = str(value_to_display)
+        self.update_rounded_value()
         self.emit('value_updated', self.value)
 
     def do_set_property(self, pspec, value):
@@ -143,6 +126,15 @@ class NumberAdjuster(Box):
             return self.rect.props.border_width
         else:
             raise TypeError('Unknown property ' + pspec.name)
+
+    def update_rounded_value(self):
+        value_to_display = float(self.value * self.factor)
+        if isinstance(self.increment, int):
+            value_to_display = int(round(value_to_display, 0))
+        elif isinstance(self.increment, float):
+            number_decimals = len(str(self.increment).split(".")[1])
+            value_to_display = round(value_to_display, number_decimals)
+        self.value_btn.props.text = str(value_to_display)
 
 
 if __name__ == '__main__':
