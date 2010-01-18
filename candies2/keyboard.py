@@ -73,12 +73,20 @@ KEYBOARD_MAPS = {
         (Key('abc',nb=2,evt='en_min'), Key(' ',nb=8))
             ),
             
-    'numeric' : (
+    'int' : (
+        (Key('1'), Key('2'), Key('3')), 
+        (Key('4'), Key('5'), Key('6')), 
+        (Key('7'), Key('8'), Key('9')),
+        (Key('0'), Key('←',evt='suppr'))
+            ), 
+
+    'float' : (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('.'), Key('0'), Key('←',evt='suppr'))
             ) 
+
     }
 
 BTN_SKIN = {
@@ -172,7 +180,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 if key.event == 'caract_fr':
                     self.load_profile("caract_fr")
                 if key.event == 'num':
-                    self.load_profile("numeric")
+                    self.load_profile("int")
                 if key.event == 'car':
                     print key.txt
                     self.emit("keyboard", key.txt)
