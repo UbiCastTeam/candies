@@ -163,8 +163,28 @@ class Box(clutter.Actor, clutter.Container):
                     element['resizable'] = 0
                 resizable_elements.append(element)
             else:
-                resizable_width -= element['object'].get_preferred_size()[2]
-                resizable_height -= element['object'].get_preferred_size()[3]
+                if element.get('expand') is True:
+                    if element.get('keep_ratio') is True:
+                        obj_height = element['object'].get_preferred_size()[3]
+                        obj_width = element['object'].get_preferred_size()[2]
+                        if self._horizontal is True:
+                            if obj_height != 0:
+                                ratio = float(obj_width/obj_height)
+                                obj_width = int(inner_height*ratio)
+                            resizable_width -= obj_width
+                            resizable_height -= inner_height
+                        else:
+                            if obj_width != 0:
+                                ratio = float(obj_width/obj_height)
+                                obj_height = int(inner_width/ratio)
+                            resizable_width -= inner_width
+                            resizable_height -= obj_height
+                    else:
+                        resizable_width -= element['object'].get_preferred_size()[2]
+                        resizable_height -= element['object'].get_preferred_size()[3]
+                else:
+                    resizable_width -= element['object'].get_preferred_size()[2]
+                    resizable_height -= element['object'].get_preferred_size()[3]
             resizable_width -= self.spacing
             resizable_height -= self.spacing
         resizable_width += self.spacing
@@ -309,24 +329,24 @@ class AlignedElement(clutter.Actor, clutter.Container):
         self.background = None
     
     def set_background(self, background):
-        if self.background:
+        if self.background is not None:
             self.background.unparent()
         self.background = background
         background.set_parent(self)
     
     def remove_background(self):
-        if self.background:
+        if self.background is not None:
             self.background.unparent()
             self.background = None
     
     def set_element(self, new_element):
-        if self.element:
+        if self.element is not None:
             self.element.unparent()
         self.element = new_element
         self.element.set_parent(self)
     
     def remove_element(self):
-        if self.element:
+        if self.element is not None:
             self.element.unparent()
             self.element = None
     
@@ -339,26 +359,52 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.elements = None
     
     def clear(self):
-        if self.element:
+        if self.element is not None:
             self.element.destroy()
             self.element = None
-        if self.background:
+        if self.background is not None:
             self.background.destroy()
             self.background = None
     
-    def _compute_preferred_size(self):
-        if self.element:
-            return self.element.get_preferred_size()
-        else:
-            return 0, 0, 0, 0
-    
     def do_get_preferred_width(self, for_height):
-        preferred = self._compute_preferred_size()
-        return preferred[0], preferred[2]
+        if self.element is not None:
+            if self.expand == True:
+                element_width = self.element.get_preferred_size()[2]
+                if self.keep_ratio == True and element_width != 0:
+                    element_height = self.element.get_preferred_size()[3]
+                    if element_height != 0:
+                        ratio = float(float(element_width) / float(element_height))
+                        prefered_width = int(element_height * ratio) + 2*self.border
+                    else:
+                        return 0, 0
+                else:
+                    prefered_width = element_width + 2*self.border
+            else:
+                element_width = self.element.get_preferred_size()[2]
+                prefered_width = element_width + 2*self.border
+            return prefered_width, prefered_width
+        else:
+            return 0, 0
     
     def do_get_preferred_height(self, for_width):
-        preferred = self._compute_preferred_size()
-        return preferred[1], preferred[3]
+        if self.element is not None:
+            if self.expand == True:
+                element_height = self.element.get_preferred_size()[0]
+                if self.keep_ratio == True and element_height != 0:
+                    element_width = self.element.get_preferred_size()[1]
+                    if element_width != 0:
+                        ratio = float(float(element_height) / float(element_width))
+                        prefered_height = int(element_width / ratio) + 2*self.border
+                    else:
+                        return 0, 0
+                else:
+                    prefered_height = element_height + 2*self.border
+            else:
+                element_height = self.element.get_preferred_size()[0]
+                prefered_height = element_height + 2*self.border
+            return prefered_height, prefered_height
+        else:
+            return 0, 0
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
@@ -383,7 +429,9 @@ class AlignedElement(clutter.Actor, clutter.Container):
             ele_y2 = self.border
             if self.expand == True:
                 if self.keep_ratio == True:
-                    ratio = element_width / element_height
+                    ratio = float(float(element_width) / float(element_height))
+                    element_width = inner_width
+                    element_height = int(element_width / ratio)
                     if element_width > inner_width:
                         element_width = inner_width
                         element_height = int(element_width / ratio)
@@ -505,7 +553,6 @@ if __name__ == '__main__':
     stage.add(line)
     
     def on_click(btn_test, event):
-        print 'click'
         color_a = '#ff000088'
         color_b = '#ff0000ff'
         current_color = line.get_by_name('rect4')['object'].get_color()
