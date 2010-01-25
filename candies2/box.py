@@ -280,7 +280,7 @@ class VBox(Box):
 class AlignedElement(clutter.Actor, clutter.Container):
     __gtype_name__ = 'AlignedElement'
 
-    def __init__(self, align='center', border=0.0):
+    def __init__(self, align='center', border=0, expand=False, keep_ratio=True):
         clutter.Actor.__init__(self)
         if align == 'top_left':
             self.align = 'top_left'
@@ -303,6 +303,8 @@ class AlignedElement(clutter.Actor, clutter.Container):
         else:
             self.align = 'center'
         self.border = border
+        self.expand = expand
+        self.keep_ratio = keep_ratio
         self.element = None
         self.background = None
     
@@ -379,23 +381,42 @@ class AlignedElement(clutter.Actor, clutter.Container):
             ele_y1 = self.border
             ele_x2 = self.border
             ele_y2 = self.border
-            if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
-                ele_x1 = self.border
-                ele_x2 = self.border + element_width
-            if self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
-                ele_x1 = main_width - self.border - element_width
-                ele_x2 = main_width - self.border
-            if self.align == 'top_left' or self.align == 'top' or self.align == 'top_right':
-                ele_y1 = self.border
-                ele_y2 = self.border + element_height
-            if self.align == 'bottom_left' or self.align == 'bottom' or self.align == 'bottom_right':
-                ele_y1 = main_height - self.border - element_height
-                ele_y2 = main_height - self.border
-            if self.align == 'center':
-                ele_x1 = self.border + int((inner_width-element_width)/2)
-                ele_x2 = self.border + int((inner_width-element_width)/2) + element_width
-                ele_y1 = self.border + int((inner_height-element_height)/2)
-                ele_y2 = self.border + int((inner_height-element_height)/2) + element_height
+            if self.expand == True:
+                if self.keep_ratio == True:
+                    ratio = element_width / element_height
+                    if element_width > inner_width:
+                        element_width = inner_width
+                        element_height = int(element_width / ratio)
+                    if element_height > inner_height:
+                        element_height = inner_height
+                        element_width = int(element_height * ratio)
+                    ele_x1 = self.border + int((inner_width - element_width)/2)
+                    ele_y1 = self.border + int((inner_height - element_height)/2)
+                    ele_x2 = main_width - self.border - int((inner_width - element_width)/2)
+                    ele_y2 = main_height - self.border - int((inner_height - element_height)/2)
+                else:
+                    ele_x1 = self.border
+                    ele_y1 = self.border
+                    ele_x2 = main_width - self.border
+                    ele_y2 = main_height - self.border
+            else:
+                if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
+                    ele_x1 = self.border
+                    ele_x2 = self.border + element_width
+                if self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
+                    ele_x1 = main_width - self.border - element_width
+                    ele_x2 = main_width - self.border
+                if self.align == 'top_left' or self.align == 'top' or self.align == 'top_right':
+                    ele_y1 = self.border
+                    ele_y2 = self.border + element_height
+                if self.align == 'bottom_left' or self.align == 'bottom' or self.align == 'bottom_right':
+                    ele_y1 = main_height - self.border - element_height
+                    ele_y2 = main_height - self.border
+                if self.align == 'center':
+                    ele_x1 = self.border + int((inner_width-element_width)/2)
+                    ele_x2 = self.border + int((inner_width-element_width)/2) + element_width
+                    ele_y1 = self.border + int((inner_height-element_height)/2)
+                    ele_y2 = self.border + int((inner_height-element_height)/2) + element_height
             elebox = clutter.ActorBox()
             elebox.x1 = ele_x1
             elebox.y1 = ele_y1
