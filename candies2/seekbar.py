@@ -4,8 +4,8 @@ import os
 from clutter import cogl
 
 '''
-class Background(clutter.Actor):
-    __gtype_name__ = 'Background'
+class bar(clutter.Actor):
+    __gtype_name__ = 'bar'
     __gproperties__ = {
         'color' : (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
@@ -110,7 +110,7 @@ class SeekBar(clutter.Actor, clutter.Container):
     SeekBar class :
 
     * Properties :
-        - background :          clutter.Rectangle       background seekbar
+        - bar :          clutter.Rectangle       bar seekbar
         - cursor :              clutter.Rectangle       cursor
         - widthbar :            float                   width size of seekbar
         - cursor_width :        float                   width size of cursor
@@ -120,7 +120,7 @@ class SeekBar(clutter.Actor, clutter.Container):
     * Functions :
         - finish :              Update progression to set 1.
 
-        - on_background_click : Update cursor where you click
+        - on_bar_click : Update cursor where you click
                                 and send signal to video to update
                                 progression of video.
 
@@ -153,7 +153,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         'cursor_color' : (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
         ),
-        'background_color' : (
+        'bar_color' : (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
         ),
         'progression': (
@@ -161,18 +161,23 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_image_path=None, cursor_image_path=None, callback=None):
+    def __init__(self, bar_x_padding=-1, bar_y_padding=-1, bar_image_path=None, cursor_image_path=None, callback=None):
         clutter.Actor.__init__(self)
         self._progression = 0.0
         self.callback = callback
+        self.x_padding = bar_x_padding
+        self.y_padding = bar_y_padding
         
-        #self.background = Background()
         if bar_image_path != None and os.path.exists(bar_image_path):
-            self.background = clutter.Texture()
-            self.background.set_from_file(bar_image_path)
+            self.bar = clutter.Texture()
+            self.bar.set_from_file(bar_image_path)
         else:
-            self.background = clutter.Rectangle()
-            self.background.set_color('LightBlue')
+            self.bar = clutter.Rectangle()
+            self.bar.set_color('LightBlue')
+        self.bar.set_parent(self)
+        
+        self.background = clutter.Rectangle()
+        self.background.set_color('#00000000')
         self.background.set_reactive(True)
         self.background.connect('button-release-event', self.on_background_click)
         self.background.set_parent(self)
@@ -195,6 +200,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         #self.radius = 0.0
         self.cursor_width = 0.0
         self.duration = 0.0
+        self.duration_sec = 0.0
         self.current_time = 0.0
 
     def set_progression(self, value):
@@ -207,16 +213,16 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_cursor_color(self, color):
         self.cursor.props.color = clutter.color_from_string(color)
 
-    def set_background_color(self, color):
-        self.background.props.color = clutter.color_from_string(color)
+    def set_bar_color(self, color):
+        self.bar.props.color = clutter.color_from_string(color)
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'progression':
             self.set_progression(value)
         elif pspec.name == 'cursor_color':
             self.set_cursor_color(value)
-        elif pspec.name == 'background_color':
-            self.set_background_color(value)
+        elif pspec.name == 'bar_color':
+            self.set_bar_color(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -225,8 +231,8 @@ class SeekBar(clutter.Actor, clutter.Container):
             return self._progression
         elif pspec.name == 'cursor_color':
             return self.cursor.props.color
-        elif pspec.name == 'background_color':
-            return self.background.props.color
+        elif pspec.name == 'bar_color':
+            return self.bar.props.color
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -272,6 +278,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         if self.last_event_x is None:
             self._progression = progression
             self.current_time = self.convert_date(current_time)
+            self.duration_sec = duration
             self.duration = self.convert_date(duration)
             self.queue_relayout()
 
@@ -300,15 +307,39 @@ class SeekBar(clutter.Actor, clutter.Container):
         return 200, 200
     
     def do_allocate(self, box, flags):
-        bar_width = box.x2 - box.x1
-        bar_height = box.y2 - box.y1
-        bg_box = clutter.ActorBox(0, 0, bar_width, bar_height)
-        self.background.allocate(bg_box, flags)
-        cursor_width = bar_height
-        cursor_height = bar_height
+        main_width = box.x2 - box.x1
+        main_height = box.y2 - box.y1
+        
+        #background
+        background_box = clutter.ActorBox()
+        background_box.x1 = 0
+        background_box.y1 = 0
+        background_box.x2 = main_width
+        background_box.y2 = main_height
+        self.background.allocate(background_box, flags)
+        
+        # bar
+        bar_box = clutter.ActorBox()
+        if self.x_padding == -1:
+            bar_box.x1 = int(main_height/2)
+            bar_box.x2 = main_width - int(main_height/2)
+        else:
+            bar_box.x1 = self.x_padding
+            bar_box.x2 = main_width - self.x_padding
+        if self.y_padding == -1:
+            bar_box.y1 = 0
+            bar_box.y2 = main_height
+        else:
+            bar_box.y1 = self.y_padding
+            bar_box.y2 = main_height - self.y_padding
+        self.bar.allocate(bar_box, flags)
+        
+        # cursor
+        cursor_width = main_height
+        cursor_height = main_height
         self.cursor_width = cursor_width
         cursor_box = clutter.ActorBox()
-        cursor_box.x1 = int(self._progression * (bar_width - cursor_width))
+        cursor_box.x1 = int(self._progression * (main_width - cursor_width))
         cursor_box.y1 = 0
         cursor_box.x2 = int(cursor_box.x1 + cursor_width)
         cursor_box.y2 = cursor_height
@@ -316,16 +347,16 @@ class SeekBar(clutter.Actor, clutter.Container):
         clutter.Actor.do_allocate(self, box, flags)
 
     def do_foreach(self, func, data=None):
-        children = (self.background, self.cursor)
+        children = [self.background, self.bar, self.cursor]
         for child in children:
             func(child, data)
 
     def do_paint(self):
-        children = (self.background, self.cursor)
+        children = [self.background, self.bar, self.cursor]
         for child in children:
             child.paint()
 
     def do_pick(self, color):
-        children = (self.background, self.cursor)
+        children = [self.background, self.bar, self.cursor]
         for child in children:
             child.paint()
