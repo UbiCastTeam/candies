@@ -86,10 +86,12 @@ class RoundRectangle(OutlinedRoundRectangle):
         ),
     }
 
-    def __init__(self):
+    def __init__(self, light_path=None, dark_path=None):
         OutlinedRoundRectangle.__init__(self)
         self._border_color = clutter.color_from_string('Black')
         self._border_width = 0.0
+        self._light_path = light_path
+        self._dark_path = dark_path
 
     def set_border_color(self, color):
         self._border_color = clutter.color_from_string(color)
@@ -129,16 +131,18 @@ class RoundRectangle(OutlinedRoundRectangle):
             cogl.set_source_color(color)
             cogl.path_fill()
             
-            # with texture
-            """cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
-            cogl.path_close()
-            cogl.set_source_texture(cogl.texture_new_from_file('/data/www/sdiemer/top.png'))
-            cogl.path_fill()
-            
-            cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
-            cogl.path_close()
-            cogl.set_source_texture(cogl.texture_new_from_file('/data/www/sdiemer/low.png'))
-            cogl.path_fill()"""
+            # light texture
+            if self._light_path:
+                cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+                cogl.path_close()
+                cogl.set_source_texture(cogl.texture_new_from_file(self._light_path))
+                cogl.path_fill()
+            # dark texture
+            if self._dark_path:
+                cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+                cogl.path_close()
+                cogl.set_source_texture(cogl.texture_new_from_file(self._dark_path))
+                cogl.path_fill()
         else:
             cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
             cogl.path_close()
