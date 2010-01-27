@@ -117,20 +117,33 @@ class RoundRectangle(OutlinedRoundRectangle):
             return OutlinedRoundRectangle.do_get_property(self, pspec)
 
     def __paint_rectangle(self, width, height, color, border_color=None):
-        cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
-        cogl.path_close()
-        
         if border_color is not None and self._border_width > 0.0:
+            cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
+            cogl.path_close()
             cogl.set_source_color(border_color)
             cogl.path_fill()
             
             w = self._border_width
-            cogl.path_round_rectangle(
-                                  w, w, width - w, height - w, self._radius - w, 1)
+            cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
             cogl.path_close()
-
-        cogl.set_source_color(color)
-        cogl.path_fill()
+            cogl.set_source_color(color)
+            cogl.path_fill()
+            
+            # with texture
+            """cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+            cogl.path_close()
+            cogl.set_source_texture(cogl.texture_new_from_file('/data/www/sdiemer/top.png'))
+            cogl.path_fill()
+            
+            cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+            cogl.path_close()
+            cogl.set_source_texture(cogl.texture_new_from_file('/data/www/sdiemer/low.png'))
+            cogl.path_fill()"""
+        else:
+            cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
+            cogl.path_close()
+            cogl.set_source_color(color)
+            cogl.path_fill()
     
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
@@ -153,7 +166,7 @@ if __name__ == '__main__':
 
     rect = OutlinedRoundRectangle()
     rect.set_radius(25)
-    rect.set_color('Red')
+    rect.set_color('#ff0000ff')
     rect.set_size(160, 120)
     rect.set_anchor_point(80, 60)
     rect.set_position(160, 240)
@@ -161,7 +174,7 @@ if __name__ == '__main__':
     
     rect = RoundRectangle()
     rect.set_radius(25)
-    rect.set_color('Blue')
+    rect.set_color('#0000ffff')
     rect.set_border_width(5)
     rect.set_size(160, 120)
     rect.set_anchor_point(80, 60)
