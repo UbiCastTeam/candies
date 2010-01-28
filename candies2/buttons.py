@@ -355,8 +355,8 @@ class ImageButton(ClassicButton):
     default_border_color = '#ffffff22'
     default_active_color = '#00000088'
 
-    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False):
-        ClassicButton.__init__(self, label, stretch, border)
+    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False, light_path=None, dark_path=None):
+        ClassicButton.__init__(self, label, stretch, border, light_path=light_path, dark_path=dark_path)
 
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
