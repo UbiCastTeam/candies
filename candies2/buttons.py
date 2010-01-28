@@ -348,12 +348,6 @@ class ImageButton(ClassicButton):
             str, 'active color', 'Background color when active', None, gobject.PARAM_READWRITE
         ),
     }
-    default_font_size = '16'
-    default_font_color = '#ffffffff'
-    default_inner_color = '#ffffff22'
-    default_highlight_color = '#ffffff88'
-    default_border_color = '#ffffff22'
-    default_active_color = '#00000088'
 
     def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False, light_path=None, dark_path=None):
         ClassicButton.__init__(self, label, stretch, border, light_path=light_path, dark_path=dark_path)
@@ -363,6 +357,13 @@ class ImageButton(ClassicButton):
         self.image.set_keep_aspect_ratio(True)
         self.use_native_image_size = use_native_image_size
         self.spacing = spacing
+        
+        self.default_font_size = '16'
+        self.default_font_color = '#000000ff'
+        self.default_inner_color = '#aaaaaaff'
+        self.default_highlight_color = '#ffffff88'
+        self.default_border_color = '#888888ff'
+        self.default_active_color = '#00000088'
         
         self.label.set_font_name(self.default_font_size)
         self.label.set_color(self.default_font_color)
