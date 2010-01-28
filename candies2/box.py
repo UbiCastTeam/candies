@@ -273,16 +273,25 @@ class Box(clutter.Actor, clutter.Container):
             func(element['object'], data)
     
     def do_destroy(self):
-        if self.background:
-            self.background.destroy()
-        for element in self.elements:
-            element['object'].destroy()
+        try:
+            if self.background:
+                self.background.destroy()
+            for element in self.elements:
+                element['object'].destroy()
+        except:
+            pass
     
     def do_paint(self):
         if self.background:
             self.background.paint()
+        draw_last_objects = list()
         for element in self.elements:
-            element['object'].paint()
+            if element.get('draw_last'):
+                draw_last_objects.append(element['object'])
+            else:
+                element['object'].paint()
+        for obj in draw_last_objects:
+            obj.paint()
     
     def do_pick(self, color):
         self.do_paint()

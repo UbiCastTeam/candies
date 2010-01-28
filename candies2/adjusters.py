@@ -20,7 +20,7 @@ class NumberAdjuster(Box):
     __gsignals__ = {'value_updated' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]),
     }
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=None):
+    def __init__(self, min, max, default, increment=1, text=None, factor=None, light_path=None, dark_path=None):
         Box.__init__(self, horizontal=True, spacing=5, border=5)
 
         self.min = min
@@ -36,12 +36,12 @@ class NumberAdjuster(Box):
         self.label_font_size = '16'
         self.button_font_size = '20'
         self.button_font_color = '#000000ff'
-        self.button_inner_color = '#ffffff44'
-        self.button_highlight_color = '#ffffff88'
-        self.button_border_color = '#ffffff44'
+        self.button_inner_color = '#ffffff55'
+        self.button_highlight_color = '#ffffffbb'
+        self.button_border_color = '#ffffff66'
         self.button_inactive_color = '#00000044'
 
-        minus = ClassicButton("-")
+        minus = ClassicButton("-", light_path=light_path, dark_path=dark_path)
         minus.label.set_font_name(self.button_font_size)
         minus.label.set_color(self.button_font_color)
         minus.rect.set_color(self.button_inner_color)
@@ -49,7 +49,7 @@ class NumberAdjuster(Box):
         minus.set_size(self.button_size, self.button_size)
         minus.connect("button-release-event", self.dec)
 
-        self.value_btn = ClassicButton('')
+        self.value_btn = ClassicButton('', light_path=light_path, dark_path=dark_path)
         self.value_btn.label.set_font_name(self.button_font_size)
         self.value_btn.label.set_color(self.button_font_color)
         self.value_btn.rect.set_color(self.button_inner_color)
@@ -59,7 +59,7 @@ class NumberAdjuster(Box):
         self.update_rounded_value()
         # set default value
 
-        plus = ClassicButton("+")
+        plus = ClassicButton("+", light_path=light_path, dark_path=dark_path)
         plus.label.set_font_name(self.button_font_size)
         plus.label.set_color(self.button_font_color)
         plus.rect.set_color(self.button_inner_color)
