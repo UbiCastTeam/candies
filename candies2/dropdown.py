@@ -226,6 +226,26 @@ class Select(clutter.Actor, clutter.Container):
         self.selected.set_icon(self.open_icon)
         self.queue_relayout()
     
+    def select_option(self, option_name, silent=True):
+        for option in self.options:
+            if option.name == option_name and option != self.selected:
+                last_selection = self.selected
+                self.selected.hide_background()
+                self.selected.set_icon(self.selected_icon)
+                self.selected = option
+                self.selected.show_background()
+                if self.opened == True:
+                    self.selected_icon = self.selected.icon_path
+                else:
+                    last_selection.hide()
+                    self.selected.show()
+                    self.selected_icon = self.selected.icon_path
+                    self.selected.set_icon(self.open_icon)
+                self.queue_relayout()
+                if self.on_change_callback is not None and silent == False:
+                    self.on_change_callback(source, event)
+                break
+    
     def do_remove(self, actor):
         if self.background == actor:
             actor.unparent()
