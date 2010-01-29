@@ -201,8 +201,6 @@ class Select(clutter.Actor, clutter.Container):
                 self._close_options()
             else:
                 self._open_options()
-                if self.on_change_callback is not None:
-                    self.on_change_callback(source, event)
         elif self.opened == True:
             self.selected = source
             self._close_options()
