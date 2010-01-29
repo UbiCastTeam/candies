@@ -243,7 +243,7 @@ class Select(clutter.Actor, clutter.Container):
                     self.selected.set_icon(self.open_icon)
                 self.queue_relayout()
                 if self.on_change_callback is not None and silent == False:
-                    self.on_change_callback(source, event)
+                    self.on_change_callback(self.selected, None)
                 break
     
     def do_remove(self, actor):
