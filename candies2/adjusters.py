@@ -135,12 +135,15 @@ class NumberAdjuster(Box):
             number_decimals = len(str(self.increment).split(".")[1])
             value_to_display = round(value_to_display, number_decimals)
 
-        if value_to_display > self.max:
-            value_to_display = self.max
-        elif value_to_display < self.min:
-            value_to_display = self.min
-
+        value_to_display = self.get_safe_value(value_to_display)
         self.value_btn.props.text = str(value_to_display)
+
+    def get_safe_value(self, value):
+        if value > self.max:
+            value = self.max
+        elif value < self.min:
+            value = self.min
+        return value
 
 
 if __name__ == '__main__':
