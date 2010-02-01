@@ -79,6 +79,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.scroller_position = event.y - self.get_transformed_position()[1] - self.border
         self.queue_relayout()
     
+    def go_to_top(self):
+        self.scroller_position = 0
+        self.queue_relayout()
+    
     def do_get_preferred_height(self, for_width):
         return 200, 200
     
