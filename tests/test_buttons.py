@@ -66,8 +66,7 @@ if __name__ == '__main__':
     stage.add(item6)
 
     image_path = os.path.join(__path__, 'candies.png')
-    b = candies2.ImageButton('Test image', image_path, stretch=False,
-                                                          image_proportion=0.5)
+    b = candies2.ImageButton('Test image', image_path, stretch=False)
     b.props.color = 'Pink'
     b.set_size(100, 100)
     b.set_position(425, 380)
@@ -77,8 +76,7 @@ if __name__ == '__main__':
         print 'Button clicked'
 
     image_path = os.path.join(__path__, 'candies_vert.png')
-    b = candies2.ImageButton("Test vertical image", image_path, stretch=False,
-                                          image_proportion=0.8, activable=True)
+    b = candies2.ImageButton("Test vertical image", image_path, stretch=False, activable=True)
     b.props.color = '#00ffff44'
     b.props.border_color = '#ff00ff44'
     b.set_size(100, 100)

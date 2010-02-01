@@ -161,7 +161,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_x_padding=-1, bar_y_padding=-1, bar_image_path=None, cursor_image_path=None, callback=None):
+    def __init__(self, bar_x_padding=(-1, -1), bar_y_padding=(-1, -1), bar_image_path=None, cursor_image_path=None, callback=None):
         clutter.Actor.__init__(self)
         self._progression = 0.0
         self.callback = callback
@@ -199,10 +199,12 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.widthbar = 0.0
         #self.radius = 0.0
         self.cursor_width = 0.0
-        self.duration = 0.0
-        self.duration_sec = 0.0
+        self._duration = 0.0
         self.current_time = 0.0
 
+    def set_duration(self, duration):
+        self._duration = duration
+    
     def set_progression(self, value):
         self._progression = value
         self.queue_relayout()
@@ -278,8 +280,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         if self.last_event_x is None:
             self._progression = progression
             self.current_time = self.convert_date(current_time)
-            self.duration_sec = duration
-            self.duration = self.convert_date(duration)
+            self._duration = duration
             self.queue_relayout()
 
     def on_release(self, source, event):
@@ -320,18 +321,18 @@ class SeekBar(clutter.Actor, clutter.Container):
         
         # bar
         bar_box = clutter.ActorBox()
-        if self.x_padding == -1:
+        if self.x_padding == (-1, -1):
             bar_box.x1 = int(main_height/2)
             bar_box.x2 = main_width - int(main_height/2)
         else:
-            bar_box.x1 = self.x_padding
-            bar_box.x2 = main_width - self.x_padding
-        if self.y_padding == -1:
+            bar_box.x1 = self.x_padding[0]
+            bar_box.x2 = main_width - self.x_padding[1]
+        if self.y_padding == (-1, -1):
             bar_box.y1 = 0
             bar_box.y2 = main_height
         else:
-            bar_box.y1 = self.y_padding
-            bar_box.y2 = main_height - self.y_padding
+            bar_box.y1 = self.y_padding[0]
+            bar_box.y2 = main_height - self.y_padding[1]
         self.bar.allocate(bar_box, flags)
         
         # cursor
