@@ -134,6 +134,12 @@ class NumberAdjuster(Box):
         elif isinstance(self.increment, float):
             number_decimals = len(str(self.increment).split(".")[1])
             value_to_display = round(value_to_display, number_decimals)
+
+        if value_to_display > self.max:
+            value_to_display = self.max
+        elif value_to_display < self.min:
+            value_to_display = self.min
+
         self.value_btn.props.text = str(value_to_display)
 
 
