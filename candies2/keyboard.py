@@ -188,7 +188,6 @@ class Keyboard(clutter.Actor, clutter.Container):
                 if key.event == 'num':
                     self.load_profile("int")
                 if key.event == 'car':
-                    print key.txt
                     self.emit("keyboard", key.txt)
                 if key.event == 'enter':
                     self.emit("keyboard", 'enter')
