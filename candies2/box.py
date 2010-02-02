@@ -61,12 +61,18 @@ class Box(clutter.Actor, clutter.Container):
                 raise KeyError('Element must contain name and object')
             self.elements.append(new_ele)
             new_ele['object'].set_parent(self)
+        self.queue_relayout()
     
-    def add_element(self, obj, name, **properties):
+    def add_element(self, obj, name, index=-1, **properties):
         element = properties.copy()
         element['name'] = name
         element['object'] = obj
-        self.add(element)
+        if index == -1 or index < 0:
+            self.elements.append(element)
+        else:
+            self.elements.insert(index, element)
+        obj.set_parent(self)
+        self.queue_relayout()
     
     def do_remove(self, actor):
         if self.background == actor:
