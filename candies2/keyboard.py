@@ -85,8 +85,14 @@ KEYBOARD_MAPS = {
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('.'), Key('0'), Key('←',evt='suppr'))
-            ) 
+            ) ,
 
+    'ip' : (
+        (Key('1'), Key('2'), Key('3')), 
+        (Key('4'), Key('5'), Key('6')), 
+        (Key('7'), Key('8'), Key('9')),
+        (Key('.'), Key('0'), Key('←',evt='suppr'))
+            ) 
     }
 
 BTN_SKIN = {
