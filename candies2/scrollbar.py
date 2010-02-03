@@ -166,7 +166,7 @@ class Clipper (clutter.Actor, clutter.Container):
         self.expand = expand
         
     def callback_position(self, source, position):
-        self.clipper_position=position
+        self.clipper_position = position
         self.queue_relayout()
         
     def do_allocate (self, box, flags):
@@ -175,8 +175,8 @@ class Clipper (clutter.Actor, clutter.Container):
         
         if self.expand == True:
             position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
-            self.actor.set_anchor_point(0,position)
-            self.actor.set_clip(0,position,box_width,box_height)
+            self.actor.set_anchor_point(0, int(position))
+            self.actor.set_clip(0, int(position), box_width, box_height)
             objbox = clutter.ActorBox()
             objbox.x1 = 0
             objbox.y1 = 0
@@ -186,25 +186,19 @@ class Clipper (clutter.Actor, clutter.Container):
             clutter.Actor.do_allocate(self, box, flags)
         else:
             position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
-            self.actor.set_anchor_point(0,position)
-            self.actor.set_clip(0,position,box_width,box_height)
+            self.actor.set_anchor_point(0, int(position))
+            self.actor.set_clip(0, int(position), box_width, box_height)
             self.actor.allocate_preferred_size(flags)
             clutter.Actor.do_allocate(self, box, flags)
         
     def do_foreach(self, func, data=None):
-        children = (self.actor,)
-        for child in children :
-            func(child, data)
+        func(self.actor, data)
     
     def do_paint(self):
-        children = (self.actor,)
-        for child in children :
-            child.paint()
+        self.actor.paint()
 
     def do_pick(self, color):
-        children = (self.actor,)
-        for child in children :
-            child.paint()
+        self.actor.paint()
 
 
 #main to test scrollbar
