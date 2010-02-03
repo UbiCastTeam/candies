@@ -139,9 +139,9 @@ class NumberAdjuster(Box):
         self.value_btn.props.text = str(value_to_display)
 
     def get_safe_value(self, value):
-        if value > self.max:
+        if value > self.max*self.factor:
             value = self.max
-        elif value < self.min:
+        elif value < self.min*self.factor:
             value = self.min
         return value
 
