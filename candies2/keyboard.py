@@ -95,13 +95,6 @@ KEYBOARD_MAPS = {
             ) 
     }
 
-BTN_SKIN = {
-    'font_color': '#000000ff',
-    'border_color': '#ffffff44',
-    'inner_color': '#ffffff44',
-    'highlight_color': '#ffffff88',
-}
-
 '''
 Keyboard Class
     .map_name = name of dictionnary used
@@ -117,7 +110,10 @@ class Keyboard(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Keyboard'
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
-    
+    font_color = '#000000ff'
+    border_color = '#ffffff44'
+    inner_color = '#ffffff44'
+    highlight_color = '#ffffff88'
     
     #keyboard init
     def __init__(self, map_name, font_name=None) : 
@@ -148,9 +144,9 @@ class Keyboard(clutter.Actor, clutter.Container):
                 else:
                     button = ClassicButton(key.txt)
                     button.label.set_font_name(self.key_font_name)
-                button.label.set_color(BTN_SKIN['font_color'])
-                button.rect.set_border_color(BTN_SKIN['border_color'])
-                button.rect.set_color(BTN_SKIN['inner_color'])
+                button.label.set_color(self.font_color)
+                button.rect.set_border_color(self.border_color)
+                button.rect.set_color(self.inner_color)
                 button.set_parent(self)
                 button.set_reactive(True)
                 button.connect('button-press-event', self.on_button_press)
@@ -170,7 +166,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     # on button press emit message
     def on_button_press(self, source, event):
-        source.rect.set_color(BTN_SKIN['highlight_color'])
+        source.rect.set_color(self.highlight_color)
         for key , button in self.button_map.items():
             if button == source :
                 if key.event == 'fr_min':
@@ -195,7 +191,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                     self.emit("keyboard",'suppr')
                 #if key.event == 'del':
                     #self.emit("keyboard",'del')
-        gobject.timeout_add(200, source.rect.set_color, BTN_SKIN['inner_color'])
+        gobject.timeout_add(200, source.rect.set_color, self.inner_color)
     
     # button mapping : calcul each buttons width and place them
     def do_allocate(self, box, flags):
