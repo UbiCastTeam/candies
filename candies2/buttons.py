@@ -92,7 +92,10 @@ class ClassicButton(clutter.Actor, clutter.Container):
     
     def _wrap_label(self, min, max, width):
         mid = (min + max) / 2
-        self.label.set_text(self.text[:mid-6] + '…' + self.text[len(self.text)-6:])
+        if mid-6 < 0:
+            self.label.set_text(self.text)
+            return
+        self.label.set_text('%s…%s' %(self.text[:mid-6], self.text[len(self.text)-6:]))
         if mid == min or self.label.get_preferred_size()[2] == width:
             return
         if self.label.get_preferred_size()[2] > width:
