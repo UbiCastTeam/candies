@@ -19,6 +19,16 @@ class NumberAdjuster(Box):
     }
     __gsignals__ = {'value_updated' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]),
     }
+    
+    # skin
+    button_size = 50
+    label_font_size = '16'
+    button_font_size = '20'
+    button_font_color = '#000000ff'
+    button_inner_color = '#ffffff55'
+    button_highlight_color = '#ffffffbb'
+    button_border_color = '#ffffff66'
+    button_inactive_color = '#00000044'
 
     def __init__(self, min, max, default, increment=1, text=None, factor=None, light_path=None, dark_path=None):
         Box.__init__(self, horizontal=True, spacing=5, border=5)
@@ -31,16 +41,6 @@ class NumberAdjuster(Box):
             factor = 1
         self.factor = factor
         
-        # skin
-        self.button_size = 50
-        self.label_font_size = '16'
-        self.button_font_size = '20'
-        self.button_font_color = '#000000ff'
-        self.button_inner_color = '#ffffff55'
-        self.button_highlight_color = '#ffffffbb'
-        self.button_border_color = '#ffffff66'
-        self.button_inactive_color = '#00000044'
-
         minus = ClassicButton("-", light_path=light_path, dark_path=dark_path)
         minus.label.set_font_name(self.button_font_size)
         minus.label.set_color(self.button_font_color)
