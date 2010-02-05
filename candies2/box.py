@@ -10,6 +10,9 @@ class Box(clutter.Actor, clutter.Container):
     The elements contained in a box are defined by a clutter actor (the
     children of the container), a name (str) and optional properties.
     
+    If bg_ignore_allocation_box is set to True, the box will allocate
+    his background bypassing the allocation box height.
+    
     Element properties can be :
     
         - resizable (float) : if set, defines the proportion an element take in
@@ -29,7 +32,7 @@ class Box(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Box'
     
-    def __init__(self, horizontal=True, spacing=0.0, border=0.0):
+    def __init__(self, horizontal=True, spacing=0.0, border=0.0, bg_ignore_allocation_box=False):
         clutter.Actor.__init__(self)
         self.elements = list()
         self.background = None
@@ -39,6 +42,10 @@ class Box(clutter.Actor, clutter.Container):
             self._horizontal = True
         else:
             self._horizontal = False
+        if bg_ignore_allocation_box == True:
+            self.bg_ignore_allocation_box = True
+        else:
+            self.bg_ignore_allocation_box = False
     
     def get_by_name(self, name):
         for element in self.elements:
@@ -146,16 +153,6 @@ class Box(clutter.Actor, clutter.Container):
         main_height = box.y2 - box.y1
         inner_width = main_width - 2*self.border
         inner_height = main_height - 2*self.border
-        
-        #box background
-        if self.background:
-            bgbox = clutter.ActorBox()
-            bgbox.x1 = 0
-            bgbox.y1 = 0
-            bgbox.x2 = main_width
-            bgbox.y2 = main_height
-            self.background.allocate(bgbox, flags)
-        
         
         #find size available for resizable elements
         resizable_elements = list()
@@ -270,7 +267,32 @@ class Box(clutter.Actor, clutter.Container):
                 x += obj_width + self.spacing
             else:
                 y += obj_height + self.spacing
+        
+        #box background
+        if self.background:
+            if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
+                bgbox = clutter.ActorBox()
+                bgbox.x1 = 0
+                bgbox.y1 = 0
+                bgbox.x2 = main_width
+                bgbox.y2 = self.border + round(y) - self.spacing
+                self.background.allocate(bgbox, flags)
+            else:
+                bgbox = clutter.ActorBox()
+                bgbox.x1 = 0
+                bgbox.y1 = 0
+                bgbox.x2 = main_width
+                bgbox.y2 = main_height
+                self.background.allocate(bgbox, flags)
+        
         clutter.Actor.do_allocate(self, box, flags)
+    
+    def set_bg_ignore_allocation_box(self, state):
+        if state:
+            self.bg_ignore_allocation_box = True
+        else:
+            self.bg_ignore_allocation_box = False
+        self.queue_redraw()
     
     def do_foreach(self, func, data=None):
         if self.background:
