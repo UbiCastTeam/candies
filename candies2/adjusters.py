@@ -30,8 +30,8 @@ class NumberAdjuster(Box):
     button_border_color = '#ffffff66'
     button_inactive_color = '#00000044'
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=None, light_path=None, dark_path=None):
-        Box.__init__(self, horizontal=True, spacing=5, border=5)
+    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, border=0, light_path=None, dark_path=None):
+        Box.__init__(self, horizontal=True, spacing=spacing, border=border)
 
         self.min = min
         self.max = max
