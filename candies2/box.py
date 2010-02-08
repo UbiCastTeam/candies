@@ -32,7 +32,7 @@ class Box(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Box'
     
-    def __init__(self, horizontal=True, spacing=0.0, border=0.0, bg_ignore_allocation_box=False):
+    def __init__(self, horizontal=True, spacing=0.0, border=0.0, bg_ignore_allocation_box=True):
         clutter.Actor.__init__(self)
         self.elements = list()
         self.background = None
@@ -129,7 +129,8 @@ class Box(clutter.Actor, clutter.Container):
                 else:
                     resizable_height -= element['object'].get_preferred_size()[3]
                 resizable_height -= self.spacing
-            resizable_height += self.spacing
+            if resizable_height != inner_height:
+                resizable_height += self.spacing
             
             #find resizable elements who will bypass box size
             for element in self.elements:
@@ -175,7 +176,8 @@ class Box(clutter.Actor, clutter.Container):
                 else:
                     resizable_width -= element['object'].get_preferred_size()[2]
                 resizable_width -= self.spacing
-            resizable_width += self.spacing
+            if resizable_width != inner_width:
+                resizable_width += self.spacing
             
             #find resizable elements who will bypass box size
             for element in self.elements:
@@ -328,12 +330,20 @@ class Box(clutter.Actor, clutter.Container):
         #box background
         if self.background:
             if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
-                bgbox = clutter.ActorBox()
-                bgbox.x1 = 0
-                bgbox.y1 = 0
-                bgbox.x2 = main_width
-                bgbox.y2 = self.border + round(y) - self.spacing
-                self.background.allocate(bgbox, flags)
+                if self._horizontal is True:
+                    bgbox = clutter.ActorBox()
+                    bgbox.x1 = 0
+                    bgbox.y1 = 0
+                    bgbox.x2 = self.border + round(x) - self.spacing
+                    bgbox.y2 = main_height
+                    self.background.allocate(bgbox, flags)
+                else:
+                    bgbox = clutter.ActorBox()
+                    bgbox.x1 = 0
+                    bgbox.y1 = 0
+                    bgbox.x2 = main_width
+                    bgbox.y2 = self.border + round(y) - self.spacing
+                    self.background.allocate(bgbox, flags)
             else:
                 bgbox = clutter.ActorBox()
                 bgbox.x1 = 0
@@ -655,6 +665,7 @@ if __name__ == '__main__':
     #line.set_width(500)
     #line.set_size(400, 350)
     line.set_position(30, 30)
+    line.set_bg_ignore_allocation_box(False)
     stage.add(line)
     
     def on_click(btn_test, event):
