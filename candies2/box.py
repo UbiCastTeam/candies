@@ -141,7 +141,7 @@ class Box(clutter.Actor, clutter.Container):
                         obj_height = element['resizable'] * resizable_height
                         factor = float(obj_height)/float(original_height)
                         used_width = int(obj_width*factor)
-                preferred_width += used_width + self.spacing
+                preferred_width = max(preferred_width, used_width)
         else:
             for element in self.elements:
                 obj_width = element['object'].get_preferred_size()[2]
