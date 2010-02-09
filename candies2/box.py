@@ -533,7 +533,7 @@ class AlignedElement(clutter.Actor, clutter.Container):
             ele_x2 = self.border
             ele_y2 = self.border
             if self.expand == True:
-                if self.keep_ratio == True:
+                if self.keep_ratio == True and element_height != 0:
                     ratio = float(float(element_width) / float(element_height))
                     element_width = inner_width
                     element_height = int(element_width / ratio)
