@@ -116,6 +116,21 @@ class Box(clutter.Actor, clutter.Container):
         inner_height = for_height - 2*self.border
         preferred_width = 0
         if self._horizontal is False:
+            #find size available for special elements with expand and keep_ratio
+            special_elements = list()
+            special_height = inner_height
+            for element in self.elements:
+                #take preferred size for resizable elements in preferred size calcul
+                if element.get('resizable', 0) != 0:
+                    pass
+                else:
+                    if element.get('expand') is True and element.get('keep_ratio') is True:
+                        special_elements.append(element)
+                    else:
+                        special_height -= element['object'].get_preferred_size()[3]
+                special_height -= self.spacing
+            special_height += self.spacing
+            
             #find size available for resizable elements
             resizable_elements = list()
             resizable_height = inner_height
@@ -131,8 +146,10 @@ class Box(clutter.Actor, clutter.Container):
                 resizable_height -= self.spacing
             if resizable_height != inner_height:
                 resizable_height += self.spacing
+                if special_elements:
+                    resizable_height -= special_height
             
-            #find resizable elements who will bypass box size
+            #find maximum object width
             for element in self.elements:
                 obj_width = element['object'].get_preferred_size()[2]
                 used_width = obj_width
@@ -142,6 +159,10 @@ class Box(clutter.Actor, clutter.Container):
                         obj_height = element['resizable'] * resizable_height
                         factor = float(obj_height)/float(original_height)
                         used_width = int(obj_width*factor)
+                obj_height = element['object'].get_preferred_size()[3]
+                if element.get('expand') is True and element.get('keep_ratio') is True and obj_width != 0 and obj_height != 0:
+                    ratio = float(obj_width) / float(obj_height)
+                    used_width = int(special_height * ratio)
                 preferred_width = max(preferred_width, used_width)
         else:
             for element in self.elements:
@@ -163,6 +184,21 @@ class Box(clutter.Actor, clutter.Container):
         inner_width = for_width - 2*self.border
         preferred_height = 0
         if self._horizontal is True:
+            #find size available for special elements with expand and keep_ratio
+            special_elements = list()
+            special_width = inner_width
+            for element in self.elements:
+                #take preferred size for resizable elements in preferred size calcul
+                if element.get('resizable', 0) != 0:
+                    pass
+                else:
+                    if element.get('expand') is True and element.get('keep_ratio') is True:
+                        special_elements.append(element)
+                    else:
+                        special_width -= element['object'].get_preferred_size()[2]
+                special_width -= self.spacing
+            special_width += self.spacing
+            
             #find size available for resizable elements
             resizable_elements = list()
             resizable_width = inner_width
@@ -178,8 +214,10 @@ class Box(clutter.Actor, clutter.Container):
                 resizable_width -= self.spacing
             if resizable_width != inner_width:
                 resizable_width += self.spacing
+                if special_elements:
+                    resizable_width -= special_width
             
-            #find resizable elements who will bypass box size
+            #find maximum object height
             for element in self.elements:
                 obj_height = element['object'].get_preferred_size()[3]
                 used_height = obj_height
@@ -189,6 +227,11 @@ class Box(clutter.Actor, clutter.Container):
                         obj_width = element['resizable'] * resizable_width
                         factor = float(obj_width) / float(original_width)
                         used_height = int(obj_height*factor)
+                preferred_height = max(preferred_height, used_height)
+                obj_width = element['object'].get_preferred_size()[3]
+                if element.get('expand') is True and element.get('keep_ratio') is True and obj_width != 0 and obj_height != 0:
+                    ratio = float(obj_width) / float(obj_height)
+                    used_height = int(special_width / ratio)
                 preferred_height = max(preferred_height, used_height)
         else:
             preferred_height = 0
@@ -213,6 +256,61 @@ class Box(clutter.Actor, clutter.Container):
         inner_width = main_width - 2*self.border
         inner_height = main_height - 2*self.border
         
+        #find size available for special elements with expand and keep_ratio, ignoring elements with resizable
+        special_elements = list()
+        special_width = inner_width
+        special_height = inner_height
+        needed_width = 0
+        needed_height = 0
+        for element in self.elements:
+            if element.get('resizable', 0) != 0:
+                pass
+            else:
+                if element.get('expand') is True and element.get('keep_ratio') is True:
+                    special_elements.append(element)
+                else:
+                    special_width -= element['object'].get_preferred_size()[2]
+                    special_height -= element['object'].get_preferred_size()[3]
+            special_width -= self.spacing
+            special_height -= self.spacing
+        special_width += self.spacing
+        special_height += self.spacing
+        
+        #check if some place will remain for resizable elements
+        for element in special_elements:
+            original_width = element['object'].get_preferred_size()[2]
+            original_height = element['object'].get_preferred_size()[3]
+            if self._horizontal is True:
+                obj_width = original_width
+                obj_height = inner_height
+                if original_width != 0 and original_height != 0:
+                    factor = float(obj_height) / float(original_height)
+                    obj_width = int(original_width * factor)
+                    if obj_width > special_width:
+                        obj_width = int(special_width)
+                        special_width = 0
+                        ratio = float(original_width) / float(original_height)
+                        obj_height = int(float(obj_width) / ratio)
+                    else:
+                        special_width -= obj_width
+                needed_width += obj_width
+            else:
+                obj_width = inner_width
+                obj_height = original_height
+                if element.get('keep_ratio') is True and original_width != 0 and original_height != 0:
+                    factor = float(obj_width) / float(original_width)
+                    obj_height = int(original_height * factor)
+                    if obj_height > special_height:
+                        obj_height = int(special_height)
+                        special_height = 0
+                        ratio = float(original_width) / float(original_height)
+                        obj_width = int(float(obj_height) * ratio)
+                    else:
+                        special_height -= obj_height
+                needed_height += obj_height
+        special_width = needed_width
+        special_height = needed_height
+        
         #find size available for resizable elements
         resizable_elements = list()
         resizable_width = inner_width
@@ -225,25 +323,8 @@ class Box(clutter.Actor, clutter.Container):
                     element['resizable'] = 0
                 resizable_elements.append(element)
             else:
-                if element.get('expand') is True:
-                    if element.get('keep_ratio') is True:
-                        obj_height = element['object'].get_preferred_size()[3]
-                        obj_width = element['object'].get_preferred_size()[2]
-                        if self._horizontal is True:
-                            if obj_height != 0:
-                                ratio = float(obj_width/obj_height)
-                                obj_width = int(inner_height*ratio)
-                            resizable_width -= obj_width
-                            resizable_height -= inner_height
-                        else:
-                            if obj_width != 0:
-                                ratio = float(obj_width/obj_height)
-                                obj_height = int(inner_width/ratio)
-                            resizable_width -= inner_width
-                            resizable_height -= obj_height
-                    else:
-                        resizable_width -= element['object'].get_preferred_size()[2]
-                        resizable_height -= element['object'].get_preferred_size()[3]
+                if element.get('expand') is True and element.get('keep_ratio') is True:
+                    pass
                 else:
                     resizable_width -= element['object'].get_preferred_size()[2]
                     resizable_height -= element['object'].get_preferred_size()[3]
@@ -251,6 +332,9 @@ class Box(clutter.Actor, clutter.Container):
             resizable_height -= self.spacing
         resizable_width += self.spacing
         resizable_height += self.spacing
+        if special_elements:
+            resizable_width -= special_width
+            resizable_height -= special_height
         
         #find resizable elements who will bypass box size
         for element in self.elements:
@@ -282,18 +366,32 @@ class Box(clutter.Actor, clutter.Container):
         for element in self.elements:
             obj_width, obj_height = element['object'].get_preferred_size()[2:]
             if element.get('expand') is True:
+                original_height = obj_height
+                original_width = obj_width
                 if self._horizontal is True:
-                    original_height = obj_height
                     obj_height = inner_height
-                    if element.get('keep_ratio') is True and original_height != 0:
-                        ratio = float(obj_height/original_height)
-                        obj_width = int(obj_width*ratio)
+                    if element.get('keep_ratio') is True and original_width != 0 and original_height != 0:
+                        factor = float(obj_height) / float(original_height)
+                        obj_width = int(original_width * factor)
+                        if obj_width > special_width:
+                            obj_width = int(special_width)
+                            special_width = 0
+                            ratio = float(original_width) / float(original_height)
+                            obj_height = int(float(obj_width) / ratio)
+                        else:
+                            special_width -= obj_width
                 else:
-                    original_width = obj_width
                     obj_width = inner_width
-                    if element.get('keep_ratio') is True and original_width != 0:
-                        ratio = float(obj_width/original_width)
-                        obj_height = int(obj_height*ratio)
+                    if element.get('keep_ratio') is True and original_width != 0 and original_height != 0:
+                        factor = float(obj_width) / float(original_width)
+                        obj_height = int(original_height * factor)
+                        if obj_height > special_height:
+                            obj_height = int(special_height)
+                            special_height = 0
+                            ratio = float(original_width) / float(original_height)
+                            obj_width = int(float(obj_height) * ratio)
+                        else:
+                            special_height -= obj_height
             if element in resizable_elements:
                 if self._horizontal is True:
                     original_width = obj_width
@@ -629,11 +727,11 @@ if __name__ == '__main__':
     
     
     rect1 = clutter.Rectangle()
-    rect1.set_size(200, 100)
+    rect1.set_size(200, 50)
     rect1.set_color(clutter.color_from_string('Black'))
     
     rect2 = clutter.Rectangle()
-    rect2.set_size(25, 50)
+    rect2.set_size(20, 10)
     rect2.set_color(clutter.color_from_string('Blue'))
     
     rect3 = clutter.Rectangle()
@@ -656,13 +754,13 @@ if __name__ == '__main__':
         'center': True,
         'object': rect2},
         {'name': 'rect3',
-        'resizable': 1.0,
+        #'resizable': 1.0,
         'object': rect3},
         {'name': 'rect4',
         'object': rect4})
-    line.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
-    line.set_height(400)
-    #line.set_width(500)
+    #line.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
+    #line.set_height(400)
+    line.set_width(500)
     #line.set_size(400, 350)
     line.set_position(30, 30)
     line.set_bg_ignore_allocation_box(False)
