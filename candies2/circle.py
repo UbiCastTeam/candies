@@ -45,7 +45,7 @@ class Circle(clutter.Actor):
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
 
-        paint_color = self._color
+        paint_color = self._color.copy()
 
         real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
         paint_color.alpha = real_alpha
