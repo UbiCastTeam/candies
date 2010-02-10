@@ -502,7 +502,7 @@ class VBox(Box):
 class AlignedElement(clutter.Actor, clutter.Container):
     __gtype_name__ = 'AlignedElement'
 
-    def __init__(self, align='center', border=0, expand=False, keep_ratio=True, pick_enabled=False):
+    def __init__(self, align='center', border=0, expand=False, keep_ratio=True, pick_enabled=True):
         clutter.Actor.__init__(self)
         if align == 'top_left':
             self.align = 'top_left'
@@ -699,7 +699,10 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.element.paint()
     
     def do_pick(self, color):
-        self.do_paint()
+        if self.pick_enabled:
+            self.do_paint()
+        else:
+            clutter.Actor.do_pick(self, color)
 
 if __name__ == '__main__':
     import buttons
