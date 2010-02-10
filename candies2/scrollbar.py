@@ -61,7 +61,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.scroller.connect('button-release-event', self.on_scroll_release)
         self.scroller.connect('motion-event', self.on_scroll_move)
         self.scroller_position = 0
-    
+        self.height=0
         self.last_event_y = None
     
     def on_scroll_press(self, source, event):
@@ -91,10 +91,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
     
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
-        box_height = box.y2 - box.y1
+        self.height = box_height = box.y2 - box.y1
         
         scroller_width = box_width - 2*self.border
-        scroller_height = scroller_width
+        self.scroller_height=scroller_height = scroller_width
         if self.thin_scroller:
             bar_width = box_width/4
         else:
@@ -120,7 +120,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
         scroller_box.y1 = self.border + self.scroller_position
         scroller_box.y2 = scroller_box.y1 + scroller_height  
         self.scroller.allocate(scroller_box,flags)
-        
         scroll_position_percent = (self.scroller_position)/(box_height - 2*self.border - scroller_height)
         self.emit("scroll_position", scroll_position_percent)
         
