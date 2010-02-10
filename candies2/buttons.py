@@ -84,6 +84,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
         min = t.get_preferred_size()[0]
         t.set_text(self.text)
         nat = t.get_preferred_size()[2]
+        t.destroy()
         return min + 2*self.border, nat + 2*self.border
     
     def do_get_preferred_height(self, for_width):
@@ -108,15 +109,13 @@ class ClassicButton(clutter.Actor, clutter.Container):
         btn_height = box.y2 - box.y1
         inner_width = btn_width - 2*self.border
         inner_height = btn_height - 2*self.border
-        #btn_width, btn_height = self.get_preferred_size()[2:]
-        #print btn_width, 'x', btn_height
         
-        cbox = clutter.ActorBox()
-        cbox.x1 = 0
-        cbox.y1 = 0
-        cbox.x2 = btn_width
-        cbox.y2 = btn_height
-        self.rect.allocate(cbox, flags)
+        rect_box = clutter.ActorBox()
+        rect_box.x1 = 0
+        rect_box.y1 = 0
+        rect_box.x2 = btn_width
+        rect_box.y2 = btn_height
+        self.rect.allocate(rect_box, flags)
         
         self.label.set_text(self.text)
         if self.label.get_preferred_size()[2] > inner_width:
@@ -132,12 +131,12 @@ class ClassicButton(clutter.Actor, clutter.Container):
             self.label.set_font_name('%s %s' %(fontface, fontsize))
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
-        cbox = clutter.ActorBox()
-        cbox.x1 = round(self.border + (inner_width - lbl_width) / 2)
-        cbox.y1 = round(self.border + (inner_height - lbl_height) / 2)
-        cbox.x2 = round(cbox.x1 + lbl_width)
-        cbox.y2 = round(cbox.y1 + lbl_height)
-        self.label.allocate(cbox, flags)
+        lbl_box = clutter.ActorBox()
+        lbl_box.x1 = round(self.border + (inner_width - lbl_width) / 2)
+        lbl_box.y1 = round(self.border + (inner_height - lbl_height) / 2)
+        lbl_box.x2 = round(lbl_box.x1 + lbl_width)
+        lbl_box.y2 = round(lbl_box.y1 + lbl_height)
+        self.label.allocate(lbl_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     

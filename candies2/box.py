@@ -699,10 +699,7 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.element.paint()
     
     def do_pick(self, color):
-        if self.pick_enabled:
-            self.do_paint()
-        else:
-            clutter.Actor.do_pick(self, color)
+        self.do_paint()
 
 if __name__ == '__main__':
     import buttons
