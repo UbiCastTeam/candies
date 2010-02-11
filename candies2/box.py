@@ -136,12 +136,15 @@ class Box(clutter.Actor, clutter.Container):
     
     def clear(self):
         for element in self.elements:
+            element['object'].unparent()
             element['object'].destroy()
         self.elements = list()
         if self.background:
+            self.background.unparent()
             self.background.destroy()
             self.background = None
         if self.overlay:
+            self.overlay.unparent()
             self.overlay.destroy()
             self.overlay = None
     
