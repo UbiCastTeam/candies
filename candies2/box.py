@@ -36,6 +36,7 @@ class Box(clutter.Actor, clutter.Container):
         clutter.Actor.__init__(self)
         self.elements = list()
         self.background = None
+        self.overlay = None
         self.spacing = spacing
         self.border = border
         if horizontal == True:
@@ -57,10 +58,36 @@ class Box(clutter.Actor, clutter.Container):
         self.background = background
         background.set_parent(self)
     
+    def set_overlay(self, overlay):
+        self.overlay = overlay
+        self.overlay.hide()
+        overlay.set_parent(self)
+    
     def remove_background(self):
-        if self.background != None:
+        if self.background:
             self.background.unparent()
             self.background = None
+    
+    def remove_overlay(self):
+        if self.overlay:
+            self.overlay.unparent()
+            self.overlay = None
+    
+    def show_overlay(self):
+        if self.overlay:
+            if self.background:
+                self.background.hide()
+            for element in self.elements:
+                element['object'].hide()
+            self.overlay.show()
+    
+    def hide_overlay(self):
+        if self.overlay:
+            self.overlay.hide()
+            if self.background:
+                self.background.show()
+            for element in self.elements:
+                element['object'].show()
     
     def add(self, *new_elements):
         for new_ele in new_elements:
@@ -85,6 +112,9 @@ class Box(clutter.Actor, clutter.Container):
         if self.background == actor:
             actor.unparent()
             self.background = None
+        if self.overlay == actor:
+            actor.unparent()
+            self.overlay = None
         for element in self.elements:
             if element['object'] == actor:
                 actor.unparent()
@@ -111,6 +141,9 @@ class Box(clutter.Actor, clutter.Container):
         if self.background:
             self.background.destroy()
             self.background = None
+        if self.overlay:
+            self.overlay.destroy()
+            self.overlay = None
     
     def do_get_preferred_width(self, for_height):
         inner_height = for_height - 2*self.border
@@ -450,6 +483,31 @@ class Box(clutter.Actor, clutter.Container):
                 bgbox.y2 = main_height
                 self.background.allocate(bgbox, flags)
         
+        #box overlay
+        if self.overlay:
+            if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
+                if self._horizontal is True:
+                    ovbox = clutter.ActorBox()
+                    ovbox.x1 = self.border
+                    ovbox.y1 = self.border
+                    ovbox.x2 = round(x) - self.spacing
+                    ovbox.y2 = main_height - self.border
+                    self.overlay.allocate(ovbox, flags)
+                else:
+                    ovbox = clutter.ActorBox()
+                    ovbox.x1 = self.border
+                    ovbox.y1 = self.border
+                    ovbox.x2 = main_width - self.border
+                    ovbox.y2 = round(y) - self.spacing
+                    self.overlay.allocate(ovbox, flags)
+            else:
+                ovbox = clutter.ActorBox()
+                ovbox.x1 = 0
+                ovbox.y1 = 0
+                ovbox.x2 = main_width
+                ovbox.y2 = main_height
+                self.overlay.allocate(ovbox, flags)
+        
         clutter.Actor.do_allocate(self, box, flags)
     
     def set_bg_ignore_allocation_box(self, state):
@@ -462,6 +520,8 @@ class Box(clutter.Actor, clutter.Container):
     def do_foreach(self, func, data=None):
         if self.background:
             func(self.background, data)
+        if self.overlay:
+            func(self.overlay, data)
         for element in self.elements:
             func(element['object'], data)
     
@@ -469,14 +529,27 @@ class Box(clutter.Actor, clutter.Container):
         try:
             if self.background:
                 self.background.destroy()
-            for element in self.elements:
+                self.background = None
+        except:
+            pass
+        try:
+            if self.overlay:
+                self.overlay.destroy()
+                self.overlay = None
+        except:
+            pass
+        try:
+            for element in list(self.elements):
                 element['object'].destroy()
+                self.elements.remove(element)
         except:
             pass
     
     def do_paint(self):
         if self.background:
             self.background.paint()
+        if self.overlay:
+            self.overlay.paint()
         draw_last_objects = list()
         for element in self.elements:
             if element.get('draw_last'):
