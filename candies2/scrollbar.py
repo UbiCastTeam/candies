@@ -216,9 +216,9 @@ class Clipper (clutter.Actor, clutter.Container):
         box_height = box.y2 - box.y1
         
         if self.expand == True:
-            position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
-            self.actor.set_anchor_point(0, int(position))
-            self.actor.set_clip(0, int(position), box_width, box_height)
+            position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
+            self.actor.set_anchor_point(0, position)
+            self.actor.set_clip(0, position, box_width, box_height)
             objbox = clutter.ActorBox()
             objbox.x1 = 0
             objbox.y1 = 0
@@ -227,9 +227,9 @@ class Clipper (clutter.Actor, clutter.Container):
             self.actor.allocate(objbox, flags)
             clutter.Actor.do_allocate(self, box, flags)
         else:
-            position = self.clipper_position * (self.actor.get_preferred_size()[3] - box_height) 
-            self.actor.set_anchor_point(0, int(position))
-            self.actor.set_clip(0, int(position), box_width, box_height)
+            position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
+            self.actor.set_anchor_point(0, position)
+            self.actor.set_clip(0, position, box_width, box_height)
             self.actor.allocate_preferred_size(flags)
             clutter.Actor.do_allocate(self, box, flags)
         
