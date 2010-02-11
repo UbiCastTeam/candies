@@ -35,10 +35,11 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False):
+    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False):
         clutter.Actor.__init__(self)
         self.border = border
         self.thin_scroller = thin_scroller
+        self.reallocate=reallocate
         
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.scrollbar_background = clutter.Texture()
@@ -87,13 +88,16 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.last_event_x = event.x - self.get_transformed_position()[0] - self.border
             self.scroller_position = event.x - self.get_transformed_position()[0] - self.border
         self.queue_relayout()
-        box = clutter.ActorBox()
-        box.x1 = self.get_allocation_box()[0]
-        box.y1 = self.get_allocation_box()[1]
-        box.x2 = self.get_allocation_box()[2]
-        box.y2 = self.get_allocation_box()[3]
-        self.do_allocate(box,0)
-    
+        
+        if self.reallocate : 
+            box = clutter.ActorBox()
+            box.x1 = self.get_allocation_box()[0]
+            box.y1 = self.get_allocation_box()[1]
+            box.x2 = self.get_allocation_box()[2]
+            box.y2 = self.get_allocation_box()[3]
+            flags = self.get_flags()
+            self.do_allocate(box,0)
+        
     def go_to_top(self):
         self.scroller_position = 0
         self.queue_relayout()
