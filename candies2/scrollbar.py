@@ -84,7 +84,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
         else : 
             if self.last_event_x is None: return
             clutter.grab_pointer(self.scroller)
-            print self.get_transformed_position()[0]
             self.last_event_x = event.x - self.get_transformed_position()[0] - self.border
             self.scroller_position = event.x - self.get_transformed_position()[0] - self.border
         self.queue_relayout()
