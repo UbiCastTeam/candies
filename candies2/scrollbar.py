@@ -14,7 +14,6 @@ import operator
 import gobject
 import clutter
 
-
 class Scrollbar(clutter.Actor, clutter.Container):
     '''
     Scrollbar class :
@@ -85,9 +84,16 @@ class Scrollbar(clutter.Actor, clutter.Container):
         else : 
             if self.last_event_x is None: return
             clutter.grab_pointer(self.scroller)
+            print self.get_transformed_position()[0]
             self.last_event_x = event.x - self.get_transformed_position()[0] - self.border
             self.scroller_position = event.x - self.get_transformed_position()[0] - self.border
         self.queue_relayout()
+        box = clutter.ActorBox()
+        box.x1 = self.get_allocation_box()[0]
+        box.y1 = self.get_allocation_box()[1]
+        box.x2 = self.get_allocation_box()[2]
+        box.y2 = self.get_allocation_box()[3]
+        self.do_allocate(box,0)
     
     def go_to_top(self):
         self.scroller_position = 0
