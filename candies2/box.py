@@ -505,10 +505,10 @@ class Box(clutter.Actor, clutter.Container):
                     self.overlay.allocate(ovbox, flags)
             else:
                 ovbox = clutter.ActorBox()
-                ovbox.x1 = 0
-                ovbox.y1 = 0
-                ovbox.x2 = main_width
-                ovbox.y2 = main_height
+                ovbox.x1 = self.border
+                ovbox.y1 = self.border
+                ovbox.x2 = main_width - self.border
+                ovbox.y2 = main_height - self.border
                 self.overlay.allocate(ovbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
