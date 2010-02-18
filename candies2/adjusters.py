@@ -83,12 +83,12 @@ class NumberAdjuster(Box):
             label.label.set_color(self.button_font_color)
             label.rect.set_color('#00000000')
             label.rect.set_border_color('#00000000')
-            self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.6})
+            self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.7})
 
         if thin == False :
             self.add(
                 {'name': 'minus', 'center': True, 'object': minus},
-                {'name': 'value','expand': True, 'resizable': 0.4, 'object': self.value_btn},
+                {'name': 'value','expand': True, 'resizable': 0.3, 'object': self.value_btn},
                 {'name': 'plus', 'center': True, 'object': plus})
         else : 
             self.add(
