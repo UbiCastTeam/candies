@@ -65,6 +65,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.last_event_y = None
         self.last_event_x = None
         self.h=h
+        self.flags=None
+        self.box=None
     
     def on_scroll_press(self, source, event):
         self.last_event_y = event.y
@@ -90,13 +92,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.queue_relayout()
         
         if self.reallocate : 
-            box = clutter.ActorBox()
-            box.x1 = self.get_allocation_box()[0]
-            box.y1 = self.get_allocation_box()[1]
-            box.x2 = self.get_allocation_box()[2]
-            box.y2 = self.get_allocation_box()[3]
-            flags = self.get_flags()
-            self.do_allocate(box,0)
+            self.do_allocate(self.box,self.flags)
         
     def go_to_top(self):
         self.scroller_position = 0
@@ -115,6 +111,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
             return 200,200
     
     def do_allocate(self, box, flags):
+        self.box=box
+        self.flags=flags
         if self.h == False : 
             box_width = box.x2 - box.x1
             self.height = box_height = box.y2 - box.y1
@@ -150,7 +148,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
         else :
             scroller_box.y1 = self.border 
             scroller_box.y2 = scroller_box.y1 + scroller_width
-            
         self.scroller_position -= scroller_height/2
         if self.scroller_position >= box_height - 2*self.border - scroller_height:
             self.scroller_position = box_height - 2*self.border - scroller_height

@@ -24,13 +24,14 @@ class NumberAdjuster(Box):
     button_size = 50
     label_font_size = '16'
     button_font_size = '20'
+    button_thin_size = '14'
     button_font_color = '#000000ff'
     button_inner_color = '#ffffff55'
     button_highlight_color = '#ffffffbb'
     button_border_color = '#ffffff66'
     button_inactive_color = '#00000044'
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, border=0, light_path=None, dark_path=None):
+    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, border=0, light_path=None, dark_path=None,thin=False):
         Box.__init__(self, horizontal=True, spacing=spacing, border=border)
 
         self.min = min
@@ -42,7 +43,10 @@ class NumberAdjuster(Box):
         self.factor = factor
         
         minus = ClassicButton("-", light_path=light_path, dark_path=dark_path)
-        minus.label.set_font_name(self.button_font_size)
+        if thin == False :
+            minus.label.set_font_name(self.button_font_size)
+        else :
+            minus.label.set_font_name(self.button_thin_size)
         minus.label.set_color(self.button_font_color)
         minus.rect.set_color(self.button_inner_color)
         minus.rect.set_border_color(self.button_border_color)
@@ -50,7 +54,10 @@ class NumberAdjuster(Box):
         minus.connect("button-release-event", self.dec)
 
         self.value_btn = ClassicButton('', light_path=light_path, dark_path=dark_path)
-        self.value_btn.label.set_font_name(self.button_font_size)
+        if thin == False :
+            self.value_btn.label.set_font_name(self.button_font_size)
+        else :
+            self.value_btn.label.set_font_name(self.button_thin_size)
         self.value_btn.label.set_color(self.button_font_color)
         self.value_btn.rect.set_color(self.button_inner_color)
         self.value_btn.rect.set_border_color(self.button_border_color)
@@ -60,7 +67,10 @@ class NumberAdjuster(Box):
         # set default value
 
         plus = ClassicButton("+", light_path=light_path, dark_path=dark_path)
-        plus.label.set_font_name(self.button_font_size)
+        if thin == False :
+            plus.label.set_font_name(self.button_font_size)
+        else :
+            plus.label.set_font_name(self.button_thin_size)
         plus.label.set_color(self.button_font_color)
         plus.rect.set_color(self.button_inner_color)
         plus.rect.set_border_color(self.button_border_color)
@@ -75,10 +85,16 @@ class NumberAdjuster(Box):
             label.rect.set_border_color('#00000000')
             self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.6})
 
-        self.add(
-            {'name': 'minus', 'center': True, 'object': minus},
-            {'name': 'value','expand': True, 'resizable': 0.4, 'object': self.value_btn},
-            {'name': 'plus', 'center': True, 'object': plus})
+        if thin == False :
+            self.add(
+                {'name': 'minus', 'center': True, 'object': minus},
+                {'name': 'value','expand': True, 'resizable': 0.4, 'object': self.value_btn},
+                {'name': 'plus', 'center': True, 'object': plus})
+        else : 
+            self.add(
+                {'name': 'minus', 'center': True, 'resizable': 0.2 ,'object': minus},
+                {'name': 'value','expand': True, 'resizable': 0.4 , 'object': self.value_btn},
+                {'name': 'plus', 'center': True, 'resizable': 0.2 , 'object': plus})
 
     def inc(self, button, event):
         button.rect.set_color(self.button_highlight_color)
