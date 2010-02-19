@@ -24,7 +24,6 @@ class NumberAdjuster(Box):
     button_size = 50
     label_font_size = '16'
     button_font_size = '20'
-    button_thin_size = '14'
     button_font_color = '#000000ff'
     button_inner_color = '#ffffff55'
     button_highlight_color = '#ffffffbb'
