@@ -62,10 +62,7 @@ class NumberAdjuster(Box):
         # set default value
 
         plus = ClassicButton("+", light_path=light_path, dark_path=dark_path)
-        if thin == False :
-            plus.label.set_font_name(self.button_font_size)
-        else :
-            plus.label.set_font_name(self.button_thin_size)
+        plus.label.set_font_name(self.button_font_size)
         plus.label.set_color(self.button_font_color)
         plus.rect.set_color(self.button_inner_color)
         plus.rect.set_border_color(self.button_border_color)
