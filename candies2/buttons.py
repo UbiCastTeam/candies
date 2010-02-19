@@ -27,7 +27,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, label, stretch=False, border=6.0, light_path=None, dark_path=None):
+    def __init__(self, label, stretch=False, border=6.0, light_path=None, dark_path=None, round=True):
         clutter.Actor.__init__(self)
 
         self.set_reactive(True)
@@ -39,12 +39,15 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.label = clutter.Text()
         self.label.set_parent(self)
         self.label.set_text(self.text)
-        
-        self.rect = RoundRectangle(light_path=light_path, dark_path=dark_path)
+
+        if round :
+            self.rect = RoundRectangle(light_path=light_path, dark_path=dark_path)
+            self.rect.set_border_color(self.default_border_color)
+            self.rect.set_border_width(3)
+            self.rect.props.radius = 10
+        else :
+            self.rect = clutter.Rectangle()
         self.rect.set_color(self.default_color)
-        self.rect.set_border_color(self.default_border_color)
-        self.rect.set_border_width(3)
-        self.rect.props.radius = 10
         self.rect.set_parent(self)
     
     def do_set_property(self, pspec, value):
