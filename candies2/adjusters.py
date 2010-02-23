@@ -141,9 +141,9 @@ class NumberAdjuster(Box):
 
     def get_safe_value(self, value):
         if value > self.max*self.factor:
-            value = self.max
+            value = int(self.max*self.factor)
         elif value < self.min*self.factor:
-            value = self.min
+            value = int(self.min*self.factor)
         return value
 
 
