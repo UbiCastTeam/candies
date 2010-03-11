@@ -35,11 +35,12 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False):
+    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False,label=None):
         clutter.Actor.__init__(self)
         self.border = border
         self.thin_scroller = thin_scroller
         self.reallocate=reallocate
+        self.show_label=False
         
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.scrollbar_background = clutter.Texture()
@@ -48,6 +49,13 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scrollbar_background = clutter.Rectangle()
             self.scrollbar_background.set_color('LightBlue')
         self.scrollbar_background.set_parent(self)
+        
+        if label != None :
+            self.label = clutter.Text()
+            self.label.set_color('#FFFFFFFF')
+            self.label.set_text(label)
+            self.label.set_parent(self)
+            self.show_label=True    
         
         if scroller_image_path != None and os.path.exists(scroller_image_path):
             self.scroller = clutter.Texture()
@@ -140,13 +148,22 @@ class Scrollbar(clutter.Actor, clutter.Container):
             bar_box.y2 = bar_box.x1 + bar_width
             bar_box.x2 = bar_box.y1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
+         
+        if self.show_label :
+            label_box=clutter.ActorBox()
+            label_box.x1=bar_box.x1+bar_width/4
+            label_box.x2=bar_box.x2
+            label_box.y1=38*box_width/93
+            label_box.y2=63*box_width/93
+            self.label.allocate(label_box,flags)
             
         scroller_box = clutter.ActorBox()
         if self.h == False :
             scroller_box.x1 = self.border 
             scroller_box.x2 = scroller_box.x1 + scroller_width
         else :
-            scroller_box.y1 = self.border 
+            #scroller_box.y1 = self.border 
+            scroller_box.y1 = 20*box_width/93
             scroller_box.y2 = scroller_box.y1 + scroller_width
         self.scroller_position -= scroller_height/2
         if self.scroller_position >= box_height - 2*self.border - scroller_height:
@@ -169,17 +186,32 @@ class Scrollbar(clutter.Actor, clutter.Container):
         children = (self.scrollbar_background, self.scroller)
         for child in children :
             func(child, data)
+        if self.show_label:
+            func(self.label,data)
     
     def do_paint(self):
+        '''
         children = (self.scrollbar_background, self.scroller)
         for child in children :
             child.paint()
+        '''
+        self.scrollbar_background.paint()
+        if self.show_label:
+            self.label.paint()
+        self.scroller.paint()
 
     def do_pick(self, color):
+        self.scrollbar_background.paint()
+        if self.show_label:
+            self.label.paint()
+        self.scroller.paint()
+        '''
         children = (self.scrollbar_background, self.scroller)
         for child in children :
             child.paint()
-
+        if self.show_label:
+            self.label.paint()
+        '''
 
 class Clipper (clutter.Actor, clutter.Container):
     '''
