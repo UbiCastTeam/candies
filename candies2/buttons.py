@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import sys
 import gobject
 import clutter
@@ -150,6 +152,17 @@ class ClassicButton(clutter.Actor, clutter.Container):
     def do_paint(self):
         self.rect.paint()
         self.label.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if self.rect is not None:
+            self.rect.unparent()
+            self.rect.destroy()
+            self.rect = None
+        if self.label is not None:
+            self.label.unparent()
+            self.label.destroy()
+            self.label = None
 
 
 class ItemButton(clutter.Actor, clutter.Container):

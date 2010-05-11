@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import gobject
 import clutter
 
@@ -92,7 +95,7 @@ class Box(clutter.Actor, clutter.Container):
     def add(self, *new_elements):
         for new_ele in new_elements:
             if 'name' not in new_ele or 'object' not in new_ele:
-                raise KeyError('Element must contain name and object')
+                raise KeyError('Can not add element to box. Element to add must be a dict with at least "name" and "object" in his keys')
             self.elements.append(new_ele)
             new_ele['object'].set_parent(self)
         self.queue_relayout()
@@ -101,7 +104,7 @@ class Box(clutter.Actor, clutter.Container):
         element = properties.copy()
         element['name'] = name
         element['object'] = obj
-        if index == -1 or index < 0:
+        if index == -1 or index < 0 or index > len(self.elements):
             self.elements.append(element)
         else:
             self.elements.insert(index, element)
@@ -130,9 +133,9 @@ class Box(clutter.Actor, clutter.Container):
             return False
     
     def remove_all_elements(self):
-        while len(self.elements) > 0:
-            self.elements[0]['object'].unparent()
-            self.elements.remove(self.elements[0])
+        for element in self.elements:
+            element['object'].unparent()
+        self.elements = list()
     
     def clear(self):
         for element in self.elements:
@@ -528,26 +531,6 @@ class Box(clutter.Actor, clutter.Container):
         for element in self.elements:
             func(element['object'], data)
     
-    def do_destroy(self):
-        try:
-            if self.background:
-                self.background.destroy()
-                self.background = None
-        except:
-            pass
-        try:
-            if self.overlay:
-                self.overlay.destroy()
-                self.overlay = None
-        except:
-            pass
-        try:
-            for element in list(self.elements):
-                element['object'].destroy()
-                self.elements.remove(element)
-        except:
-            pass
-    
     def do_paint(self):
         if self.background:
             self.background.paint()
@@ -564,6 +547,22 @@ class Box(clutter.Actor, clutter.Container):
     
     def do_pick(self, color):
         self.do_paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        for element in self.elements:
+            element['object'].unparent()
+            element['object'].destroy()
+        self.elements = list()
+        if self.background:
+            self.background.unparent()
+            self.background.destroy()
+            self.background = None
+        if self.overlay:
+            self.overlay.unparent()
+            self.overlay.destroy()
+            self.overlay = None
+        clutter.Actor.destroy(self)
 
 class HBox(Box):
     
@@ -759,15 +758,6 @@ class AlignedElement(clutter.Actor, clutter.Container):
         if self.element is not None:
             func(self.element, data)
     
-    def do_destroy(self):
-        try:
-            if self.background is not None:
-                self.background.destroy()
-            if self.element is not None:
-                self.element.destroy()
-        except:
-            pass
-    
     def do_paint(self):
         if self.background is not None:
             self.background.paint()
@@ -779,14 +769,23 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.do_paint()
         else:
             clutter.Actor.do_pick(self, color)
+    
+    def do_destroy(self):
+        self.unparent()
+        if self.background is not None:
+            self.background.unparent()
+            self.background.destroy()
+            self.background = None
+        if self.element is not None:
+            self.element.unparent()
+            self.element.destroy()
+            self.element = None
 
 if __name__ == '__main__':
-    import buttons
-    
     # stage
+    stage = clutter.Stage()
     stage_width = 1200
     stage_height = 600
-    stage = clutter.Stage()
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', clutter.main_quit)
     
@@ -876,17 +875,55 @@ if __name__ == '__main__':
     rect_bg_2.set_color('#ffffffff')
     
     other_box.set_background(rect_bg_2)
-    other_box.add({'name': 'rect5',
+    other_box.add(
+        {'name': 'rect5',
         'expand': True,
         'object': rect5},
         {'name': 'rect6',
         #'expand': True,
         'resizable': 1.0,
         'keep_ratio': True,
-        'object': rect6})
+        'object': rect6}
+    )
     other_box.set_size(400, 300)
     other_box.set_position(700, 30)
     stage.add(other_box)
+    
+    test_memory_usage = True
+    if test_memory_usage:
+        from buttons import ClassicButton
+        max_count = 20000
+        
+        def create_test_object():
+            t = Box(horizontal=True, spacing=10.0, border=20.0)
+            r = clutter.Rectangle()
+            r.set_size(250, 150)
+            r.set_color(clutter.color_from_string('Blue'))
+            t.add_element(r, 'rect')
+            b = ClassicButton('zefezf pozeffap^afl )qfq)àz iàg egjez çàfiçzf jgioe gjopfjq')
+            t.add_element(b, 'button')
+            return t
+        def remove_test_object(obj, stage):
+            #stage.remove(obj)
+            obj.destroy()
+            return False
+        
+        def test_memory(stage, counter, max_count):
+            if counter < max_count or max_count == 0:
+                counter += 1
+                print counter
+                tested_object = create_test_object()
+                stage.add(tested_object)
+                gobject.timeout_add(1, remove_tested_object, tested_object, stage, counter)
+            return False
+        
+        def remove_tested_object(tested_object, stage, counter):
+            remove_test_object(tested_object, stage)
+            gobject.timeout_add(1, test_memory, stage, counter, max_count)
+            return False
+        
+        gobject.timeout_add(10, test_memory, stage, 0, max_count)
+
     
     stage.show()
     clutter.main()
