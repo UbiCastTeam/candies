@@ -550,19 +550,21 @@ class Box(clutter.Actor, clutter.Container):
     
     def do_destroy(self):
         self.unparent()
-        for element in self.elements:
-            element['object'].unparent()
-            element['object'].destroy()
-        self.elements = list()
-        if self.background:
-            self.background.unparent()
-            self.background.destroy()
-            self.background = None
-        if self.overlay:
-            self.overlay.unparent()
-            self.overlay.destroy()
-            self.overlay = None
-        clutter.Actor.destroy(self)
+        if hasattr(self, 'elements'):
+            for element in self.elements:
+                element['object'].unparent()
+                element['object'].destroy()
+            self.elements = list()
+        if hasattr(self, 'background'):
+            if self.background:
+                self.background.unparent()
+                self.background.destroy()
+                self.background = None
+        if hasattr(self, 'overlay'):
+            if self.overlay:
+                self.overlay.unparent()
+                self.overlay.destroy()
+                self.overlay = None
 
 class HBox(Box):
     
@@ -772,14 +774,16 @@ class AlignedElement(clutter.Actor, clutter.Container):
     
     def do_destroy(self):
         self.unparent()
-        if self.background is not None:
-            self.background.unparent()
-            self.background.destroy()
-            self.background = None
-        if self.element is not None:
-            self.element.unparent()
-            self.element.destroy()
-            self.element = None
+        if hasattr(self, 'background'):
+            if self.background is not None:
+                self.background.unparent()
+                self.background.destroy()
+                self.background = None
+        if hasattr(self, 'element'):
+            if self.element is not None:
+                self.element.unparent()
+                self.element.destroy()
+                self.element = None
 
 if __name__ == '__main__':
     # stage
@@ -892,6 +896,10 @@ if __name__ == '__main__':
     test_memory_usage = True
     if test_memory_usage:
         from buttons import ClassicButton
+        import gc
+        gc.set_debug(gc.DEBUG_LEAK)
+        from pprint import pprint
+        
         max_count = 20000
         
         def create_test_object():
@@ -900,8 +908,8 @@ if __name__ == '__main__':
             r.set_size(250, 150)
             r.set_color(clutter.color_from_string('Blue'))
             t.add_element(r, 'rect')
-            b = ClassicButton('zefezf pozeffap^afl )qfq)àz iàg egjez çàfiçzf jgioe gjopfjq')
-            t.add_element(b, 'button')
+            #b = ClassicButton('zefezf pozeffap^afl )qfq)àz iàg egjez çàfiçzf jgioe gjopfjq')
+            #t.add_element(b, 'button')
             return t
         def remove_test_object(obj, stage):
             #stage.remove(obj)
@@ -919,6 +927,10 @@ if __name__ == '__main__':
         
         def remove_tested_object(tested_object, stage, counter):
             remove_test_object(tested_object, stage)
+            
+            gc.collect()
+            pprint(gc.garbage)
+            
             gobject.timeout_add(1, test_memory, stage, counter, max_count)
             return False
         

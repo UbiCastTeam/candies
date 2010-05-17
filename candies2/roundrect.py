@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
 import gobject
 import clutter
@@ -66,6 +69,9 @@ class OutlinedRoundRectangle(clutter.Actor):
 
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__paint_rectangle(x2 - x1, y2 - y1, pick_color)
+    
+    def do_destroy(self):
+        self.unparent()
 
 
 class RoundRectangle(OutlinedRoundRectangle):
@@ -86,16 +92,12 @@ class RoundRectangle(OutlinedRoundRectangle):
         ),
     }
 
-    def __init__(self, light_path=None, dark_path=None):
+    def __init__(self, light_texture=None, dark_texture=None):
         OutlinedRoundRectangle.__init__(self)
         self._border_color = clutter.color_from_string('Black')
         self._border_width = 0.0
-        self._light_path = light_path
-        self._dark_path = dark_path
-        if light_path is not None:
-            self._light_texture = cogl.texture_new_from_file(self._light_path)
-        if dark_path is not None:
-            self._dark_texture = cogl.texture_new_from_file(self._dark_path)
+        self._light_texture = light_texture
+        self._dark_texture = dark_texture
 
     def set_border_color(self, color):
         self._border_color = clutter.color_from_string(color)
@@ -136,13 +138,13 @@ class RoundRectangle(OutlinedRoundRectangle):
             cogl.path_fill()
             
             # light texture
-            if self._light_path:
+            if self._light_texture:
                 cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
                 cogl.path_close()
                 cogl.set_source_texture(self._light_texture)
                 cogl.path_fill()
             # dark texture
-            if self._dark_path:
+            if self._dark_texture:
                 cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
                 cogl.path_close()
                 cogl.set_source_texture(self._dark_texture)
@@ -165,6 +167,13 @@ class RoundRectangle(OutlinedRoundRectangle):
         border_color.alpha = real_alpha
 
         self.__paint_rectangle(x2 - x1, y2 - y1, paint_color, border_color)
+    
+    def do_destroy(self):
+        self.unparent()
+        try:
+            OutlinedRoundRectangle.do_destroy(self)
+        except:
+            pass
 
 
 if __name__ == '__main__':
@@ -184,11 +193,52 @@ if __name__ == '__main__':
     rect.set_radius(25)
     rect.set_color('#0000ffff')
     rect.set_border_width(5)
+    rect.set_border_color('#00ffffff')
     rect.set_size(160, 120)
     rect.set_anchor_point(80, 60)
     rect.set_position(480, 240)
     stage.add(rect)
+    
+    test_memory_usage = True
+    if test_memory_usage:
+        import gc
+        gc.set_debug(gc.DEBUG_LEAK)
+        from pprint import pprint
+        
+        max_count = 20000
+        
+        light_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        dark_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        light_texture = cogl.texture_new_from_file(light_path)
+        dark_texture = cogl.texture_new_from_file(dark_path)
+        
+        def create_test_object():
+            t = RoundRectangle(light_texture = light_texture, dark_texture = dark_texture)
+            return t
+        def remove_test_object(obj, stage):
+            stage.remove(obj)
+            obj.destroy()
+            return False
+        
+        def test_memory(stage, counter, max_count):
+            if counter < max_count or max_count == 0:
+                counter += 1
+                print counter
+                tested_object = create_test_object()
+                stage.add(tested_object)
+                gobject.timeout_add(1, remove_tested_object, tested_object, stage, counter)
+            return False
+        
+        def remove_tested_object(tested_object, stage, counter):
+            remove_test_object(tested_object, stage)
+            
+            gc.collect()
+            pprint(gc.garbage)
+            
+            gobject.timeout_add(1, test_memory, stage, counter, max_count)
+            return False
+        
+        gobject.timeout_add(10, test_memory, stage, 0, max_count)
 
     stage.show()
-
     clutter.main()

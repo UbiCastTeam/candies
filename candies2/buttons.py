@@ -4,6 +4,7 @@
 import sys
 import gobject
 import clutter
+from text import StretchText
 from roundrect import RoundRectangle, OutlinedRoundRectangle
 
 class ClassicButton(clutter.Actor, clutter.Container):
@@ -29,7 +30,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, label, stretch=False, border=6.0, light_path=None, dark_path=None, round=True):
+    def __init__(self, label, stretch=False, border=6.0, light_texture=None, dark_texture=None, round=True):
         clutter.Actor.__init__(self)
 
         self.set_reactive(True)
@@ -43,7 +44,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.label.set_text(self.text)
 
         if round :
-            self.rect = RoundRectangle(light_path=light_path, dark_path=dark_path)
+            self.rect = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
             self.rect.set_border_color(self.default_border_color)
             self.rect.set_border_width(3)
             self.rect.props.radius = 10
@@ -126,7 +127,6 @@ class ClassicButton(clutter.Actor, clutter.Container):
         if self.label.get_preferred_size()[2] > inner_width:
             self._wrap_label(0, len(self.text), inner_width)
         elif self.is_stretch:
-            from text import StretchText
             lbl = StretchText()
             lbl.set_text(self.text)
             fontface = self.label.get_font_name()
@@ -155,14 +155,16 @@ class ClassicButton(clutter.Actor, clutter.Container):
     
     def do_destroy(self):
         self.unparent()
-        if self.rect is not None:
-            self.rect.unparent()
-            self.rect.destroy()
-            self.rect = None
-        if self.label is not None:
-            self.label.unparent()
-            self.label.destroy()
-            self.label = None
+        if hasattr(self, 'rect'):
+            if self.rect is not None:
+                self.rect.unparent()
+                self.rect.destroy()
+                self.rect = None
+        if hasattr(self, 'label'):
+            if self.label is not None:
+                self.label.unparent()
+                self.label.destroy()
+                self.label = None
 
 
 class ItemButton(clutter.Actor, clutter.Container):
@@ -341,10 +343,9 @@ class ItemButton(clutter.Actor, clutter.Container):
     
     @property
     def _children(self):
-        children = [self.back, self.border]
+        children = [self.back, self.border, self.label]
         if self.picture is not None:
             children.append(self.picture)
-        children.append(self.label)
         return children
     
     def do_foreach(self, func, data=None):
@@ -354,6 +355,29 @@ class ItemButton(clutter.Actor, clutter.Container):
     def do_paint(self):
         for child in self._children:
             child.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'label'):
+            if self.label is not None:
+                self.label.unparent()
+                self.label.destroy()
+                self.label = None
+        if hasattr(self, 'picture'):
+            if self.picture is not None:
+                self.picture.unparent()
+                self.picture.destroy()
+                self.picture = None
+        if hasattr(self, 'border'):
+            if self.border is not None:
+                self.border.unparent()
+                self.border.destroy()
+                self.border = None
+        if hasattr(self, 'back'):
+            if self.back is not None:
+                self.back.unparent()
+                self.back.destroy()
+                self.back = None
 
 
 class ImageButton(ClassicButton):
@@ -367,8 +391,8 @@ class ImageButton(ClassicButton):
         ),
     }
 
-    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False, light_path=None, dark_path=None):
-        ClassicButton.__init__(self, label, stretch, border, light_path=light_path, dark_path=dark_path)
+    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False, light_texture=None, dark_texture=None):
+        ClassicButton.__init__(self, label, stretch, border, light_texture=light_texture, dark_texture=dark_texture)
 
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
@@ -498,6 +522,18 @@ class ImageButton(ClassicButton):
     def do_foreach(self, func, data=None):
         ClassicButton.do_foreach(self, func, data)
         func(self.image, data)
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'image'):
+            if self.image is not None:
+                self.image.unparent()
+                self.image.destroy()
+                self.image = None
+        try:
+            ClassicButton.do_destroy(self)
+        except:
+            pass
 
 gobject.type_register(ImageButton)
 
@@ -584,9 +620,12 @@ if __name__ == '__main__':
     b.set_size(170, 170)
     b.set_position(425, 210)
     stage.add(b)
-
-
+    
     stage.add(box0)
+    
+    #for child in stage.get_children():
+    #    stage.remove(child)
+    #    child.destroy()
+    
     stage.show()
-
     clutter.main()

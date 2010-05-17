@@ -8,7 +8,7 @@ class OptionLine(clutter.Actor, clutter.Container):
     __gtype_name__ = 'OptionLine'
     
     
-    def __init__(self, name, hname, icon_height=32, icon_path=None, border=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', light_path=None, dark_path=None):
+    def __init__(self, name, hname, icon_height=32, icon_path=None, border=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', light_texture=None, dark_texture=None):
         clutter.Actor.__init__(self)
         self.name = name
         self.hname = hname
@@ -20,7 +20,7 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.default_border_color = border_color
         
         # background
-        self.background = RoundRectangle(light_path=light_path, dark_path=dark_path)
+        self.background = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
         self.background.set_color(self.default_color)
         self.background.set_border_color(self.default_border_color)
         self.background.set_border_width(3)
@@ -148,7 +148,7 @@ class Select(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Select'
     
-    def __init__(self, border=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', color='LightGray', border_color='Gray', option_color='LightBlue', light_path=None, dark_path=None):
+    def __init__(self, border=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', color='LightGray', border_color='Gray', option_color='LightBlue', light_texture=None, dark_texture=None):
         clutter.Actor.__init__(self)
         self.border = border
         self.on_change_callback = on_change_callback
@@ -164,8 +164,8 @@ class Select(clutter.Actor, clutter.Container):
         self.default_color = color
         self.default_border_color = border_color
         self.option_color = option_color
-        self.light_path = light_path
-        self.dark_path = dark_path
+        self.light_texture = light_texture
+        self.dark_texture = dark_texture
         
         self.background = RoundRectangle()
         self.background.set_color(self.default_color)
@@ -176,7 +176,7 @@ class Select(clutter.Actor, clutter.Container):
         
     
     def add_option(self, name, hname, icon_path=None):
-        new_option = OptionLine(name, hname, border=self.border, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', light_path=self.light_path, dark_path=self.dark_path)
+        new_option = OptionLine(name, hname, border=self.border, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', light_texture=self.light_texture, dark_texture=self.dark_texture)
         new_option.set_parent(self)
         new_option.set_reactive(True)
         new_option.connect('button-press-event', self._on_click)
