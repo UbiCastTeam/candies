@@ -1,7 +1,6 @@
 import gobject
 import clutter
 import os
-from clutter import cogl
 
 '''
 class bar(clutter.Actor):

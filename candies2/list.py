@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 import re
 import gobject
@@ -116,7 +115,6 @@ class ButtonList(clutter.Actor, clutter.Container):
     
     def do_allocate(self, box, flags):
         list_width = box.x2 - box.x1
-        list_height = box.y2 - box.y1
         
         y = 0.0
         for button in self._buttons:

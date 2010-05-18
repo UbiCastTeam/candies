@@ -4,10 +4,8 @@
 import sys
 import gobject
 import clutter
-from roundrect import RoundRectangle
 from buttons import ClassicButton
 from box import Box
-from text import StretchText
 
 class NumberAdjuster(Box):
     __gtype_name__ = 'NumberAdjuster'
@@ -69,7 +67,7 @@ class NumberAdjuster(Box):
         plus.set_size(self.button_size, self.button_size)
 
         if text is not None:
-            label = ClassicButton(str(text), stretch=False, border=0.0)
+            label = ClassicButton(str(text), stretch=False, border=0)
             label.label.set_font_name(self.label_font_size)
             label.label.set_color(self.button_font_color)
             label.rect.set_color('#00000000')

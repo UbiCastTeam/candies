@@ -73,8 +73,7 @@ class StretchText(clutter.Text):
         
         # Force minimal width if computed natural width is smaller
         nat_width = lbl.get_width()
-        if nat_width < min_width:
-            nat_width = min_width
+        min_width = nat_width
         return min_width, nat_width
     
     def do_allocate(self, box, flags):

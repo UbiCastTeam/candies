@@ -9,8 +9,6 @@ version : 0
 '''
 
 import os
-import sys
-import operator
 import gobject
 import clutter
 

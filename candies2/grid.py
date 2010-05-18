@@ -111,7 +111,8 @@ if __name__ == '__main__':
     import random
     stage = clutter.Stage()
     stage.connect('destroy', clutter.main_quit)
-
+    
+    from box import Box
     box = Box()
     for i in range(10):
         rect = clutter.Rectangle()

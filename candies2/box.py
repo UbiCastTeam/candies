@@ -896,7 +896,6 @@ if __name__ == '__main__':
     
     test_memory_usage = True
     if test_memory_usage:
-        from buttons import ClassicButton
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
         from pprint import pprint

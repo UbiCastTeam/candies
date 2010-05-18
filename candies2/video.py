@@ -7,10 +7,9 @@ Video player: cluttergst.VideoTexture wrapper
 Copyright 2008, Florent Thiery, UbiCast
 """
 from __future__ import division
-from cluttergst import VideoTexture, VideoSink
+from cluttergst import VideoTexture
 import gobject
 import gst
-from seekbar import SeekBar
 
 import logging
 logger = logging.getLogger("videoplayer")

@@ -453,7 +453,6 @@ class ImageButton(ClassicButton):
         if self.label.get_preferred_size()[2] > inner_width:
             self._wrap_label(0, len(self.text), inner_width)
         elif self.is_stretch:
-            from text import StretchText
             lbl = StretchText()
             lbl.set_text(self.text)
             fontface = self.label.get_font_name()
@@ -469,7 +468,6 @@ class ImageButton(ClassicButton):
             image_width = self.image.get_preferred_size()[2]
             image_height = self.image.get_preferred_size()[3]
         else:
-            max_width = self.image.get_preferred_size()[2]
             max_height = self.image.get_preferred_size()[3]
             image_ratio = float(self.image.get_preferred_size()[2])/float(self.image.get_preferred_size()[3])
             
@@ -514,7 +512,7 @@ class ImageButton(ClassicButton):
         elif pspec.name == 'active-color':
             return self.default_active_color
         else:
-            ClassicButton.do_get_property(self, pspec, value)
+            ClassicButton.do_get_property(self, pspec)
 
     def do_paint(self):
         ClassicButton.do_paint(self)
@@ -632,8 +630,8 @@ if __name__ == '__main__':
         
         max_count = 5000
         
-        light_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
-        dark_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        light_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
+        dark_path = '/home/sdiemer/sources/candies/main/candies2/effect_dark.png'
         light_texture = clutter.cogl.texture_new_from_file(light_path)
         dark_texture = clutter.cogl.texture_new_from_file(dark_path)
         

@@ -282,8 +282,6 @@ class Select(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.border
-        inner_height = main_height - 2*self.border
         
         if self.opened:
             total_height = (self.icon_height + 2*self.border) * len(self.options)

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import operator
-import gobject
 import clutter
 from container import ContainerAdapter
 

@@ -8,8 +8,6 @@ date : nov 30 2009
 version : 0
 '''
 
-import sys
-import operator
 import gobject
 import clutter
 from buttons import ClassicButton
@@ -132,12 +130,10 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.keyboard = KEYBOARD_MAPS[map_name]
         self.button_map = dict()
         
-        nb_line = len(self.keyboard)
         self.width_line=list()
     
         for line in self.keyboard:
             one_line_width = 0
-            nb_button = len(line)
             for key in line:
                 if self.key_font_name is None:
                     button = ClassicButton(key.txt,stretch=True)
@@ -197,7 +193,6 @@ class Keyboard(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
-        
         
         nb_line = len(self.keyboard)
         taillemax=min(box_width/self.nb_col, box_height/nb_line)
@@ -310,12 +305,12 @@ if __name__ == '__main__':
     def keyboard_callback(keyboard, key):
         #suppr button
         if key == 'suppr':
-            text_retour=text.delete_chars(1)
+            text.delete_chars(1)
             text.set_selection(text.get_cursor_position(), text.get_cursor_position())
         #del button
         elif key == 'del':
             text.set_selection(text.get_cursor_position()+1, text.get_cursor_position()+1)
-            text_retour=text.delete_chars(1)
+            text.delete_chars(1)
             text.set_selection(text.get_cursor_position(), text.get_cursor_position())
         # others entries
         else :
@@ -337,7 +332,7 @@ if __name__ == '__main__':
                     elif keyboard.map_name =='en_maj':
                         keyboard.load_profile('en_min')
             # insert text
-            text_affich=text.insert_text(key, text.get_cursor_position())
+            text.insert_text(key, text.get_cursor_position())
         # maj or min mapping : when first char is maj the next is min
         text_length = len(text.get_text())
         if text_length == 1 : 
