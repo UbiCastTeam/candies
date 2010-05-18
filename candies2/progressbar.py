@@ -235,6 +235,14 @@ class SkinnedProgressBar(clutter.Actor, clutter.Container):
     def do_paint(self):
         for texture in self._textures:
             texture.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, '_textures'):
+            for texture in self._textures:
+                texture.unparent()
+                texture.destroy()
+            self._textures = list()
 
 if __name__ == '__main__':
     def update_label(bar, event, label):

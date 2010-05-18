@@ -111,17 +111,18 @@ class Box(clutter.Actor, clutter.Container):
         obj.set_parent(self)
         self.queue_relayout()
     
-    def do_remove(self, actor):
-        if self.background == actor:
-            actor.unparent()
-            self.background = None
-        if self.overlay == actor:
-            actor.unparent()
-            self.overlay = None
-        for element in self.elements:
-            if element['object'] == actor:
-                actor.unparent()
-                self.elements.remove(element)
+    def do_remove(self, *children):
+        for child in children:
+            if self.background == child:
+                child.unparent()
+                self.background = None
+            if self.overlay == child:
+                child.unparent()
+                self.overlay = None
+            for element in self.elements:
+                if element['object'] == child:
+                    child.unparent()
+                    self.elements.remove(element)
     
     def remove_element(self, name):
         element = self.get_by_name(name)
@@ -922,7 +923,7 @@ if __name__ == '__main__':
                 print counter
                 tested_object = create_test_object()
                 stage.add(tested_object)
-                gobject.timeout_add(1, remove_tested_object, tested_object, stage, counter)
+                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
             return False
         
         def remove_tested_object(tested_object, stage, counter):
@@ -931,7 +932,7 @@ if __name__ == '__main__':
             gc.collect()
             pprint(gc.garbage)
             
-            gobject.timeout_add(1, test_memory, stage, counter, max_count)
+            gobject.timeout_add(2, test_memory, stage, counter, max_count)
             return False
         
         gobject.timeout_add(10, test_memory, stage, 0, max_count)

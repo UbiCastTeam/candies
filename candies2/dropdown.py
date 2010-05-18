@@ -128,18 +128,28 @@ class OptionLine(clutter.Actor, clutter.Container):
         for children in childrens:
             func(children, data)
     
-    def do_destroy(self):
-        try:
-            self.background.destroy()
-            self.icon.destroy()
-            self.label.destroy()
-        except:
-            pass
-    
     def do_paint(self):
         self.background.paint()
         self.icon.paint()
         self.label.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'background'):
+            if self.background is not None:
+                self.background.unparent()
+                self.background.destroy()
+                self.background = None
+        if hasattr(self, 'icon'):
+            if self.icon is not None:
+                self.icon.unparent()
+                self.icon.destroy()
+                self.icon = None
+        if hasattr(self, 'label'):
+            if self.label is not None:
+                self.label.unparent()
+                self.label.destroy()
+                self.label = None
     
 
 class Select(clutter.Actor, clutter.Container):
@@ -315,12 +325,6 @@ class Select(clutter.Actor, clutter.Container):
         for option in self.options:
             func(option, data)
     
-    def do_destroy(self):
-        self.background.destroy()
-        for option in list(self.options):
-            option.destroy()
-        self.options = list()
-    
     def do_paint(self):
         #last painted must be selected option
         self.background.paint()
@@ -332,6 +336,19 @@ class Select(clutter.Actor, clutter.Container):
     
     def do_pick(self, color):
         self.do_paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'options'):
+            for option in list(self.options):
+                option.unparent()
+                option.destroy()
+            self.options = list()
+        if hasattr(self, 'background'):
+            if self.background is not None:
+                self.background.unparent()
+                self.background.destroy()
+                self.background = None
 
 
 if __name__ == '__main__':

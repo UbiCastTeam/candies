@@ -190,11 +190,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
             func(self.label,data)
     
     def do_paint(self):
-        '''
-        children = (self.scrollbar_background, self.scroller)
-        for child in children :
-            child.paint()
-        '''
         self.scrollbar_background.paint()
         if self.show_label:
             self.label.paint()
@@ -205,13 +200,24 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if self.show_label:
             self.label.paint()
         self.scroller.paint()
-        '''
-        children = (self.scrollbar_background, self.scroller)
-        for child in children :
-            child.paint()
-        if self.show_label:
-            self.label.paint()
-        '''
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'scrollbar_background'):
+            if self.scrollbar_background is not None:
+                self.scrollbar_background.unparent()
+                self.scrollbar_background.destroy()
+                self.scrollbar_background = None
+        if hasattr(self, 'label'):
+            if self.label is not None:
+                self.label.unparent()
+                self.label.destroy()
+                self.label = None
+        if hasattr(self, 'scroller'):
+            if self.scroller is not None:
+                self.scroller.unparent()
+                self.scroller.destroy()
+                self.scroller = None
 
 class Clipper (clutter.Actor, clutter.Container):
     '''
@@ -270,6 +276,14 @@ class Clipper (clutter.Actor, clutter.Container):
 
     def do_pick(self, color):
         self.actor.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'actor'):
+            if self.actor is not None:
+                self.actor.unparent()
+                self.actor.destroy()
+                self.actor = None
 
 
 #main to test scrollbar

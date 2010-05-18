@@ -44,3 +44,12 @@ class ContainerAdapter:
 
     def do_allocate(self, box, flags):
         raise NotImplementedError('do_allocate')
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, '_children'):
+            for child in self._children:
+                child.unparent()
+                child.destroy()
+            self._children = list()
+

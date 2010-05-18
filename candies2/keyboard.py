@@ -229,6 +229,14 @@ class Keyboard(clutter.Actor, clutter.Container):
     def do_pick(self, color):
         for actor in self.button_map.values():
             actor.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'button_map'):
+            for button in self.button_map.values():
+                button.unparent()
+                button.destroy()
+            self.button_map = dict()
 
 
 '''

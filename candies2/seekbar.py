@@ -361,3 +361,23 @@ class SeekBar(clutter.Actor, clutter.Container):
         children = [self.background, self.bar, self.cursor]
         for child in children:
             child.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, 'background'):
+            if self.background is not None:
+                self.background.unparent()
+                self.background.destroy()
+                self.background = None
+        if hasattr(self, 'bar'):
+            if self.bar is not None:
+                self.bar.unparent()
+                self.bar.destroy()
+                self.bar = None
+        if hasattr(self, 'cursor'):
+            if self.cursor is not None:
+                self.cursor.unparent()
+                self.cursor.destroy()
+                self.cursor = None
+
+

@@ -147,6 +147,14 @@ class ButtonList(clutter.Actor, clutter.Container):
     def do_pick(self, color):
         for btn in self._buttons:
             btn.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, '_buttons'):
+            for btn in self._buttons:
+                btn.unparent()
+                btn.destroy()
+            self._buttons = list()
 
 class FileList(ButtonList):
     __gtype_name__ = 'FileList'

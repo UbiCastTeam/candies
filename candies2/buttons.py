@@ -43,12 +43,12 @@ class ClassicButton(clutter.Actor, clutter.Container):
         self.label.set_parent(self)
         self.label.set_text(self.text)
 
-        if round :
+        if round:
             self.rect = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
             self.rect.set_border_color(self.default_border_color)
             self.rect.set_border_width(3)
             self.rect.props.radius = 10
-        else :
+        else:
             self.rect = clutter.Rectangle()
         self.rect.set_color(self.default_color)
         self.rect.set_parent(self)
@@ -91,6 +91,7 @@ class ClassicButton(clutter.Actor, clutter.Container):
         t.set_text(self.text)
         nat = t.get_preferred_size()[2]
         t.destroy()
+        del t
         return min + 2*self.border, nat + 2*self.border
     
     def do_get_preferred_height(self, for_width):
@@ -623,9 +624,45 @@ if __name__ == '__main__':
     
     stage.add(box0)
     
-    #for child in stage.get_children():
-    #    stage.remove(child)
-    #    child.destroy()
+    test_memory_usage = True
+    if test_memory_usage:
+        import gc
+        gc.set_debug(gc.DEBUG_LEAK)
+        from pprint import pprint
+        
+        max_count = 5000
+        
+        light_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        dark_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        light_texture = clutter.cogl.texture_new_from_file(light_path)
+        dark_texture = clutter.cogl.texture_new_from_file(dark_path)
+        
+        def create_test_object():
+            t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', light_texture = light_texture, dark_texture = dark_texture, round = True)
+            return t
+        def remove_test_object(obj, stage):
+            obj.destroy()
+            return False
+        
+        def test_memory(stage, counter, max_count):
+            if counter < max_count or max_count == 0:
+                counter += 1
+                print counter
+                tested_object = create_test_object()
+                stage.add(tested_object)
+                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
+            return False
+        
+        def remove_tested_object(tested_object, stage, counter):
+            remove_test_object(tested_object, stage)
+            
+            gc.collect()
+            pprint(gc.garbage)
+            
+            gobject.timeout_add(2, test_memory, stage, counter, max_count)
+            return False
+        
+        gobject.timeout_add(10, test_memory, stage, 0, max_count)
     
     stage.show()
     clutter.main()

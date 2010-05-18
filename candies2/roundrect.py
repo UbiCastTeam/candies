@@ -74,7 +74,7 @@ class OutlinedRoundRectangle(clutter.Actor):
         self.unparent()
 
 
-class RoundRectangle(OutlinedRoundRectangle):
+class RoundRectangle(clutter.Actor):
     """
     RoundRectangle (clutter.Actor)
 
@@ -83,6 +83,13 @@ class RoundRectangle(OutlinedRoundRectangle):
     """
     __gtype_name__ = 'RoundRectangle'
     __gproperties__ = {
+        'color' : (
+            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+        ),
+        'radius': (
+            gobject.TYPE_FLOAT, 'Radius', 'Radius of the round angles',
+            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
+        ),
         'border_color': (
             str, 'border color', 'Border color', None, gobject.PARAM_READWRITE
         ),
@@ -93,12 +100,22 @@ class RoundRectangle(OutlinedRoundRectangle):
     }
 
     def __init__(self, light_texture=None, dark_texture=None):
-        OutlinedRoundRectangle.__init__(self)
+        clutter.Actor.__init__(self)
+        self._radius = 0.0
+        self._color = clutter.color_from_string('Black')
         self._border_color = clutter.color_from_string('Black')
         self._border_width = 0.0
         self._light_texture = light_texture
         self._dark_texture = dark_texture
-
+    
+    def set_radius(self, radius):
+        self._radius = radius
+        self.queue_redraw()
+    
+    def set_color(self, color):
+        self._color = clutter.color_from_string(color)
+        self.queue_redraw()
+    
     def set_border_color(self, color):
         self._border_color = clutter.color_from_string(color)
         self.queue_redraw()
@@ -112,17 +129,24 @@ class RoundRectangle(OutlinedRoundRectangle):
             self.set_border_color(value)
         elif pspec.name == 'border-width':
             self.set_border_width(value)
+        elif pspec.name == 'color':
+            self.set_color(value)
+        elif pspec.name == 'radius':
+            self.set_radius(value)
         else:
-            OutlinedRoundRectangle.do_set_property(self, pspec, value)
-            return
+            raise TypeError('Unknown property ' + pspec.name)
 
     def do_get_property(self, pspec):
         if pspec.name == 'border-color':
             return self._border_color
         elif pspec.name == 'border-width':
             return self._border_width
+        elif pspec.name == 'color':
+            return self._color
+        elif pspec.name == 'radius':
+            return self._radius
         else:
-            return OutlinedRoundRectangle.do_get_property(self, pspec)
+            raise TypeError('Unknown property ' + pspec.name)
 
     def __paint_rectangle(self, width, height, color, border_color=None):
         if border_color is not None and self._border_width > 0.0:
@@ -170,10 +194,6 @@ class RoundRectangle(OutlinedRoundRectangle):
     
     def do_destroy(self):
         self.unparent()
-        try:
-            OutlinedRoundRectangle.do_destroy(self)
-        except:
-            pass
 
 
 if __name__ == '__main__':
@@ -226,7 +246,7 @@ if __name__ == '__main__':
                 print counter
                 tested_object = create_test_object()
                 stage.add(tested_object)
-                gobject.timeout_add(1, remove_tested_object, tested_object, stage, counter)
+                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
             return False
         
         def remove_tested_object(tested_object, stage, counter):
@@ -235,7 +255,7 @@ if __name__ == '__main__':
             gc.collect()
             pprint(gc.garbage)
             
-            gobject.timeout_add(1, test_memory, stage, counter, max_count)
+            gobject.timeout_add(2, test_memory, stage, counter, max_count)
             return False
         
         gobject.timeout_add(10, test_memory, stage, 0, max_count)
