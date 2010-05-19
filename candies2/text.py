@@ -143,6 +143,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def set_text(self, text):
         self._text = text
+        self.label.set_text(self._text)
         self.queue_relayout()
     
     def get_text(self):
@@ -196,6 +197,7 @@ class TextContainer(clutter.Actor, clutter.Container):
             self.rect.props.color = value
         elif pspec.name == 'text':
             self._text = value
+            self.label.set_text(self._text)
             self.queue_relayout()
         elif pspec.name == 'font-color':
             self.label.props.color = clutter.color_from_string(value)

@@ -908,11 +908,8 @@ if __name__ == '__main__':
             r.set_size(250, 150)
             r.set_color(clutter.color_from_string('Blue'))
             t.add_element(r, 'rect')
-            #b = ClassicButton('zefezf pozeffap^afl )qfq)àz iàg egjez çàfiçzf jgioe gjopfjq')
-            #t.add_element(b, 'button')
             return t
         def remove_test_object(obj, stage):
-            #stage.remove(obj)
             obj.destroy()
             return False
         

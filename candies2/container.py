@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*
+
 class ContainerAdapter:
     """
     An abstract container class to be subclass by common Candies containers.
