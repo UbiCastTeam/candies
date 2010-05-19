@@ -19,7 +19,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             .scrollbar_background : clutter.Rectangle or clutter.Texture if bar_image_path set
             .scroller : clutter.Rectangle or clutter.Texture if scroller_image_path set
             .scroller_position : float
-            .border : float
+            .padding : float
             .thin_scroller : boolean
         functions :
             .on_scroll_press : drag scroller
@@ -33,9 +33,9 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, border=8.0, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False,label=None):
+    def __init__(self, padding=8, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False,label=None):
         clutter.Actor.__init__(self)
-        self.border = border
+        self.padding = padding
         self.thin_scroller = thin_scroller
         self.reallocate=reallocate
         self.show_label=False
@@ -88,13 +88,13 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if self.h == False : 
             if self.last_event_y is None: return
             clutter.grab_pointer(self.scroller)
-            self.last_event_y = event.y - self.get_transformed_position()[1] - self.border
-            self.scroller_position = event.y - self.get_transformed_position()[1] - self.border
+            self.last_event_y = event.y - self.get_transformed_position()[1] - self.padding
+            self.scroller_position = event.y - self.get_transformed_position()[1] - self.padding
         else : 
             if self.last_event_x is None: return
             clutter.grab_pointer(self.scroller)
-            self.last_event_x = event.x - self.get_transformed_position()[0] - self.border
-            self.scroller_position = event.x - self.get_transformed_position()[0] - self.border
+            self.last_event_x = event.x - self.get_transformed_position()[0] - self.padding
+            self.scroller_position = event.x - self.get_transformed_position()[0] - self.padding
         self.queue_relayout()
         
         if self.reallocate : 
@@ -126,13 +126,13 @@ class Scrollbar(clutter.Actor, clutter.Container):
             box_width = box.y2 - box.y1
             self.height = box_height = box.x2 - box.x1
             
-        scroller_width = box_width - 2*self.border
+        scroller_width = box_width - 2*self.padding
         self.scroller_height=scroller_height = scroller_width
         if self.thin_scroller:
             bar_width = box_width/4
         else:
-            bar_width = box_width - 2*self.border
-        bar_height = box_height - 2*self.border - scroller_height + bar_width
+            bar_width = box_width - 2*self.padding
+        bar_height = box_height - 2*self.padding - scroller_height + bar_width
             
         bar_box = clutter.ActorBox()  
         if self.h == False :
@@ -157,26 +157,26 @@ class Scrollbar(clutter.Actor, clutter.Container):
             
         scroller_box = clutter.ActorBox()
         if self.h == False :
-            scroller_box.x1 = self.border 
+            scroller_box.x1 = self.padding 
             scroller_box.x2 = scroller_box.x1 + scroller_width
         else :
-            #scroller_box.y1 = self.border 
+            #scroller_box.y1 = self.padding 
             scroller_box.y1 = 20*box_width/93
             scroller_box.y2 = scroller_box.y1 + scroller_width
         self.scroller_position -= scroller_height/2
-        if self.scroller_position >= box_height - 2*self.border - scroller_height:
-            self.scroller_position = box_height - 2*self.border - scroller_height
+        if self.scroller_position >= box_height - 2*self.padding - scroller_height:
+            self.scroller_position = box_height - 2*self.padding - scroller_height
         if self.scroller_position <= 0:
             self.scroller_position = 0
             scroll_position_percent = 0
         if self.h == False :
-            scroller_box.y1 = self.border + self.scroller_position
+            scroller_box.y1 = self.padding + self.scroller_position
             scroller_box.y2 = scroller_box.y1 + scroller_height  
         else :
-            scroller_box.x1 = self.border + self.scroller_position
+            scroller_box.x1 = self.padding + self.scroller_position
             scroller_box.x2 = scroller_box.x1 + scroller_height
         self.scroller.allocate(scroller_box,flags)
-        scroll_position_percent = (self.scroller_position)/(box_height - 2*self.border - scroller_height)
+        scroll_position_percent = (self.scroller_position)/(box_height - 2*self.padding - scroller_height)
         self.emit("scroll_position", scroll_position_percent)
         clutter.Actor.do_allocate(self, box, flags)
     

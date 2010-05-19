@@ -135,16 +135,13 @@ class Keyboard(clutter.Actor, clutter.Container):
         for line in self.keyboard:
             one_line_width = 0
             for key in line:
-                if self.key_font_name is None:
-                    button = ClassicButton(key.txt,stretch=True)
-                else:
-                    button = ClassicButton(key.txt)
+                button = ClassicButton(key.txt)
+                if self.key_font_name is not None:
                     button.label.set_font_name(self.key_font_name)
-                button.label.set_color(self.font_color)
-                button.rect.set_border_color(self.border_color)
-                button.rect.set_color(self.inner_color)
+                button.set_font_color(self.font_color)
+                button.set_inner_color(self.inner_color)
+                button.set_border_color(self.border_color)
                 button.set_parent(self)
-                button.set_reactive(True)
                 button.connect('button-press-event', self.on_button_press)
                 self.button_map[key] = button
                 one_line_width=one_line_width+key.width
@@ -162,7 +159,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     # on button press emit message
     def on_button_press(self, source, event):
-        source.rect.set_color(self.highlight_color)
+        source.set_inner_color(self.highlight_color)
         for key , button in self.button_map.items():
             if button == source :
                 if key.event == 'fr_min':
@@ -187,7 +184,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                     self.emit("keyboard",'suppr')
                 #if key.event == 'del':
                     #self.emit("keyboard",'del')
-        gobject.timeout_add(200, source.rect.set_color, self.inner_color)
+        gobject.timeout_add(200, source.set_inner_color, self.inner_color)
     
     # button mapping : calcul each buttons width and place them
     def do_allocate(self, box, flags):

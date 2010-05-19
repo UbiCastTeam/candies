@@ -24,12 +24,12 @@ class OutlinedRoundRectangle(clutter.Actor):
         self._color = clutter.color_from_string('Black')
         self._radius = 0.0
     
-    def set_color(self, color):
-        self._color = clutter.color_from_string(color)
-        self.queue_redraw()
-    
     def set_radius(self, radius):
         self._radius = radius
+        self.queue_redraw()
+    
+    def set_color(self, color):
+        self._color = clutter.color_from_string(color)
         self.queue_redraw()
     
     def do_set_property(self, pspec, value):

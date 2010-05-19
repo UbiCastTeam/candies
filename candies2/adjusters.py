@@ -28,8 +28,8 @@ class NumberAdjuster(Box):
     button_border_color = '#ffffff66'
     button_inactive_color = '#00000044'
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, border=0, light_texture=None, dark_texture=None):
-        Box.__init__(self, horizontal=True, spacing=spacing, border=border)
+    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, padding=0, light_texture=None, dark_texture=None):
+        Box.__init__(self, horizontal=True, spacing=spacing, padding=padding)
 
         self.min = min
         self.max = max
@@ -40,38 +40,37 @@ class NumberAdjuster(Box):
         self.factor = factor
         
         minus = ClassicButton("-", light_texture=light_texture, dark_texture=dark_texture)
-       
-        minus.label.set_font_name(self.button_font_size)
-        minus.label.set_color(self.button_font_color)
-        minus.rect.set_color(self.button_inner_color)
-        minus.rect.set_border_color(self.button_border_color)
+        minus.set_font_name(self.button_font_size)
+        minus.set_font_color(self.button_font_color)
+        minus.set_inner_color(self.button_inner_color)
+        minus.set_border_color(self.button_border_color)
         minus.set_size(self.button_size, self.button_size)
         minus.connect("button-release-event", self.dec)
 
         self.value_btn = ClassicButton('', light_texture=light_texture, dark_texture=dark_texture)
-        self.value_btn.label.set_font_name(self.button_font_size)
-        self.value_btn.label.set_color(self.button_font_color)
-        self.value_btn.rect.set_color(self.button_inner_color)
-        self.value_btn.rect.set_border_color(self.button_border_color)
+        self.value_btn.set_font_name(self.button_font_size)
+        self.value_btn.set_font_color(self.button_font_color)
+        self.value_btn.set_inner_color(self.button_inner_color)
+        self.value_btn.set_border_color(self.button_border_color)
         self.value_btn.set_width(2*self.button_size) #minimum size
 
         self.update_rounded_value()
         # set default value
 
         plus = ClassicButton("+", light_texture=light_texture, dark_texture=dark_texture)
-        plus.label.set_font_name(self.button_font_size)
-        plus.label.set_color(self.button_font_color)
-        plus.rect.set_color(self.button_inner_color)
-        plus.rect.set_border_color(self.button_border_color)
+        plus.set_font_name(self.button_font_size)
+        plus.set_font_color(self.button_font_color)
+        plus.set_inner_color(self.button_inner_color)
+        plus.set_border_color(self.button_border_color)
         plus.connect("button-release-event", self.inc)
         plus.set_size(self.button_size, self.button_size)
 
         if text is not None:
-            label = ClassicButton(str(text), stretch=False, border=0)
-            label.label.set_font_name(self.label_font_size)
-            label.label.set_color(self.button_font_color)
-            label.rect.set_color('#00000000')
-            label.rect.set_border_color('#00000000')
+            label = ClassicButton(str(text), padding=0)
+            label.set_font_name(self.label_font_size)
+            label.set_font_color(self.button_font_color)
+            label.set_inner_color('#00000000')
+            label.set_border_color('#00000000')
             self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.7})
 
         self.add(

@@ -35,13 +35,13 @@ class Box(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Box'
     
-    def __init__(self, horizontal=True, spacing=0.0, border=0.0, bg_ignore_allocation_box=True):
+    def __init__(self, horizontal=True, spacing=0, padding=0, bg_ignore_allocation_box=True):
         clutter.Actor.__init__(self)
         self.elements = list()
         self.background = None
         self.overlay = None
         self.spacing = spacing
-        self.border = border
+        self.padding = padding
         if horizontal == True:
             self._horizontal = True
         else:
@@ -153,7 +153,7 @@ class Box(clutter.Actor, clutter.Container):
             self.overlay = None
     
     def do_get_preferred_width(self, for_height):
-        inner_height = for_height - 2*self.border
+        inner_height = for_height - 2*self.padding
         preferred_width = 0
         if self._horizontal is False:
             #find size available for special elements with expand and keep_ratio
@@ -217,11 +217,11 @@ class Box(clutter.Actor, clutter.Container):
             if preferred_width != 0:
                 preferred_width -= self.spacing
         
-        preferred_width += 2*self.border
+        preferred_width += 2*self.padding
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        inner_width = for_width - 2*self.border
+        inner_width = for_width - 2*self.padding
         preferred_height = 0
         if self._horizontal is True:
             #find size available for special elements with expand and keep_ratio
@@ -287,14 +287,14 @@ class Box(clutter.Actor, clutter.Container):
             if preferred_height != 0:
                 preferred_height -= self.spacing
         
-        preferred_height += 2*self.border
+        preferred_height += 2*self.padding
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.border
-        inner_height = main_height - 2*self.border
+        inner_width = main_width - 2*self.padding
+        inner_height = main_height - 2*self.padding
         
         #find size available for special elements with expand and keep_ratio, ignoring elements with resizable
         special_elements = list()
@@ -401,8 +401,8 @@ class Box(clutter.Actor, clutter.Container):
                             obj_height = int(original_height*ratio)
                             element['resizable'] = float(obj_height/resizable_height)
         
-        x = self.border
-        y = self.border
+        x = self.padding
+        y = self.padding
         for element in self.elements:
             obj_width, obj_height = element['object'].get_preferred_size()[2:]
             if element.get('expand') is True:
@@ -472,7 +472,7 @@ class Box(clutter.Actor, clutter.Container):
                     bgbox = clutter.ActorBox()
                     bgbox.x1 = 0
                     bgbox.y1 = 0
-                    bgbox.x2 = self.border + round(x) - self.spacing
+                    bgbox.x2 = self.padding + round(x) - self.spacing
                     bgbox.y2 = main_height
                     self.background.allocate(bgbox, flags)
                 else:
@@ -480,7 +480,7 @@ class Box(clutter.Actor, clutter.Container):
                     bgbox.x1 = 0
                     bgbox.y1 = 0
                     bgbox.x2 = main_width
-                    bgbox.y2 = self.border + round(y) - self.spacing
+                    bgbox.y2 = self.padding + round(y) - self.spacing
                     self.background.allocate(bgbox, flags)
             else:
                 bgbox = clutter.ActorBox()
@@ -495,24 +495,24 @@ class Box(clutter.Actor, clutter.Container):
             if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
                 if self._horizontal is True:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self.border
-                    ovbox.y1 = self.border
+                    ovbox.x1 = self.padding
+                    ovbox.y1 = self.padding
                     ovbox.x2 = round(x) - self.spacing
-                    ovbox.y2 = main_height - self.border
+                    ovbox.y2 = main_height - self.padding
                     self.overlay.allocate(ovbox, flags)
                 else:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self.border
-                    ovbox.y1 = self.border
-                    ovbox.x2 = main_width - self.border
+                    ovbox.x1 = self.padding
+                    ovbox.y1 = self.padding
+                    ovbox.x2 = main_width - self.padding
                     ovbox.y2 = round(y) - self.spacing
                     self.overlay.allocate(ovbox, flags)
             else:
                 ovbox = clutter.ActorBox()
-                ovbox.x1 = self.border
-                ovbox.y1 = self.border
-                ovbox.x2 = main_width - self.border
-                ovbox.y2 = main_height - self.border
+                ovbox.x1 = self.padding
+                ovbox.y1 = self.padding
+                ovbox.x2 = main_width - self.padding
+                ovbox.y2 = main_height - self.padding
                 self.overlay.allocate(ovbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -580,7 +580,7 @@ class VBox(Box):
 class AlignedElement(clutter.Actor, clutter.Container):
     __gtype_name__ = 'AlignedElement'
 
-    def __init__(self, align='center', border=0, expand=False, keep_ratio=True, pick_enabled=True):
+    def __init__(self, align='center', padding=0, expand=False, keep_ratio=True, pick_enabled=True):
         clutter.Actor.__init__(self)
         if align == 'top_left':
             self.align = 'top_left'
@@ -602,7 +602,7 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.align = 'bottom_right'
         else:
             self.align = 'center'
-        self.border = border
+        self.padding = padding
         self.expand = expand
         self.keep_ratio = keep_ratio
         self.element = None
@@ -655,14 +655,14 @@ class AlignedElement(clutter.Actor, clutter.Container):
                     element_height = self.element.get_preferred_size()[3]
                     if element_height != 0:
                         ratio = float(float(element_width) / float(element_height))
-                        prefered_width = int(element_height * ratio) + 2*self.border
+                        prefered_width = int(element_height * ratio) + 2*self.padding
                     else:
                         return 0, 0
                 else:
-                    prefered_width = element_width + 2*self.border
+                    prefered_width = element_width + 2*self.padding
             else:
                 element_width = self.element.get_preferred_size()[2]
-                prefered_width = element_width + 2*self.border
+                prefered_width = element_width + 2*self.padding
             return prefered_width, prefered_width
         else:
             return 0, 0
@@ -675,14 +675,14 @@ class AlignedElement(clutter.Actor, clutter.Container):
                     element_width = self.element.get_preferred_size()[1]
                     if element_width != 0:
                         ratio = float(float(element_height) / float(element_width))
-                        prefered_height = int(element_width / ratio) + 2*self.border
+                        prefered_height = int(element_width / ratio) + 2*self.padding
                     else:
                         return 0, 0
                 else:
-                    prefered_height = element_height + 2*self.border
+                    prefered_height = element_height + 2*self.padding
             else:
                 element_height = self.element.get_preferred_size()[0]
-                prefered_height = element_height + 2*self.border
+                prefered_height = element_height + 2*self.padding
             return prefered_height, prefered_height
         else:
             return 0, 0
@@ -690,8 +690,8 @@ class AlignedElement(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.border
-        inner_height = main_height - 2*self.border
+        inner_width = main_width - 2*self.padding
+        inner_height = main_height - 2*self.padding
         
         #box background
         if self.background:
@@ -704,10 +704,10 @@ class AlignedElement(clutter.Actor, clutter.Container):
         
         if self.element:
             element_width, element_height = self.element.get_preferred_size()[2:]
-            ele_x1 = self.border
-            ele_y1 = self.border
-            ele_x2 = self.border
-            ele_y2 = self.border
+            ele_x1 = self.padding
+            ele_y1 = self.padding
+            ele_x2 = self.padding
+            ele_y2 = self.padding
             if self.expand == True:
                 if self.keep_ratio == True and element_height != 0:
                     ratio = float(float(element_width) / float(element_height))
@@ -719,33 +719,33 @@ class AlignedElement(clutter.Actor, clutter.Container):
                     if element_height > inner_height:
                         element_height = inner_height
                         element_width = int(element_height * ratio)
-                    ele_x1 = self.border + int((inner_width - element_width)/2)
-                    ele_y1 = self.border + int((inner_height - element_height)/2)
-                    ele_x2 = main_width - self.border - int((inner_width - element_width)/2)
-                    ele_y2 = main_height - self.border - int((inner_height - element_height)/2)
+                    ele_x1 = self.padding + int((inner_width - element_width)/2)
+                    ele_y1 = self.padding + int((inner_height - element_height)/2)
+                    ele_x2 = main_width - self.padding - int((inner_width - element_width)/2)
+                    ele_y2 = main_height - self.padding - int((inner_height - element_height)/2)
                 else:
-                    ele_x1 = self.border
-                    ele_y1 = self.border
-                    ele_x2 = main_width - self.border
-                    ele_y2 = main_height - self.border
+                    ele_x1 = self.padding
+                    ele_y1 = self.padding
+                    ele_x2 = main_width - self.padding
+                    ele_y2 = main_height - self.padding
             else:
                 if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
-                    ele_x1 = self.border
-                    ele_x2 = self.border + element_width
+                    ele_x1 = self.padding
+                    ele_x2 = self.padding + element_width
                 if self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
-                    ele_x1 = main_width - self.border - element_width
-                    ele_x2 = main_width - self.border
+                    ele_x1 = main_width - self.padding - element_width
+                    ele_x2 = main_width - self.padding
                 if self.align == 'top_left' or self.align == 'top' or self.align == 'top_right':
-                    ele_y1 = self.border
-                    ele_y2 = self.border + element_height
+                    ele_y1 = self.padding
+                    ele_y2 = self.padding + element_height
                 if self.align == 'bottom_left' or self.align == 'bottom' or self.align == 'bottom_right':
-                    ele_y1 = main_height - self.border - element_height
-                    ele_y2 = main_height - self.border
+                    ele_y1 = main_height - self.padding - element_height
+                    ele_y2 = main_height - self.padding
                 if self.align == 'center':
-                    ele_x1 = self.border + int((inner_width-element_width)/2)
-                    ele_x2 = self.border + int((inner_width-element_width)/2) + element_width
-                    ele_y1 = self.border + int((inner_height-element_height)/2)
-                    ele_y2 = self.border + int((inner_height-element_height)/2) + element_height
+                    ele_x1 = self.padding + int((inner_width-element_width)/2)
+                    ele_x2 = self.padding + int((inner_width-element_width)/2) + element_width
+                    ele_y1 = self.padding + int((inner_height-element_height)/2)
+                    ele_y2 = self.padding + int((inner_height-element_height)/2) + element_height
             elebox = clutter.ActorBox()
             elebox.x1 = ele_x1
             elebox.y1 = ele_y1
@@ -822,7 +822,7 @@ if __name__ == '__main__':
     rect4.set_size(40, 40)
     rect4.set_color(clutter.color_from_string('Red'))
     
-    line = Box(horizontal=True, spacing=10.0, border=20.0)
+    line = Box(horizontal=True, spacing=10, padding=20)
     line.set_background(rect_bg)
     line.add({'name': 'rect1',
         'center': True,
@@ -866,7 +866,7 @@ if __name__ == '__main__':
     
     
     
-    other_box = Box(horizontal=True, spacing=10.0, border=20.0)
+    other_box = Box(horizontal=True, spacing=10, padding=20)
     
     rect5 = clutter.Rectangle()
     rect5.set_size(250, 150)
@@ -903,7 +903,7 @@ if __name__ == '__main__':
         max_count = 20000
         
         def create_test_object():
-            t = Box(horizontal=True, spacing=10.0, border=20.0)
+            t = Box(horizontal=True, spacing=10, padding=20)
             r = clutter.Rectangle()
             r.set_size(250, 150)
             r.set_color(clutter.color_from_string('Blue'))

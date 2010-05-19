@@ -10,7 +10,7 @@ from list import ButtonList, FileList
 from video import VideoPlayer 
 from seekbar import SeekBar
 from scrollbar import Scrollbar, Clipper
-from text import StretchText
+from text import StretchText, TextContainer
 from clicking import SimpleClick, LongClick
 from keyboard import Keyboard
 from adjusters import NumberAdjuster

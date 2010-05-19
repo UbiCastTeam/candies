@@ -1,171 +1,58 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import gobject
 import clutter
-from text import StretchText
+from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
 
-class ClassicButton(clutter.Actor, clutter.Container):
+class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
-    __gproperties__ = {
-        'text' : (
-            str, 'text', 'Text', None, gobject.PARAM_READWRITE
-        ),
-        'color' : (
-            str, 'color', 'Color', None, gobject.PARAM_READWRITE
-        ),
-        'font_color' : (
-            str, 'font color', 'Font color', None, gobject.PARAM_READWRITE
-        ),
-        'border_color': (
-            str, 'border color', 'Border color', None, gobject.PARAM_READWRITE
-        ),
-        'border_width' : (
-            gobject.TYPE_FLOAT, 'border width', 'Border width',
-            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
-        ),
-    }
-    default_color = 'LightGray'
-    default_border_color = 'Gray'
     
-    def __init__(self, label, stretch=False, border=6.0, light_texture=None, dark_texture=None, round=True):
-        clutter.Actor.__init__(self)
-
+    def __init__(self, label, padding=6, light_texture=None, dark_texture=None, rounded=True):
+        TextContainer.__init__(self, label, padding=padding, light_texture=light_texture, dark_texture=dark_texture, rounded=rounded)
+        
         self.set_reactive(True)
-
-        self.text = label
-        self.is_stretch = stretch
-        self.border = border
         
-        self.label = clutter.Text()
-        self.label.set_parent(self)
-        self.label.set_text(self.text)
-
-        if round:
-            self.rect = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
-            self.rect.set_border_color(self.default_border_color)
-            self.rect.set_border_width(3)
-            self.rect.props.radius = 10
-        else:
-            self.rect = clutter.Rectangle()
-        self.rect.set_color(self.default_color)
-        self.rect.set_parent(self)
-    
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'color':
-            self.rect.props.color = value
-        elif pspec.name == 'text':
-            self.text = value
-            self.queue_relayout()
-        elif pspec.name == 'font-color':
-            self.label.props.color = clutter.color_from_string(value)
-        elif pspec.name == 'border-color':
-            self.rect.props.border_color = value
-        elif pspec.name == 'border-width':
-            self.rect.props.border_width = value
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-        self.queue_redraw()
-
-    def do_get_property(self, pspec):
-        if pspec.name == 'color':
-            return self.rect.props.color
-        elif pspec.name == 'text':
-            return self.text
-        elif pspec.name == 'font-color':
-            return self.label.props.color
-        elif pspec.name == 'border-color':
-            return self.rect.props.border_color
-        elif pspec.name == 'border-width':
-            return self.rect.props.border_width
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-    
-    def do_get_preferred_width(self, for_height):
-        t = clutter.Text()
-        t.set_font_name(self.label.get_font_name())
-        t.set_text('…')
-        min = t.get_preferred_size()[0]
-        t.set_text(self.text)
-        nat = t.get_preferred_size()[2]
-        t.destroy()
-        del t
-        return min + 2*self.border, nat + 2*self.border
-    
-    def do_get_preferred_height(self, for_width):
-        min, nat = self.label.get_preferred_height(for_width)
-        return min + 2*self.border, nat + 2*self.border
-    
-    def _wrap_label(self, min, max, width):
-        mid = (min + max) / 2
-        if mid-6 < 0:
-            self.label.set_text(self.text)
-            return
-        self.label.set_text('%s…%s' %(self.text[:mid-6], self.text[len(self.text)-6:]))
-        if mid == min or self.label.get_preferred_size()[2] == width:
-            return
-        if self.label.get_preferred_size()[2] > width:
-            self._wrap_label(min, mid, width)
-        else:
-            self._wrap_label(mid, max, width)
-    
+    """
     def do_allocate(self, box, flags):
-        btn_width = box.x2 - box.x1
-        btn_height = box.y2 - box.y1
-        inner_width = btn_width - 2*self.border
-        inner_height = btn_height - 2*self.border
+        if self.is_stretch:
+            btn_width = box.x2 - box.x1
+            btn_height = box.y2 - box.y1
+            inner_width = btn_width - 2*self.padding
+            inner_height = btn_height - 2*self.padding
+            
+            rect_box = clutter.ActorBox()
+            rect_box.x1 = 0
+            rect_box.y1 = 0
+            rect_box.x2 = btn_width
+            rect_box.y2 = btn_height
+            self.rect.allocate(rect_box, flags)
+            
+            self.label.set_text(self._text)
         
-        rect_box = clutter.ActorBox()
-        rect_box.x1 = 0
-        rect_box.y1 = 0
-        rect_box.x2 = btn_width
-        rect_box.y2 = btn_height
-        self.rect.allocate(rect_box, flags)
-        
-        self.label.set_text(self.text)
-        if self.label.get_preferred_size()[2] > inner_width:
-            self._wrap_label(0, len(self.text), inner_width)
-        elif self.is_stretch:
             lbl = StretchText()
-            lbl.set_text(self.text)
+            lbl.set_text(self._text)
             fontface = self.label.get_font_name()
             lbl.set_font_name(fontface)
             fontsize = lbl.get_preferred_fontsize(inner_width, inner_height)
+            lbl.destroy()
+            del lbl
             fontface = fontface[:fontface.rindex(' ')]
             self.label.set_font_name('%s %s' %(fontface, fontsize))
-        lbl_width = self.label.get_preferred_size()[2]
-        lbl_height = self.label.get_preferred_size()[3]
-        lbl_box = clutter.ActorBox()
-        lbl_box.x1 = round(self.border + (inner_width - lbl_width) / 2)
-        lbl_box.y1 = round(self.border + (inner_height - lbl_height) / 2)
-        lbl_box.x2 = round(lbl_box.x1 + lbl_width)
-        lbl_box.y2 = round(lbl_box.y1 + lbl_height)
-        self.label.allocate(lbl_box, flags)
+            lbl_width = self.label.get_preferred_size()[2]
+            lbl_height = self.label.get_preferred_size()[3]
+            lbl_box = clutter.ActorBox()
+            lbl_box.x1 = round(self.padding + (inner_width - lbl_width) / 2)
+            lbl_box.y1 = round(self.padding + (inner_height - lbl_height) / 2)
+            lbl_box.x2 = round(lbl_box.x1 + lbl_width)
+            lbl_box.y2 = round(lbl_box.y1 + lbl_height)
+            self.label.allocate(lbl_box, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
-    
-    def do_foreach(self, func, data=None):
-        func(self.rect, data)
-        func(self.label, data)
-    
-    def do_paint(self):
-        self.rect.paint()
-        self.label.paint()
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, 'rect'):
-            if self.rect is not None:
-                self.rect.unparent()
-                self.rect.destroy()
-                self.rect = None
-        if hasattr(self, 'label'):
-            if self.label is not None:
-                self.label.unparent()
-                self.label.destroy()
-                self.label = None
+            clutter.Actor.do_allocate(self, box, flags)
+        else:
+            TextContainer.do_allocate(self, box, flags)
+    """
 
 
 class ItemButton(clutter.Actor, clutter.Container):
@@ -194,13 +81,13 @@ class ItemButton(clutter.Actor, clutter.Container):
     default_active_color = 'Yellow'
     default_border_color = 'Gray'
     
-    def __init__(self, label, picture=None, border=6.0):
+    def __init__(self, label, picture=None, padding=6):
         clutter.Actor.__init__(self)
-
+        
         self.set_reactive(True)
-
-        self.text = label
-        self.border_size = border
+        
+        self.padding = padding
+        self._text = label
         self._is_active = False
         
         self.label = clutter.Text()
@@ -225,6 +112,13 @@ class ItemButton(clutter.Actor, clutter.Container):
     def toggle_status(self):
         self.props.active = not self.props.active
     
+    def set_text(self, text):
+        self._text = text
+        self.queue_relayout()
+    
+    def get_text(self):
+        return self._text
+    
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
             self.default_color = value
@@ -235,7 +129,7 @@ class ItemButton(clutter.Actor, clutter.Container):
             if self._is_active:
                 self.back.props.color = value
         elif pspec.name == 'text':
-            self.text = value
+            self._text = value
             self.queue_relayout()
         elif pspec.name == 'font-color':
             self.label.props.color = clutter.color_from_string(value)
@@ -256,7 +150,7 @@ class ItemButton(clutter.Actor, clutter.Container):
         elif pspec.name == 'active-color':
             return self.default_active_color
         elif pspec.name == 'text':
-            return self.text
+            return self._text
         elif pspec.name == 'font-color':
             return self.label.props.color
         elif pspec.name == 'border-color':
@@ -271,12 +165,12 @@ class ItemButton(clutter.Actor, clutter.Container):
         t.set_font_name(self.label.get_font_name())
         t.set_text('…')
         min = t.get_preferred_size()[0]
-        t.set_text(self.text)
+        t.set_text(self._text)
         nat = t.get_preferred_size()[2]
         if self.picture is not None:
             pict_width = self.picture.get_preferred_width(-1)[1]
             nat = max(nat, pict_width)
-        return min + 2*self.border_size, nat + 2*self.border_size
+        return min + 2*self.padding, nat + 2*self.padding
     
     def do_get_preferred_height(self, for_width):
         min, nat = self.label.get_preferred_height(for_width)
@@ -287,14 +181,14 @@ class ItemButton(clutter.Actor, clutter.Container):
             min_width = t.get_preferred_size()[0]
             min += self.picture.get_preferred_height(min_width)[0]
             nat += self.picture.get_preferred_height(-1)[1]
-        return min + 2*self.border_size, nat + 2*self.border_size
+        return min + 2*self.padding, nat + 2*self.padding
     
     
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
-        inner_width = btn_width - 2*self.border_size
-        inner_height = btn_height - 2*self.border_size
+        inner_width = btn_width - 2*self.padding
+        inner_height = btn_height - 2*self.padding
         
         bgbox = clutter.ActorBox()
         bgbox.x1 = 0
@@ -304,15 +198,15 @@ class ItemButton(clutter.Actor, clutter.Container):
         self.back.allocate(bgbox, flags)
         self.border.allocate(bgbox, flags)
         
-        self.label.set_text(self.text)
+        self.label.set_text(self._text)
         lbl_height = self.label.get_preferred_size()[3]
         lbl_width = self.label.get_preferred_size()[2]
         if self.label.get_preferred_size()[2] > inner_width:
             self.label.set_clip(0, 0, inner_width, lbl_height)
             lbl_width = inner_width
         lblbox = clutter.ActorBox()
-        lblbox.x1 = round(self.border_size + (inner_width - lbl_width) / 2)
-        lblbox.y1 = round(self.border_size)
+        lblbox.x1 = round(self.padding + (inner_width - lbl_width) / 2)
+        lblbox.y1 = round(self.padding)
         lblbox.x2 = round(lblbox.x1 + lbl_width)
         lblbox.y2 = round(lblbox.y1 + lbl_height)
         self.label.allocate(lblbox, flags)
@@ -331,10 +225,9 @@ class ItemButton(clutter.Actor, clutter.Container):
                     pict_height = remain_height
             elif pict_height > remain_height:
                 remain_height = inner_height
-                pict_top = self.border_size
+                pict_top = self.padding
             
-            pictbox.x1 = \
-                       round(self.border_size + (inner_width - pict_width) / 2)
+            pictbox.x1 = round(self.padding + (inner_width - pict_width) / 2)
             pictbox.y1 = round(pict_top + (remain_height - pict_height) / 2)
             pictbox.x2 = round(pictbox.x1 + pict_width)
             pictbox.y2 = round(pictbox.y1 + pict_height)
@@ -392,8 +285,8 @@ class ImageButton(ClassicButton):
         ),
     }
 
-    def __init__(self, label, image_location, stretch=False, border=6.0, spacing=8.0, use_native_image_size=False, activable=False, light_texture=None, dark_texture=None):
-        ClassicButton.__init__(self, label, stretch, border, light_texture=light_texture, dark_texture=dark_texture)
+    def __init__(self, label, image_location, padding=6, spacing=8, use_native_image_size=False, activable=False, light_texture=None, dark_texture=None):
+        ClassicButton.__init__(self, label, padding=padding, light_texture=light_texture, dark_texture=dark_texture)
 
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
@@ -437,8 +330,8 @@ class ImageButton(ClassicButton):
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
-        inner_width = btn_width - 2*self.border
-        inner_height = btn_height - 2*self.border
+        inner_width = btn_width - 2*self.padding
+        inner_height = btn_height - 2*self.padding
         
         # round rect
         rbox = clutter.ActorBox()
@@ -449,17 +342,9 @@ class ImageButton(ClassicButton):
         self.rect.allocate(rbox, flags)
         
         # label
-        self.label.set_text(self.text)
+        self.label.set_text(self._text)
         if self.label.get_preferred_size()[2] > inner_width:
-            self._wrap_label(0, len(self.text), inner_width)
-        elif self.is_stretch:
-            lbl = StretchText()
-            lbl.set_text(self.text)
-            fontface = self.label.get_font_name()
-            lbl.set_font_name(fontface)
-            fontsize = lbl.get_preferred_fontsize(inner_width, inner_height)
-            fontface = fontface[:fontface.rindex(' ')]
-            self.label.set_font_name('%s %s' %(fontface, fontsize))
+            self._wrap_label(0, len(self._text), inner_width)
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
         
@@ -482,15 +367,15 @@ class ImageButton(ClassicButton):
                 image_height = image_width/image_ratio
         
         lbox = clutter.ActorBox()
-        lbox.x1 = round(self.border + (inner_width - lbl_width)/2)
-        lbox.y1 = round(self.border + (inner_height - lbl_height - self.spacing - image_height)/2 + image_height + self.spacing)
+        lbox.x1 = round(self.padding + (inner_width - lbl_width)/2)
+        lbox.y1 = round(self.padding + (inner_height - lbl_height - self.spacing - image_height)/2 + image_height + self.spacing)
         lbox.x2 = round(lbox.x1 + lbl_width)
         lbox.y2 = round(lbox.y1 + lbl_height)
         self.label.allocate(lbox, flags)
         
         ibox = clutter.ActorBox()
-        ibox.x1 = round(self.border + (inner_width - image_width)/2)
-        ibox.y1 = round(self.border + (inner_height - lbl_height - self.spacing - image_height)/2)
+        ibox.x1 = round(self.padding + (inner_width - image_width)/2)
+        ibox.y1 = round(self.padding + (inner_height - lbl_height - self.spacing - image_height)/2)
         ibox.x2 = round(ibox.x1 + image_width)
         ibox.y2 = round(ibox.y1 + image_height)
         self.image.allocate(ibox, flags)
@@ -590,32 +475,32 @@ if __name__ == '__main__':
     r.set_size(640, 1)
     box0.add(r)
     
-    # Testing stretch buttons
-    b = ClassicButton('A', stretch=True)
+    # Testing buttons
+    b = ClassicButton('A')
     b.set_size(15, 15)
     b.set_position(5, 450)
     stage.add(b)
     
-    b = ClassicButton('B', stretch=True)
+    b = ClassicButton('B')
     b.set_size(25, 25)
     b.set_position(50, 425)
     stage.add(b)
     
-    b = ClassicButton('C', stretch=True)
-    b.props.font_color = 'Yellow'
+    b = ClassicButton('C')
+    b.set_font_color('Yellow')
     b.set_size(50, 50)
     b.set_position(125, 375)
     stage.add(b)
     
-    b = ClassicButton('D', stretch=True)
-    b.props.border_width = 10
-    b.props.border_color = 'Green'
+    b = ClassicButton('D')
+    b.set_border_width(10)
+    b.set_border_color('Green')
     b.set_size(100, 100)
     b.set_position(250, 325)
     stage.add(b)
     
-    b = ClassicButton('E', stretch=True)
-    b.props.color = 'Pink'
+    b = ClassicButton('E')
+    b.set_color('Pink')
     b.set_size(170, 170)
     b.set_position(425, 210)
     stage.add(b)
@@ -636,7 +521,7 @@ if __name__ == '__main__':
         dark_texture = clutter.cogl.texture_new_from_file(dark_path)
         
         def create_test_object():
-            t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', light_texture = light_texture, dark_texture = dark_texture, round = True)
+            t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', light_texture = light_texture, dark_texture = dark_texture, rounded = True)
             return t
         def remove_test_object(obj, stage):
             obj.destroy()
