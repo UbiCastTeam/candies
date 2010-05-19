@@ -56,18 +56,18 @@ KEYBOARD_MAPS = {
             ),
     
     'caract_fr' :  (
-        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'),),
+        (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'),),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
-        (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='fr_maj'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
+        (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
+        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=8))
             ),
     
     'caract_en' :  (
-        (Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'), ),
+        (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'), ),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
-        (Key('`'), Key('|'), Key('('), Key(')'), Key('{'), Key('}'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('>'), Key('←',nb=2,evt='suppr')),
+        (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
+        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='en_min'), Key(' ',nb=8))
             ),
             
