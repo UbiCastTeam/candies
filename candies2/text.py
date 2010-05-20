@@ -160,7 +160,8 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_font_name(font_name)
     
     def set_inner_color(self, color):
-        self.rect.set_color(color)
+        if self.rect is not None:
+            self.rect.set_color(color)
     
     def set_border_color(self, color):
         if self._rounded:
