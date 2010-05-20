@@ -1,6 +1,7 @@
 from version import VERSION as __revision__
 
 from box import Box, VBox, HBox, AlignedElement
+from block import TexturedBlock
 from flowbox import FlowBox
 from progressbar import SimpleProgressBar, SkinnedProgressBar
 from circle import Circle
