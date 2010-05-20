@@ -670,9 +670,9 @@ class AlignedElement(clutter.Actor, clutter.Container):
     def do_get_preferred_height(self, for_width):
         if self.element is not None:
             if self.expand == True:
-                element_height = self.element.get_preferred_size()[0]
+                element_height = self.element.get_preferred_size()[3]
                 if self.keep_ratio == True and element_height != 0:
-                    element_width = self.element.get_preferred_size()[1]
+                    element_width = self.element.get_preferred_size()[2]
                     if element_width != 0:
                         ratio = float(float(element_height) / float(element_width))
                         prefered_height = int(element_width / ratio) + 2*self.padding
@@ -681,7 +681,7 @@ class AlignedElement(clutter.Actor, clutter.Container):
                 else:
                     prefered_height = element_height + 2*self.padding
             else:
-                element_height = self.element.get_preferred_size()[0]
+                element_height = self.element.get_preferred_size()[3]
                 prefered_height = element_height + 2*self.padding
             return prefered_height, prefered_height
         else:
