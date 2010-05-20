@@ -279,7 +279,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
                 self.title_actor.unparent()
                 self.title_actor.destroy()
                 self.title_actor = None
-        if hasattr(self, '_default_title_actor'):
+        if hasattr(self, 'default_title_actor'):
             if self.default_title_actor:
                 self.default_title_actor.unparent()
                 self.default_title_actor.destroy()
