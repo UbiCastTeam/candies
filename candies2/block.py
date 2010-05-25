@@ -4,6 +4,7 @@
 import gobject
 import clutter
 from clutter import cogl
+from text import TextContainer
 
 class TexturedBlock(clutter.Actor, clutter.Container):
     __gtype_name__ = 'TexturedBlock'
@@ -14,24 +15,18 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         self.spacing = spacing
         
         self._highlighted = False
-        self._highlight_color = clutter.color_from_string('#ffffff88')
+        self._highlight_color = clutter.color_from_string('#ffffff44')
         
         self.title_actor = title_actor
         if title_actor:
             self.title_actor.set_parent(self)
-            if title_padding:
-                self.title_padding = title_padding
-            else:
-                self.title_padding = 0
+        if title_padding:
+            self.title_padding = title_padding
         else:
-            if title_padding:
-                self.title_padding = title_padding
-            else:
-                self.title_padding = 10
-        self.default_title_actor = clutter.Text()
+            self.title_padding = 0
+        self.default_title_actor = TextContainer(title)
         self.default_title_actor.set_line_alignment(1)
         self.default_title_actor.set_line_wrap(False)
-        self.default_title_actor.set_text(title)
         self.default_title_actor.set_parent(self)
         self._title_alignement = 'center'
         self._title_height = 0
@@ -45,7 +40,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         
         # textures
         #    background
-        self._bg_textures_size = 20
+        self._bg_textures_size = 40
         self._top_left = None
         self._top = None
         self._top_right = None
@@ -64,21 +59,30 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         self._parse_textures_package(textures_package)
     
     def set_font_color(self, color):
-        self.default_title_actor.set_color(color)
+        self.default_title_actor.set_font_color(color)
     
     def set_font_name(self, font_name):
         self.default_title_actor.set_font_name(font_name)
         
     def set_title_alignement(self, alignement):
         if alignement == 'center':
-            self.default_title_actor.set_line_alignment(1)
             self._title_alignement = 'center'
+            self.default_title_actor.set_line_alignment('center')
         elif alignement == 'right':
-            self.default_title_actor.set_line_alignment(2)
             self._title_alignement = 'right'
+            self.default_title_actor.set_line_alignment('right')
         elif alignement == 'left':
-            self.default_title_actor.set_line_alignment(3)
             self._title_alignement = 'left'
+            self.default_title_actor.set_line_alignment('left')
+    
+    def set_title_inner_color(self, color):
+        self.default_title_actor.set_inner_color(color)
+    
+    def set_title_border_color(self, color):
+        self.default_title_actor.set_border_color(color)
+    
+    def set_title_radius(self, radius):
+        self.default_title_actor.set_radius(radius)
     
     def set_title_wrap(self, boolean):
         if boolean:
@@ -193,15 +197,19 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         x2_padding = 0
         title_max_width = inner_width - 2*self.title_padding
         title_width = selected_title_actor.get_preferred_size()[2]
-        if title_max_width > title_width:
-            if self._title_alignement == 'center':
-                x1_padding = x2_padding = round(float(title_max_width - title_width) / 2.0)
-            elif self._title_alignement == 'left':
-                x1_padding = 0
-                x2_padding = title_max_width - title_width
-            elif self._title_alignement == 'right':
-                x1_padding = title_max_width - title_width
-                x2_padding = 0
+        if self.title_actor:
+            if title_max_width > title_width:
+                if self._title_alignement == 'center':
+                    x1_padding = x2_padding = round(float(title_max_width - title_width) / 2.0)
+                elif self._title_alignement == 'left':
+                    x1_padding = 0
+                    x2_padding = title_max_width - title_width
+                elif self._title_alignement == 'right':
+                    x1_padding = title_max_width - title_width
+                    x2_padding = 0
+        else:
+            x1_padding = 0
+            x2_padding = 0
         self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
         title_box = clutter.ActorBox()
         title_box.x1 = self.padding + self.title_padding + x1_padding
@@ -321,7 +329,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     
     def __paint_light(self):
         x1 = self.padding
-        y1 = self.padding + 2*self.title_padding + self._title_height + self.spacing
+        y1 = self.padding
         x2 = self.width - self.padding
         y2 = self.height - self.padding
         
