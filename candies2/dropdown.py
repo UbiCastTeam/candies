@@ -6,7 +6,7 @@ from roundrect import RoundRectangle
 
 class OptionLine(clutter.Actor, clutter.Container):
     """
-    A option line for select input.
+    A option line for select input. Can be used alone to have a text with icon.
     """
     __gtype_name__ = 'OptionLine'
     

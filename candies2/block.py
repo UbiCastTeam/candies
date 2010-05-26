@@ -352,10 +352,15 @@ class TexturedBlock(clutter.Actor, clutter.Container):
             self.content_actor.paint()
     
     def do_pick(self, color):
+        clutter.Actor.do_pick(self, color)
+        
         cogl.path_rectangle(0, 0, self.width, self.height)
         cogl.path_close()
         cogl.set_source_color(color)
         cogl.path_fill()
+        
+        if self.content_actor:
+            self.content_actor.paint()
     
     def do_destroy(self):
         self.unparent()
