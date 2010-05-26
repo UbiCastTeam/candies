@@ -28,7 +28,7 @@ class NumberAdjuster(Box):
     button_border_color = '#ffffff66'
     button_inactive_color = '#00000044'
 
-    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, padding=0, light_texture=None, dark_texture=None):
+    def __init__(self, min, max, default, increment=1, text=None, factor=None, spacing=5, padding=0, texture=None):
         Box.__init__(self, horizontal=True, spacing=spacing, padding=padding)
 
         self.min = min
@@ -39,7 +39,7 @@ class NumberAdjuster(Box):
             factor = 1
         self.factor = factor
         
-        minus = ClassicButton("-", light_texture=light_texture, dark_texture=dark_texture)
+        minus = ClassicButton("-", texture=texture)
         minus.set_font_name(self.button_font_size)
         minus.set_font_color(self.button_font_color)
         minus.set_inner_color(self.button_inner_color)
@@ -47,7 +47,7 @@ class NumberAdjuster(Box):
         minus.set_size(self.button_size, self.button_size)
         minus.connect("button-release-event", self.dec)
 
-        self.value_btn = ClassicButton('', light_texture=light_texture, dark_texture=dark_texture)
+        self.value_btn = ClassicButton('', texture=texture)
         self.value_btn.set_font_name(self.button_font_size)
         self.value_btn.set_font_color(self.button_font_color)
         self.value_btn.set_inner_color(self.button_inner_color)
@@ -57,7 +57,7 @@ class NumberAdjuster(Box):
         self.update_rounded_value()
         # set default value
 
-        plus = ClassicButton("+", light_texture=light_texture, dark_texture=dark_texture)
+        plus = ClassicButton("+", texture=texture)
         plus.set_font_name(self.button_font_size)
         plus.set_font_color(self.button_font_color)
         plus.set_inner_color(self.button_inner_color)

@@ -115,7 +115,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, text, padding=6, light_texture=None, dark_texture=None, rounded=True):
+    def __init__(self, text, padding=6, texture=None, rounded=True):
         clutter.Actor.__init__(self)
         
         self.padding = padding
@@ -131,7 +131,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         
         if rounded:
             self._rounded = True
-            self.rect = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
+            self.rect = RoundRectangle(texture=texture)
             self.rect.set_border_color(self.default_border_color)
             self.rect.set_border_width(3)
             self.rect.props.radius = 10

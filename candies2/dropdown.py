@@ -12,7 +12,7 @@ class OptionLine(clutter.Actor, clutter.Container):
     __gtype_name__ = 'OptionLine'
     
     
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', light_texture=None, dark_texture=None):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None):
         clutter.Actor.__init__(self)
         self.name = name
         self.padding = padding
@@ -24,7 +24,7 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.default_border_color = border_color
         
         # background
-        self.background = RoundRectangle(light_texture=light_texture, dark_texture=dark_texture)
+        self.background = RoundRectangle(texture=texture)
         self.background.set_color(self.default_color)
         self.background.set_border_color(self.default_border_color)
         self.background.set_border_width(3)
@@ -163,7 +163,7 @@ class Select(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Select'
     
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', color='LightGray', border_color='Gray', option_color='LightBlue', light_texture=None, dark_texture=None):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.spacing = spacing
@@ -177,11 +177,11 @@ class Select(clutter.Actor, clutter.Container):
         
         self.font = font
         self.font_color = font_color
+        self.selected_font_color = selected_font_color
         self.default_color = color
         self.default_border_color = border_color
         self.option_color = option_color
-        self.light_texture = light_texture
-        self.dark_texture = dark_texture
+        self.texture = texture
         
         self.background = RoundRectangle()
         self.background.set_color(self.default_color)
@@ -192,7 +192,7 @@ class Select(clutter.Actor, clutter.Container):
         
     
     def add_option(self, name, hname, icon_path=None):
-        new_option = OptionLine(name, hname, padding=self.padding, spacing=self.spacing, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', light_texture=self.light_texture, dark_texture=self.dark_texture)
+        new_option = OptionLine(name, hname, padding=self.padding, spacing=self.spacing, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
         new_option.set_parent(self)
         new_option.set_reactive(True)
         new_option.connect('button-press-event', self._on_click)
@@ -200,6 +200,7 @@ class Select(clutter.Actor, clutter.Container):
         if self.selected == None:
             self.selected = new_option
             self.selected.show_background()
+            self.selected.set_font_color(self.selected_font_color)
             self.selected_icon = self.selected.icon_path
             self.selected.set_icon(self.open_icon)
         else:
@@ -218,7 +219,9 @@ class Select(clutter.Actor, clutter.Container):
             else:
                 self._open_options()
         elif self.opened == True:
+            self.selected.set_font_color(self.font_color)
             self.selected = source
+            self.selected.set_font_color(self.selected_font_color)
             self._close_options()
             if self.on_change_callback is not None:
                 self.on_change_callback(source, event)
@@ -248,7 +251,9 @@ class Select(clutter.Actor, clutter.Container):
                 last_selection = self.selected
                 self.selected.hide_background()
                 self.selected.set_icon(self.selected_icon)
+                self.selected.set_font_color(self.font_color)
                 self.selected = option
+                self.selected.set_font_color(self.selected_font_color)
                 self.selected.show_background()
                 if self.opened == True:
                     self.selected_icon = self.selected.icon_path

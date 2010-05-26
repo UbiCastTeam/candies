@@ -9,8 +9,8 @@ from roundrect import RoundRectangle, OutlinedRoundRectangle
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
     
-    def __init__(self, label, padding=6, light_texture=None, dark_texture=None, rounded=True):
-        TextContainer.__init__(self, label, padding=padding, light_texture=light_texture, dark_texture=dark_texture, rounded=rounded)
+    def __init__(self, label, padding=6, texture=None, rounded=True):
+        TextContainer.__init__(self, label, padding=padding, texture=texture, rounded=rounded)
         
         self.set_reactive(True)
         
@@ -285,8 +285,8 @@ class ImageButton(ClassicButton):
         ),
     }
 
-    def __init__(self, label, image_location, padding=6, spacing=8, use_native_image_size=False, activable=False, light_texture=None, dark_texture=None):
-        ClassicButton.__init__(self, label, padding=padding, light_texture=light_texture, dark_texture=dark_texture)
+    def __init__(self, label, image_location, padding=6, spacing=8, use_native_image_size=False, activable=False, texture=None):
+        ClassicButton.__init__(self, label, padding=padding, texture=texture)
 
         self.image = clutter.Texture(image_location)
         self.image.set_parent(self)
@@ -515,13 +515,11 @@ if __name__ == '__main__':
         
         max_count = 5000
         
-        light_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
-        dark_path = '/home/sdiemer/sources/candies/main/candies2/effect_dark.png'
-        light_texture = clutter.cogl.texture_new_from_file(light_path)
-        dark_texture = clutter.cogl.texture_new_from_file(dark_path)
+        texture_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
+        texture = clutter.cogl.texture_new_from_file(light_path)
         
         def create_test_object():
-            t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', light_texture = light_texture, dark_texture = dark_texture, rounded = True)
+            t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture = texture, rounded = True)
             return t
         def remove_test_object(obj, stage):
             obj.destroy()

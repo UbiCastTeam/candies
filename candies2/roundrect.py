@@ -99,14 +99,13 @@ class RoundRectangle(clutter.Actor):
         ),
     }
 
-    def __init__(self, light_texture=None, dark_texture=None):
+    def __init__(self, texture=None):
         clutter.Actor.__init__(self)
         self._radius = 0.0
         self._color = clutter.color_from_string('Black')
         self._border_color = clutter.color_from_string('Black')
         self._border_width = 0.0
-        self._light_texture = light_texture
-        self._dark_texture = dark_texture
+        self._texture = texture
     
     def set_radius(self, radius):
         self._radius = radius
@@ -161,17 +160,11 @@ class RoundRectangle(clutter.Actor):
             cogl.set_source_color(color)
             cogl.path_fill()
             
-            # light texture
-            if self._light_texture:
+            # texture
+            if self._texture:
                 cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
                 cogl.path_close()
-                cogl.set_source_texture(self._light_texture)
-                cogl.path_fill()
-            # dark texture
-            if self._dark_texture:
-                cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
-                cogl.path_close()
-                cogl.set_source_texture(self._dark_texture)
+                cogl.set_source_texture(self._texture)
                 cogl.path_fill()
         else:
             cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
@@ -227,13 +220,11 @@ if __name__ == '__main__':
         
         max_count = 20000
         
-        light_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
-        dark_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
-        light_texture = cogl.texture_new_from_file(light_path)
-        dark_texture = cogl.texture_new_from_file(dark_path)
+        texture_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        texture = cogl.texture_new_from_file(light_path)
         
         def create_test_object():
-            t = RoundRectangle(light_texture = light_texture, dark_texture = dark_texture)
+            t = RoundRectangle(texture = texture)
             return t
         def remove_test_object(obj, stage):
             stage.remove(obj)
