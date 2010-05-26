@@ -3,6 +3,7 @@
 
 import clutter
 from roundrect import RoundRectangle
+from text import TextContainer
 
 class OptionLine(clutter.Actor, clutter.Container):
     """
@@ -11,11 +12,11 @@ class OptionLine(clutter.Actor, clutter.Container):
     __gtype_name__ = 'OptionLine'
     
     
-    def __init__(self, name, hname, icon_height=32, icon_path=None, padding=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', light_texture=None, dark_texture=None):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', light_texture=None, dark_texture=None):
         clutter.Actor.__init__(self)
         self.name = name
-        self.hname = hname
         self.padding = padding
+        self.spacing = spacing
         
         self.font = font
         self.font_color = font_color
@@ -44,16 +45,21 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.icon.hide()
         self.icon.set_parent(self)
         # label
-        self.label = clutter.Text()
-        self.label.set_text(hname)
-        self.label.set_color(self.font_color)
+        self.label = TextContainer(text, padding=0)
+        self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
+        self.label.set_inner_color('#00000000')
+        self.label.set_border_color('#00000000')
         self.label.set_parent(self)
     
-    def set_hname(self, new_hname):
-        self.label.set_text(new_hname)
+    def set_text(self, text):
+        self.label.set_text(text)
         self.queue_relayout()
     
+    def set_hname(self, text):
+        self.label.set_text(text)
+        self.queue_relayout()
+        
     def set_icon(self, new_icon_path=None):
         self.icon_path = new_icon_path
         if new_icon_path:
@@ -61,6 +67,18 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.icon.show()
         else:
             self.icon.hide()
+    
+    def set_font_color(self, color):
+        self.label.set_font_color(color)
+    
+    def set_font_name(self, font_name):
+        self.label.set_font_name(font_name)
+    
+    def set_inner_color(self, color):
+        self.background.set_color(color)
+    
+    def set_border_color(self, color):
+        self.background.set_border_color(color)
     
     def show_background(self):
         if self.enable_background != True:
@@ -72,19 +90,8 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.enable_background = False
             self.background.hide()
     
-    def do_remove(self, actor):
-        if self.background == actor:
-            actor.unparent()
-            self.background = None
-        if self.icon == actor:
-            actor.unparent()
-            self.icon = None
-        if self.label == actor:
-            actor.unparent()
-            self.label = None
-    
     def do_get_preferred_width(self, for_height):
-        preferred_width = self.icon_height + 4*self.padding + self.label.get_preferred_size()[2]
+        preferred_width = self.icon_height + 2*self.padding + self.spacing + self.label.get_preferred_size()[2]
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
@@ -94,7 +101,6 @@ class OptionLine(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_height = main_height - 2*self.padding
         
         # background
         background_box = clutter.ActorBox()
@@ -108,20 +114,16 @@ class OptionLine(clutter.Actor, clutter.Container):
         icon_box = clutter.ActorBox()
         icon_box.x1 = self.padding
         icon_box.y1 = self.padding
-        icon_box.x2 = self.padding + inner_height
-        icon_box.y2 = self.padding + inner_height
+        icon_box.x2 = main_height - self.padding
+        icon_box.y2 = main_height - self.padding
         self.icon.allocate(icon_box, flags)
         
         # label
-        label_width = self.label.get_preferred_size()[2]
-        label_height = self.label.get_preferred_size()[3]
-        label_h_padding = round((main_width - main_height - 2*self.padding - label_width) / 2)
-        label_v_padding = round((inner_height - label_height) / 2)
         label_box = clutter.ActorBox()
-        label_box.x1 = main_height + self.padding + label_h_padding
-        label_box.y1 = self.padding + label_v_padding
-        label_box.x2 = main_width - self.padding - label_h_padding
-        label_box.y2 = main_height - self.padding - label_v_padding
+        label_box.x1 = icon_box.x2 + self.spacing
+        label_box.y1 = self.padding
+        label_box.x2 = main_width - self.padding
+        label_box.y2 = main_height - self.padding
         self.label.allocate(label_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -161,9 +163,10 @@ class Select(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Select'
     
-    def __init__(self, padding=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', color='LightGray', border_color='Gray', option_color='LightBlue', light_texture=None, dark_texture=None):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', color='LightGray', border_color='Gray', option_color='LightBlue', light_texture=None, dark_texture=None):
         clutter.Actor.__init__(self)
         self.padding = padding
+        self.spacing = spacing
         self.on_change_callback = on_change_callback
         self.icon_height = icon_height
         self.options = list()
@@ -189,7 +192,7 @@ class Select(clutter.Actor, clutter.Container):
         
     
     def add_option(self, name, hname, icon_path=None):
-        new_option = OptionLine(name, hname, padding=self.padding, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', light_texture=self.light_texture, dark_texture=self.dark_texture)
+        new_option = OptionLine(name, hname, padding=self.padding, spacing=self.spacing, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', light_texture=self.light_texture, dark_texture=self.dark_texture)
         new_option.set_parent(self)
         new_option.set_reactive(True)
         new_option.connect('button-press-event', self._on_click)

@@ -115,11 +115,11 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, label, padding=6, light_texture=None, dark_texture=None, rounded=True):
+    def __init__(self, text, padding=6, light_texture=None, dark_texture=None, rounded=True):
         clutter.Actor.__init__(self)
         
         self.padding = padding
-        self._text = label
+        self._text = text
         self._line_wrap = False
         self._multiline = False
         
