@@ -21,6 +21,7 @@ class NumberAdjuster(Box):
     # skin
     button_size = 50
     label_font_size = '16'
+    label_font_color = '#000000ff'
     button_font_size = '20'
     button_font_color = '#000000ff'
     button_inner_color = '#ffffff55'
@@ -68,7 +69,7 @@ class NumberAdjuster(Box):
         if text is not None:
             label = ClassicButton(str(text), padding=0)
             label.set_font_name(self.label_font_size)
-            label.set_font_color(self.button_font_color)
+            label.set_font_color(self.label_font_color)
             label.set_inner_color('#00000000')
             label.set_border_color('#00000000')
             self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.7})
