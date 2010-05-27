@@ -148,6 +148,10 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def get_text(self):
         return self._text
+        
+    def set_texture(self, texture):
+        if self._rounded:
+            self.rect.set_texture(texture)
     
     def set_radius(self, radius):
         if self._rounded:

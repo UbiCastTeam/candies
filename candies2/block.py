@@ -193,28 +193,11 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         else:
             selected_title_actor = self.default_title_actor
         
-        x1_padding = 0
-        x2_padding = 0
-        title_max_width = inner_width - 2*self.title_padding
-        title_width = selected_title_actor.get_preferred_size()[2]
-        if self.title_actor:
-            if title_max_width > title_width:
-                if self._title_alignement == 'center':
-                    x1_padding = x2_padding = round(float(title_max_width - title_width) / 2.0)
-                elif self._title_alignement == 'left':
-                    x1_padding = 0
-                    x2_padding = title_max_width - title_width
-                elif self._title_alignement == 'right':
-                    x1_padding = title_max_width - title_width
-                    x2_padding = 0
-        else:
-            x1_padding = 0
-            x2_padding = 0
         self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
         title_box = clutter.ActorBox()
-        title_box.x1 = self.padding + self.title_padding + x1_padding
+        title_box.x1 = self.padding + self.title_padding
         title_box.y1 = self.padding + self.title_padding
-        title_box.x2 = self.width - self.padding - self.title_padding - x2_padding
+        title_box.x2 = self.width - self.padding - self.title_padding
         title_box.y2 = self.padding + self.title_padding + self._title_height
         selected_title_actor.allocate(title_box, flags)
         
@@ -354,11 +337,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     def do_pick(self, color):
         clutter.Actor.do_pick(self, color)
         
-        cogl.path_rectangle(0, 0, self.width, self.height)
-        cogl.path_close()
-        cogl.set_source_color(color)
-        cogl.path_fill()
-        
+        if self.title_actor:
+            self.title_actor.paint()
+        else:
+            self.default_title_actor.paint()
         if self.content_actor:
             self.content_actor.paint()
     

@@ -107,6 +107,10 @@ class RoundRectangle(clutter.Actor):
         self._border_width = 0.0
         self._texture = texture
     
+    def set_texture(self, texture):
+        self._texture = texture
+        self.queue_redraw()
+    
     def set_radius(self, radius):
         self._radius = radius
         self.queue_redraw()
