@@ -122,6 +122,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._text = text
         self._line_wrap = False
         self._multiline = False
+        self._alignment = 'center'
         
         self.label = clutter.Text()
         self.label.set_parent(self)
@@ -183,12 +184,15 @@ class TextContainer(clutter.Actor, clutter.Container):
             self._line_wrap = False
             self.label.set_line_wrap(False)
             
-    def set_line_alignment(self, alignement):
-        if alignement == 'center':
+    def set_line_alignment(self, alignment):
+        if alignment == 'center':
+            self._alignment = 'center'
             self.label.set_line_alignment(1)
-        elif alignement == 'right':
+        elif alignment == 'right':
+            self._alignment = 'right'
             self.label.set_line_alignment(2)
-        elif alignement == 'left':
+        elif alignment == 'left':
+            self._alignment = 'left'
             self.label.set_line_alignment(3)
     
     def set_justify(self, boolean):
@@ -280,20 +284,33 @@ class TextContainer(clutter.Actor, clutter.Container):
             if self.label.get_preferred_height(for_width = inner_width)[1] > self.label.get_preferred_size()[3]:
                 if inner_height > self.label.get_preferred_size()[3]:
                     self._multiline = True
+        x1_padding = 0
+        x2_padding = 0
         if self._multiline:
             if self.label.get_preferred_height(for_width = inner_width)[1] > inner_height:
                 self._wrap_multilines_label(0, len(self._text), inner_width, inner_height)
-            lbl_width = inner_width
             lbl_height = self.label.get_preferred_height(for_width = inner_width)[1]
         else:
             if self.label.get_preferred_size()[2] > inner_width:
                 self._wrap_singleline_label(0, len(self._text), inner_width)
-            lbl_width = self.label.get_preferred_size()[2]
-            lbl_height = self.label.get_preferred_size()[3]
+                lbl_width = self.label.get_preferred_size()[2]
+                lbl_height = self.label.get_preferred_size()[3]
+                x1_padding = x2_padding = round((inner_width - lbl_width) / 2.0)
+            else:
+                lbl_width = self.label.get_preferred_size()[2]
+                lbl_height = self.label.get_preferred_size()[3]
+                if self._alignment == 'right':
+                    x1_padding = inner_width - lbl_width
+                    x2_padding = 0
+                elif self._alignment == 'left':
+                    x1_padding = 0
+                    x2_padding = lbl_width
+                else:
+                    x1_padding = x2_padding = round((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
-        lbl_box.x1 = round(self.padding + (inner_width - lbl_width) / 2)
+        lbl_box.x1 = self.padding + x1_padding
         lbl_box.y1 = round(self.padding + (inner_height - lbl_height) / 2)
-        lbl_box.x2 = round(lbl_box.x1 + lbl_width)
+        lbl_box.x2 = btn_width - self.padding - x2_padding
         lbl_box.y2 = round(lbl_box.y1 + lbl_height)
         self.label.allocate(lbl_box, flags)
         
