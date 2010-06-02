@@ -344,7 +344,7 @@ class ImageButton(ClassicButton):
         # label
         self.label.set_text(self._text)
         if self.label.get_preferred_size()[2] > inner_width:
-            self._wrap_label(0, len(self._text), inner_width)
+            self._wrap_singleline_label(0, len(self._text), inner_width)
         lbl_width = self.label.get_preferred_size()[2]
         lbl_height = self.label.get_preferred_size()[3]
         
