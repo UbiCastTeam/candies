@@ -42,7 +42,7 @@ class Box(clutter.Actor, clutter.Container):
         self.overlay = None
         self.spacing = spacing
         self.padding = padding
-        if horizontal == True:
+        if horizontal:
             self._horizontal = True
         else:
             self._horizontal = False
@@ -56,6 +56,12 @@ class Box(clutter.Actor, clutter.Container):
             if element['name'] == name:
                 return element
         return None
+    
+    def set_horizontal(self, boolean):
+        if boolean:
+            self._horizontal = True
+        else:
+            self._horizontal = False
     
     def set_background(self, background):
         self.background = background

@@ -169,18 +169,22 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     
     def do_get_preferred_width(self, for_height):
         if self.title_actor:
-            max_width = max(self.title_actor.get_preferred_width(for_height)[1], self.content_actor.get_preferred_width(for_height)[1])
+            max_width = self.title_actor.get_preferred_width(for_height)[1]
         else:
-            max_width = max(self.default_title_actor.get_preferred_width(for_height)[1], self.content_actor.get_preferred_width(for_height)[1])
+            max_width = self.default_title_actor.get_preferred_width(for_height)[1]
+        if self.content_actor:
+            max_width = max(max_width, self.content_actor.get_preferred_width(for_height)[1])
         preferred_width = 2*self.padding + max_width
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        preferred_height = 2*self.padding + self.spacing + self.content_actor.get_preferred_height(for_width)[1]
+        preferred_height = 2*self.padding
         if self.title_actor:
             preferred_height += self.title_actor.get_preferred_height(for_width)[1]
         else:
             preferred_height += self.default_title_actor.get_preferred_height(for_width)[1]
+        if self.content_actor:
+            preferred_height += self.spacing + self.content_actor.get_preferred_height(for_width)[1]
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
@@ -219,7 +223,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         if self.content_actor:
             func(self.content_actor, data)
     
-    def __paint_background(self):
+    def _paint_background(self):
         if self.width > 0 and self.height > 0:
             x1 = 0
             y1 = 0
@@ -310,7 +314,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
                 cogl.set_source_texture(self._title_right)
                 cogl.path_fill()
     
-    def __paint_light(self):
+    def _paint_light(self):
         x1 = self.padding
         y1 = self.padding
         x2 = self.width - self.padding
@@ -322,10 +326,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         cogl.path_fill()
     
     def do_paint(self):
-        self.__paint_background()
+        self._paint_background()
         
         if self._highlighted:
-            self.__paint_light()
+            self._paint_light()
         
         if self.title_actor:
             self.title_actor.paint()
