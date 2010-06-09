@@ -656,14 +656,12 @@ class AlignedElement(clutter.Actor, clutter.Container):
     def do_get_preferred_width(self, for_height):
         if self.element is not None:
             if self.expand == True:
-                element_width = self.element.get_preferred_size()[2]
-                if self.keep_ratio == True and element_width != 0:
-                    element_height = self.element.get_preferred_size()[3]
-                    if element_height != 0:
-                        ratio = float(float(element_width) / float(element_height))
-                        prefered_width = int(element_height * ratio) + 2*self.padding
-                    else:
-                        return 0, 0
+                preferred_size = self.element.get_preferred_size()
+                element_width = preferred_size[2]
+                element_height = preferred_size[3]
+                if self.keep_ratio == True and element_width != 0 and element_height != 0 and for_height != -1:
+                    ratio = float(float(element_width) / float(element_height))
+                    prefered_width = int(for_height * ratio) + 2*self.padding
                 else:
                     prefered_width = element_width + 2*self.padding
             else:
@@ -676,14 +674,12 @@ class AlignedElement(clutter.Actor, clutter.Container):
     def do_get_preferred_height(self, for_width):
         if self.element is not None:
             if self.expand == True:
-                element_height = self.element.get_preferred_size()[3]
-                if self.keep_ratio == True and element_height != 0:
-                    element_width = self.element.get_preferred_size()[2]
-                    if element_width != 0:
-                        ratio = float(float(element_height) / float(element_width))
-                        prefered_height = int(element_width / ratio) + 2*self.padding
-                    else:
-                        return 0, 0
+                preferred_size = self.element.get_preferred_size()
+                element_width = preferred_size[2]
+                element_height = preferred_size[3]
+                if self.keep_ratio == True and element_width != 0 and element_height != 0 and for_width != -1:
+                    ratio = float(float(element_height) / float(element_width))
+                    prefered_height = int(for_width / ratio) + 2*self.padding
                 else:
                     prefered_height = element_height + 2*self.padding
             else:
@@ -792,6 +788,104 @@ class AlignedElement(clutter.Actor, clutter.Container):
                 self.element.destroy()
                 self.element = None
 
+class MultiLayerContainer(clutter.Actor, clutter.Container):
+    __gtype_name__ = 'MultiLayerContainer'
+    """
+    A box in wich all childs have the same space allocated
+    """
+    def __init__(self):
+        clutter.Actor.__init__(self)
+        self._children = list()
+    
+    def do_add(self, *children):
+        for child in children:
+            if child in self._children:
+                raise Exception("Actor %s is already a children of %s" % (child, self))
+            self._children.append(child)
+            child.set_parent(self)
+            self.queue_relayout()
+    
+    def do_remove(self, *children):
+        for child in children:
+            if child in self._children:
+                self._children.remove(child)
+                child.unparent()
+                self.queue_relayout()
+            else:
+                raise Exception("Actor %s is not a child of %s" % (child, self))
+    
+    def do_get_preferred_width(self, for_height):
+        preferred_width = 0
+        for child in self._children:
+            preferred_width = max(preferred_width, child.get_preferred_width(for_height=for_height)[1])
+        return preferred_width, preferred_width
+
+    def do_get_preferred_height(self, for_width):
+        preferred_height = 0
+        for child in self._children:
+            preferred_height = max(preferred_height, child.get_preferred_height(for_width=for_width)[1])
+        return preferred_height, preferred_height
+    
+    def do_raise_child(self, child, sibling=None):
+        if child not in self._children:
+            raise Exception("Actor %s is not a child of %s" % (child, self))
+        if sibling:
+            if sibling not in self._children:
+                raise Exception("Actor %s is not a child of %s" % (sibling, self))
+            sibling_index = self._children.index(sibling)
+            child_index = self._children.index(child)
+            self._children[sibling_index] = child
+            self._children[child_index] = sibling
+        else:
+            self._children.remove(child)
+            self._children.append(child)
+    
+    def do_lower_child(self, child, sibling=None):
+        if child not in self._children:
+            raise Exception("Actor %s is not a child of %s" % (child, self))
+        if sibling:
+            if sibling not in self._children:
+                raise Exception("Actor %s is not a child of %s" % (sibling, self))
+            sibling_index = self._children.index(sibling)
+            child_index = self._children.index(child)
+            self._children[sibling_index] = child
+            self._children[child_index] = sibling
+        else:
+            self._children.remove(child)
+            self._children.insert(child, 0)
+    
+    def do_allocate(self, box, flags):
+        main_width = box.x2 - box.x1
+        main_height = box.y2 - box.y1
+        for child in self._children:
+            child_box = clutter.ActorBox()
+            child_box.x1 = 0
+            child_box.y1 = 0
+            child_box.x2 = main_width - 0
+            child_box.y2 = main_height - 0
+            child.allocate(child_box, flags)
+        clutter.Actor.do_allocate(self, box, flags)
+    
+    def do_foreach(self, func, data=None):
+        for child in self._children:
+            func(child, data)
+    
+    def do_paint(self):
+        for actor in self._children:
+            actor.paint()
+    
+    def do_pick(self, color):
+        for actor in self._children:
+            actor.paint()
+    
+    def do_destroy(self):
+        self.unparent()
+        if hasattr(self, '_children'):
+            for child in self._children:
+                child.unparent()
+                child.destroy()
+            self._children = list()
+
 if __name__ == '__main__':
     # stage
     stage = clutter.Stage()
@@ -872,19 +966,24 @@ if __name__ == '__main__':
     
     
     
-    other_box = Box(horizontal=True, spacing=10, padding=20)
-    
     rect5 = clutter.Rectangle()
     rect5.set_size(250, 150)
-    rect5.set_color(clutter.color_from_string('Black'))
+    rect5.set_color('#ffffffff')
     
     rect6 = clutter.Rectangle()
     rect6.set_size(5, 5)
-    rect6.set_color(clutter.color_from_string('Blue'))
+    rect6.set_color('#00ff0088')
     
     rect_bg_2 = clutter.Rectangle()
     rect_bg_2.set_color('#ffffffff')
     
+    test_layer = MultiLayerContainer()
+    test_layer.add(rect5, rect6)
+    test_layer.set_position(700, 30)
+    stage.add(test_layer)
+    
+    """
+    other_box = Box(horizontal=True, spacing=10, padding=20)
     other_box.set_background(rect_bg_2)
     other_box.add(
         {'name': 'rect5',
@@ -899,8 +998,8 @@ if __name__ == '__main__':
     other_box.set_size(400, 300)
     other_box.set_position(700, 30)
     stage.add(other_box)
-    
-    test_memory_usage = True
+    """
+    test_memory_usage = False
     if test_memory_usage:
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
