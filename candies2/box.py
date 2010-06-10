@@ -814,6 +814,12 @@ class MultiLayerContainer(clutter.Actor, clutter.Container):
             else:
                 raise Exception("Actor %s is not a child of %s" % (child, self))
     
+    def remove_all(self):
+        for child in self._children:
+            child.unparent()
+        self._children = list()
+        self.queue_relayout()
+    
     def do_get_preferred_width(self, for_height):
         preferred_width = 0
         for child in self._children:
