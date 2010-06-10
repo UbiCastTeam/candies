@@ -16,6 +16,8 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         
         self._highlighted = False
         self._highlight_color = clutter.color_from_string('#ffffff44')
+        self._disabled = False
+        self._disabled_color = clutter.color_from_string('#00000044')
         
         self.title_actor = title_actor
         if title_actor:
@@ -100,6 +102,22 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     def set_highlight_color(self, color):
         self._highlight_color = clutter.color_from_string(color)
         if self._highlighted:
+            self.queue_redraw()
+    
+    def set_disabled(self, boolean):
+        if boolean:
+            self._disabled = True
+            if self.content_actor:
+                self.content_actor.set_opacity(100)
+        else:
+            self._disabled = False
+            if self.content_actor:
+                self.content_actor.set_opacity(255)
+        self.queue_redraw()
+        
+    def set_disabled_color(self, color):
+        self._disabled_color = clutter.color_from_string(color)
+        if self._disabled:
             self.queue_redraw()
     
     def set_textures(self, textures_package):
@@ -325,10 +343,23 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         cogl.set_source_color(self._highlight_color)
         cogl.path_fill()
     
+    def _paint_shadow(self):
+        x1 = self.padding
+        y1 = self.padding
+        x2 = self.width - self.padding
+        y2 = self.height - self.padding
+        
+        cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
+        cogl.path_close()
+        cogl.set_source_color(self._disabled_color)
+        cogl.path_fill()
+    
     def do_paint(self):
         self._paint_background()
         
-        if self._highlighted:
+        if self._disabled:
+            self._paint_shadow()
+        elif self._highlighted:
             self._paint_light()
         
         if self.title_actor:
