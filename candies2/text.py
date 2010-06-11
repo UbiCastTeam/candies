@@ -307,10 +307,10 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
         rect_box = clutter.ActorBox()
-        rect_box.x1 = 0
-        rect_box.y1 = 0
-        rect_box.x2 = width
-        rect_box.y2 = height
+        rect_box.x1 = base_x + 0
+        rect_box.y1 = base_y + 0
+        rect_box.x2 = base_x + width
+        rect_box.y2 = base_y + height
         self.rect.allocate(rect_box, flags)
     
     def do_allocate(self, box, flags):
