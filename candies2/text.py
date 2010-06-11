@@ -265,18 +265,9 @@ class TextContainer(clutter.Actor, clutter.Container):
         else:
             self._wrap_multilines_label(mid, max, max_width, max_height)
     
-    def do_allocate(self, box, flags):
-        btn_width = box.x2 - box.x1
-        btn_height = box.y2 - box.y1
-        inner_width = btn_width - 2*self.padding
-        inner_height = btn_height - 2*self.padding
-        
-        rect_box = clutter.ActorBox()
-        rect_box.x1 = 0
-        rect_box.y1 = 0
-        rect_box.x2 = btn_width
-        rect_box.y2 = btn_height
-        self.rect.allocate(rect_box, flags)
+    def _allocate_label(self, base_x, base_y, width, height, flags):
+        inner_width = width - 2*self.padding
+        inner_height = height - 2*self.padding
         
         self.label.set_text(self._text)
         self._multiline = False
@@ -308,11 +299,27 @@ class TextContainer(clutter.Actor, clutter.Container):
                 else:
                     x1_padding = x2_padding = round((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
-        lbl_box.x1 = self.padding + x1_padding
-        lbl_box.y1 = round(self.padding + (inner_height - lbl_height) / 2)
-        lbl_box.x2 = btn_width - self.padding - x2_padding
-        lbl_box.y2 = round(lbl_box.y1 + lbl_height)
+        lbl_box.x1 = base_x + self.padding + x1_padding
+        lbl_box.y1 = base_y + round(self.padding + (inner_height - lbl_height) / 2)
+        lbl_box.x2 = base_x + width - self.padding - x2_padding
+        lbl_box.y2 = base_y + round(lbl_box.y1 + lbl_height)
         self.label.allocate(lbl_box, flags)
+    
+    def _allocate_rect(self, base_x, base_y, width, height, flags):
+        rect_box = clutter.ActorBox()
+        rect_box.x1 = 0
+        rect_box.y1 = 0
+        rect_box.x2 = width
+        rect_box.y2 = height
+        self.rect.allocate(rect_box, flags)
+    
+    def do_allocate(self, box, flags):
+        btn_width = box.x2 - box.x1
+        btn_height = box.y2 - box.y1
+        
+        self._allocate_rect(0, 0, btn_width, btn_height, flags)
+        
+        self._allocate_label(0, 0, btn_width, btn_height, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     

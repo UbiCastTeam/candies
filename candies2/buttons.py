@@ -15,23 +15,16 @@ class ClassicButton(TextContainer):
 
 class ImageButton(ClassicButton):
     __gtype_name__ = 'ImageButton'
-    __gproperties__ = {
-        'active' : (
-            gobject.TYPE_BOOLEAN, 'active', 'Active', 0, gobject.PARAM_READWRITE
-        ),
-        'active_color' : (
-            str, 'active color', 'Background color when active', None, gobject.PARAM_READWRITE
-        ),
-    }
 
-    def __init__(self, label, image_location, padding=6, spacing=8, use_native_image_size=False, activable=False, texture=None):
+    def __init__(self, label, image_src, padding=10, spacing=10, texture=None, has_text=True, expand=False):
         ClassicButton.__init__(self, label, padding=padding, texture=texture)
 
-        self.image = clutter.Texture(image_location)
-        self.image.set_parent(self)
-        self.image.set_keep_aspect_ratio(True)
-        self.use_native_image_size = use_native_image_size
         self.spacing = spacing
+        self._has_text = has_text
+        self._expand = expand
+        
+        self.image = clutter.Texture(image_src)
+        self.image.set_parent(self)
         
         self.default_font_size = '16'
         self.default_font_color = '#000000ff'
@@ -40,107 +33,74 @@ class ImageButton(ClassicButton):
         self.default_border_color = '#888888ff'
         self.default_active_color = '#00000088'
         
-        self.label.set_font_name(self.default_font_size)
-        self.label.set_color(self.default_font_color)
-        self.rect.set_color(self.default_inner_color)
-        self.rect.set_border_color(self.default_border_color)
+        self.set_font_name(self.default_font_size)
+        self.set_font_color(self.default_font_color)
+        self.set_inner_color(self.default_inner_color)
+        self.set_border_color(self.default_border_color)
         
-        self.last_color = self.rect.props.color
-
-        self._activated = False
-        if activable:
-            self.connect("button-release-event", self.toggle_activate)
-
-    def toggle_activate(self, source=None, event=None):
-        if self._activated:
-            self.set_active(False)
-        else:
-            self.set_active(True)
-
-    def set_active(self, value):
-        if value:
-            self.last_color = self.rect.props.color
-            self.rect.props.color = self.default_active_color
-            self._activated = True
-        else:
-            self.rect.props.color = self.last_color
-            self._activated = False
-
+        self.last_color = self.default_inner_color
+    
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
         inner_width = btn_width - 2*self.padding
         inner_height = btn_height - 2*self.padding
         
-        # round rect
-        rbox = clutter.ActorBox()
-        rbox.x1 = 0
-        rbox.y1 = 0
-        rbox.x2 = btn_width
-        rbox.y2 = btn_height
-        self.rect.allocate(rbox, flags)
+        # allocate background
+        self._allocate_rect(0, 0, btn_width, btn_height, flags)
         
-        # label
-        self.label.set_text(self._text)
-        if self.label.get_preferred_size()[2] > inner_width:
-            self._wrap_singleline_label(0, len(self._text), inner_width)
-        lbl_width = self.label.get_preferred_size()[2]
-        lbl_height = self.label.get_preferred_size()[3]
-        
-        # image
-        if self.use_native_image_size:
-            image_width = self.image.get_preferred_size()[2]
-            image_height = self.image.get_preferred_size()[3]
+        # allocate image
+        if self._has_text:
+            label_height = ClassicButton.do_get_preferred_height(self, for_width=inner_width)[1]
+            remaining_height = btn_height - label_height - self.spacing
         else:
-            max_height = self.image.get_preferred_size()[3]
-            image_ratio = float(self.image.get_preferred_size()[2])/float(self.image.get_preferred_size()[3])
-            
-            image_height = inner_height - lbl_height - self.spacing
-            if image_height > max_height:
-                image_height = max_height
-            if image_height > inner_height:
-                image_height = inner_height
-            image_width = image_height * image_ratio
+            label_height = 0
+            remaining_height = inner_height
+        image_preferred_size = self.image.get_preferred_size()
+        image_ratio = float(image_preferred_size[2]) / float(image_preferred_size[3])
+        if self._expand:
+            image_height = remaining_height
+            image_width = round(float(image_height) * float(image_ratio))
             if image_width > inner_width:
                 image_width = inner_width
-                image_height = image_width/image_ratio
+                image_height = round(float(image_width) / float(image_ratio))
+        else:
+            image_height = image_preferred_size[3]
+            if remaining_height < image_height:
+                image_height = remaining_height
+            image_width = round(float(image_height) * float(image_ratio))
+            if image_width > inner_width:
+                image_width = inner_width
+                image_height = round(float(image_width) / float(image_ratio))
+        x_padding = round((inner_width - image_width) / 2.0)
+        y_padding = round((remaining_height - image_height) / 2.0)
         
-        lbox = clutter.ActorBox()
-        lbox.x1 = round(self.padding + (inner_width - lbl_width)/2)
-        lbox.y1 = round(self.padding + (inner_height - lbl_height - self.spacing - image_height)/2 + image_height + self.spacing)
-        lbox.x2 = round(lbox.x1 + lbl_width)
-        lbox.y2 = round(lbox.y1 + lbl_height)
-        self.label.allocate(lbox, flags)
+        image_box = clutter.ActorBox()
+        image_box.x1 = self.padding + x_padding
+        image_box.y1 = self.padding + y_padding
+        image_box.x2 = image_box.x1 + image_width
+        image_box.y2 = image_box.y1 + image_height
+        self.image.allocate(image_box, flags)
         
-        ibox = clutter.ActorBox()
-        ibox.x1 = round(self.padding + (inner_width - image_width)/2)
-        ibox.y1 = round(self.padding + (inner_height - lbl_height - self.spacing - image_height)/2)
-        ibox.x2 = round(ibox.x1 + image_width)
-        ibox.y2 = round(ibox.y1 + image_height)
-        self.image.allocate(ibox, flags)
+        # allocate label
+        if self._has_text:
+            base_y = image_height + self.spacing
+            label_height = btn_height - base_y
+            self._allocate_label(0, base_y, btn_width, label_height, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
 
     def do_set_property(self, pspec, value):
-        if pspec.name == 'active':
-            self.set_active(value)
-        elif pspec.name == 'active-color':
-            self.default_active_color = clutter.color_from_string(value)
-        else:
-            ClassicButton.do_set_property(self, pspec, value)
-        self.queue_redraw()
+        return ClassicButton.do_set_property(self, pspec, value)
 
     def do_get_property(self, pspec):
-        if pspec.name == 'active':
-            return self._activated
-        elif pspec.name == 'active-color':
-            return self.default_active_color
-        else:
-            ClassicButton.do_get_property(self, pspec)
+        return ClassicButton.do_get_property(self, pspec)
 
     def do_paint(self):
-        ClassicButton.do_paint(self)
+        self.rect.paint()
         self.image.paint()
+        if self._has_text:
+            self.label.paint()
 
     def do_foreach(self, func, data=None):
         ClassicButton.do_foreach(self, func, data)
