@@ -11,7 +11,6 @@ class OptionLine(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'OptionLine'
     
-    
     def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None):
         clutter.Actor.__init__(self)
         self.name = name
@@ -52,6 +51,15 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.label.set_border_color('#00000000')
         self.label.set_parent(self)
     
+    def set_line_wrap(self, boolean):
+        self.label.set_line_wrap(boolean)
+            
+    def set_line_alignment(self, alignment):
+        self.label.set_line_alignment(alignment)
+    
+    def set_justify(self, boolean):
+        self.label.set_justify(boolean)
+    
     def set_text(self, text):
         self.label.set_text(text)
         self.queue_relayout()
@@ -91,7 +99,7 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.background.hide()
     
     def do_get_preferred_width(self, for_height):
-        preferred_width = self.icon_height + 2*self.padding + self.spacing + self.label.get_preferred_size()[2]
+        preferred_width = self.icon_height + 2*self.padding + self.spacing + self.label.get_preferred_width(for_height=for_height)[1]
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):

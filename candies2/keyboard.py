@@ -16,9 +16,9 @@ from buttons import ClassicButton
 # class Key : name , width , event default event = char width = 1
 class Key:
     def __init__(self,k,nb=1,evt='car'):
-        self.txt=k
-        self.width=nb
-        self.event=evt
+        self.txt = k
+        self.width = nb
+        self.event = evt
 
 # keyboard dictionnary
 
@@ -130,7 +130,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.keyboard = KEYBOARD_MAPS[map_name]
         self.button_map = dict()
         
-        self.width_line=list()
+        self.width_line = list()
     
         for line in self.keyboard:
             one_line_width = 0
@@ -164,27 +164,35 @@ class Keyboard(clutter.Actor, clutter.Container):
             if button == source :
                 if key.event == 'fr_min':
                     self.load_profile("fr_min")
-                if key.event == 'fr_maj':
+                elif key.event == 'fr_maj':
                     self.load_profile("fr_maj")
-                if key.event == 'en_min':
+                elif key.event == 'en_min':
                     self.load_profile("en_min")
-                if key.event == 'en_maj':
+                elif key.event == 'en_maj':
                     self.load_profile("en_maj")
-                if key.event == 'caract_en':
+                elif key.event == 'caract_en':
                     self.load_profile("caract_en")
-                if key.event == 'caract_fr':
+                elif key.event == 'caract_fr':
                     self.load_profile("caract_fr")
-                if key.event == 'num':
+                elif key.event == 'num':
                     self.load_profile("int")
-                if key.event == 'car':
+                elif key.event == 'car':
                     self.emit("keyboard", key.txt)
-                if key.event == 'enter':
+                elif key.event == 'enter':
                     self.emit("keyboard", 'enter')
-                if key.event == 'suppr':
-                    self.emit("keyboard",'suppr')
-                #if key.event == 'del':
+                elif key.event == 'suppr':
+                    self.emit("keyboard", 'suppr')
+                #elif key.event == 'del':
                     #self.emit("keyboard",'del')
         gobject.timeout_add(200, source.set_inner_color, self.inner_color)
+    
+    def do_get_preferred_width(self, for_height):
+        preferred_width = 0
+        return preferred_width, preferred_width
+
+    def do_get_preferred_height(self, for_width):
+        preferred_height = 0
+        return preferred_height, preferred_height
     
     # button mapping : calcul each buttons width and place them
     def do_allocate(self, box, flags):
@@ -192,12 +200,12 @@ class Keyboard(clutter.Actor, clutter.Container):
         box_height = box.y2 - box.y1
         
         nb_line = len(self.keyboard)
-        taillemax=min(box_width/self.nb_col, box_height/nb_line)
+        taillemax = min(box_width / self.nb_col, box_height / nb_line)
         marge = taillemax/8
-        origy = (box_height - nb_line*taillemax)/2 + marge/2
+        origy = round((box_height - nb_line*taillemax + marge) / 2.0)
         
         for line_id, line in enumerate(self.keyboard):
-            origx = (box_width - self.width_line[line_id]*taillemax)/2 + marge/2
+            origx = round((box_width - self.width_line[line_id]*taillemax + marge) / 2.0)
             for key in line:
                 button = self.button_map[key]
                 btnbox = clutter.ActorBox()
