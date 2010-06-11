@@ -6,24 +6,61 @@ import clutter
 from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
 
+class CheckButton(clutter.Texture):
+    def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False):
+        clutter.Texture.__init__(self)
+        self.name = name
+        self.not_checked_image_path = not_checked_image_path
+        self.checked_image_path = checked_image_path
+        if checked:
+            self.checked = True
+            if self.checked_image_path:
+                self.set_from_file(self.checked_image_path)
+        else:
+            self.checked = False
+            if self.not_checked_image_path:
+                self.set_from_file(self.not_checked_image_path)
+        self.set_reactive(True)
+    
+    def toggle_check(self):
+        if self.checked == True:
+            self.checked = False
+            self.set_from_file(self.not_checked_image_path)
+        else:
+            self.checked = True
+            self.set_from_file(self.checked_image_path)
+    
+    def set_checked(self, boolean):
+        if boolean and not self.checked:
+            self.checked = True
+            if self.checked_image_path:
+                self.set_from_file(self.checked_image_path)
+        elif not boolean and self.checked:
+            self.checked = False
+            if self.not_checked_image_path:
+                self.set_from_file(self.not_checked_image_path)
+            
+
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
     
-    def __init__(self, label, padding=6, texture=None, rounded=True):
+    def __init__(self, label=' ', padding=6, texture=None, rounded=True):
         TextContainer.__init__(self, label, padding=padding, texture=texture, rounded=rounded)
         self.set_reactive(True)
 
 class ImageButton(ClassicButton):
     __gtype_name__ = 'ImageButton'
 
-    def __init__(self, label, image_src, padding=10, spacing=10, texture=None, has_text=True, expand=False):
+    def __init__(self, label=' ', image_src=None, padding=10, spacing=10, texture=None, has_text=True, expand=False):
         ClassicButton.__init__(self, label, padding=padding, texture=texture)
 
         self.spacing = spacing
         self._has_text = has_text
         self._expand = expand
         
-        self.image = clutter.Texture(image_src)
+        self.image = clutter.Texture()
+        if image_src:
+            self.image.set_from_file(image_src)
         self.image.set_parent(self)
         
         self.default_font_size = '16'
