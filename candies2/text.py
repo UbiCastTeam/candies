@@ -286,7 +286,7 @@ class TextContainer(clutter.Actor, clutter.Container):
                 self._wrap_singleline_label(0, len(self._text), inner_width)
                 lbl_width = self.label.get_preferred_size()[2]
                 lbl_height = self.label.get_preferred_size()[3]
-                x1_padding = x2_padding = round((inner_width - lbl_width) / 2.0)
+                x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
             else:
                 lbl_width = self.label.get_preferred_size()[2]
                 lbl_height = self.label.get_preferred_size()[3]
@@ -295,9 +295,9 @@ class TextContainer(clutter.Actor, clutter.Container):
                     x2_padding = 0
                 elif self._alignment == 'left':
                     x1_padding = 0
-                    x2_padding = lbl_width
+                    x2_padding = inner_width - lbl_width
                 else:
-                    x1_padding = x2_padding = round((inner_width - lbl_width) / 2.0)
+                    x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
         lbl_box.x1 = base_x + self.padding + x1_padding
         lbl_box.y1 = base_y + round(self.padding + (inner_height - lbl_height) / 2)
@@ -307,8 +307,8 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
         rect_box = clutter.ActorBox()
-        rect_box.x1 = base_x + 0
-        rect_box.y1 = base_y + 0
+        rect_box.x1 = base_x
+        rect_box.y1 = base_y
         rect_box.x2 = base_x + width
         rect_box.y2 = base_y + height
         self.rect.allocate(rect_box, flags)
