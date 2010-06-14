@@ -108,20 +108,21 @@ class Keyboard(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Keyboard'
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
-    font_color = '#000000ff'
-    border_color = '#ffffff44'
-    inner_color = '#ffffff44'
-    highlight_color = '#ffffff88'
-    
     #keyboard init
     def __init__(self, map_name, font_name=None) : 
         clutter.Actor.__init__(self)
+        
+        self.default_btn_size = 64
+        self.font_color = '#000000ff'
+        self.inner_color = '#ffffff44'
+        self.border_color = '#ffffff44'
+        self.highlight_color = '#ffffff88'
+        self.button_texture = None
+        
         self.keyboard = None
         self.map_name = None
         self.key_font_name = font_name
         self.load_profile(map_name)
-        self.default_btn_size = 64
-
     
     #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
@@ -136,7 +137,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         for line in self.keyboard:
             one_line_width = 0
             for key in line:
-                button = ClassicButton(key.txt)
+                button = ClassicButton(key.txt, texture=self.button_texture)
                 if self.key_font_name is not None:
                     button.label.set_font_name(self.key_font_name)
                 button.set_font_color(self.font_color)
