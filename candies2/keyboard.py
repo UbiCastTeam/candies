@@ -120,6 +120,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.map_name = None
         self.key_font_name = font_name
         self.load_profile(map_name)
+        self.default_btn_size = 64
 
     
     #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
@@ -187,11 +188,31 @@ class Keyboard(clutter.Actor, clutter.Container):
         gobject.timeout_add(200, source.set_inner_color, self.inner_color)
     
     def do_get_preferred_width(self, for_height):
-        preferred_width = 0
+        if for_height == -1:
+            row_count = len(self.keyboard)
+            col_count = self.nb_col
+            margin = int(self.default_btn_size / 8.0)
+            preferred_width = col_count * self.default_btn_size + margin
+        else:
+            row_count = len(self.keyboard)
+            col_count = self.nb_col
+            btn_size = float(for_height / row_count)
+            margin = int(btn_size / 8.0)
+            preferred_width = col_count * btn_size + margin
         return preferred_width, preferred_width
 
     def do_get_preferred_height(self, for_width):
-        preferred_height = 0
+        if for_width == -1:
+            row_count = len(self.keyboard)
+            col_count = self.nb_col
+            margin = int(self.default_btn_size / 8.0)
+            preferred_height = row_count * self.default_btn_size + margin
+        else:
+            row_count = len(self.keyboard)
+            col_count = self.nb_col
+            btn_size = float(for_width / col_count)
+            margin = int(btn_size / 8.0)
+            preferred_height = row_count * btn_size + margin
         return preferred_height, preferred_height
     
     # button mapping : calcul each buttons width and place them
@@ -200,8 +221,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         box_height = box.y2 - box.y1
         
         nb_line = len(self.keyboard)
-        taillemax = min(box_width / self.nb_col, box_height / nb_line)
-        marge = taillemax/8
+        taillemax = min(float(box_width / self.nb_col), float(box_height / nb_line))
+        marge = int(taillemax / 8.0)
         origy = round((box_height - nb_line*taillemax + marge) / 2.0)
         
         for line_id, line in enumerate(self.keyboard):
