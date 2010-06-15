@@ -7,6 +7,8 @@ from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
 
 class CheckButton(clutter.Texture):
+    __gtype_name__ = 'CheckButton'
+    
     def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False):
         clutter.Texture.__init__(self)
         self.name = name

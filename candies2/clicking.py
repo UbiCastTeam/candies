@@ -58,8 +58,9 @@ class LongClick(SimpleClick):
         gobject.timeout_add(self.long_delay, self.on_long_press, source)
         #if self.long_msg is not None:
         #    self.launchEvent('info', 'Hold %s seconds to %s' %(self.long_delay_ms/1000, self.long_msg))
+        return True
     
-    def on_long_press(self, source): 
+    def on_long_press(self, source):
         if self._is_pressed:
             self._is_long = True
             self.actor.emit('long-press-event')
