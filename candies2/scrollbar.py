@@ -174,7 +174,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             if self.position == 'center' :
                 bar_box.x1 = box_width/2 - bar_width/2
             elif self.position == 'top' :
-                bar_box.x1 = box.x1
+                bar_box.x1 = box.x1 + self.padding
             else :
                 bar_box.x1 = box_width - bar_width
             bar_box.y1 = box_height/2 - bar_height/2 
@@ -184,7 +184,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             if self.position == 'center' :
                 bar_box.y1 = box_width/2 - bar_width/2
             elif self.position == 'top' :
-                bar_box.y1 = box.y1
+                bar_box.y1 = box.y1 + self.padding
             else :
                 bar_box.y1 = box_width - bar_width
             bar_box.x1 = box_height/2 - bar_height/2 
