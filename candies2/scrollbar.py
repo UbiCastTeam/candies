@@ -33,10 +33,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Scrollbar'
     __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, padding=8, thin_scroller=True, bar_image_path=None, scroller_image_path=None,h=False,reallocate=False,label=None):
+    def __init__(self, padding=8, position = 'center', bar_image_path=None, scroller_image_path=None, scroller_press_image_path=None, horizontal=False, reallocate=False, label=None):
         clutter.Actor.__init__(self)
         self.padding = padding
-        self.thin_scroller = thin_scroller
+        self.position = position
         self.reallocate=reallocate
         self.show_label=False
 
@@ -53,36 +53,47 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.label.set_color('#FFFFFFFF')
             self.label.set_text(label)
             self.label.set_parent(self)
-            self.show_label=True    
+            self.show_label = True
 
         if scroller_image_path != None and os.path.exists(scroller_image_path):
             self.scroller = clutter.Texture()
             self.scroller.set_from_file(scroller_image_path)
+            self.scroller_image_path = scroller_image_path
         else:
             self.scroller = clutter.Rectangle()
             self.scroller.set_color('Gray')
+            self.scroller_image_path = None
+        if scroller_press_image_path != None and os.path.exist(scroller_image_press_path):
+            self.scroller_press_image_path = scroller_press_image_path
+        else :
+            self.scroller_press_image_path = None
         self.scroller.set_parent(self)
         self.scroller.set_reactive(True)
         self.scroller.connect('button-press-event', self.on_scroll_press)
         self.scroller.connect('button-release-event', self.on_scroll_release)
         self.scroller.connect('motion-event', self.on_scroll_move)
+        
         self.scroller_position = 0
-        self.height=0
+        self.height = 0
         self.last_event_y = None
         self.last_event_x = None
-        self.h=h
-        self.flags=None
-        self.box=None
+        self.h = horizontal
+        self.flags = None
+        self.box = None
 
     def on_scroll_press(self, source, event):
         self.last_event_y = event.y
         self.last_event_x = event.x
+        if self.scroller_press_image_path is not None :
+            self.scroller.set_from_file(self.scroller_press_image_path)
         return True 
 
     def on_scroll_release(self, source, event):
         clutter.ungrab_pointer()
         self.last_event_y = None
         self.last_event_x = None
+        if self.scroller_press_image_path is not None and self.scroller_image_path is not None:
+            self.scroller.set_from_file( self.scroller_image_path)
 
     def on_scroll_move(self, source, event):
         if self.h == False : 
@@ -107,7 +118,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def get_scroller_position_percent(self):
         value = (self.scroller_position)/(self.height-2*self.padding-self.scroller_height)
         return value
-
 
     def go_to_top(self):
         self.scroller_position = 0
@@ -137,40 +147,46 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
         scroller_width = box_width - 2*self.padding
         self.scroller_height=scroller_height = scroller_width
-        if self.thin_scroller:
-            bar_width = box_width/4
-        else:
-            bar_width = box_width - 2*self.padding
+        bar_width = box_width/4
         bar_height = box_height - 2*self.padding - scroller_height + bar_width
 
         bar_box = clutter.ActorBox()
         if self.h == False :
-            bar_box.x1 = box_width/2 - bar_width/2
+            if self.position == 'center' :
+                bar_box.x1 = box_width/2 - bar_width/2
+            elif self.position == 'top' :
+                bar_box.x1 = box.x1
+            else :
+                bar_box.x1 = box_width - bar_width
             bar_box.y1 = box_height/2 - bar_height/2 
             bar_box.x2 = bar_box.x1 + bar_width
             bar_box.y2 = bar_box.y1 + bar_height
         else :
-            bar_box.y1 = box_width/2 - bar_width/2
+            if self.position == 'center' :
+                bar_box.y1 = box_width/2 - bar_width/2
+            elif self.position == 'top' :
+                bar_box.y1 = box.y1
+            else :
+                bar_box.y1 = box_width - bar_width
             bar_box.x1 = box_height/2 - bar_height/2 
-            bar_box.y2 = bar_box.x1 + bar_width
-            bar_box.x2 = bar_box.y1 + bar_height
+            bar_box.y2 = bar_box.y1 + bar_width
+            bar_box.x2 = bar_box.x1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
 
         if self.show_label :
-            label_box=clutter.ActorBox()
-            label_box.x1=bar_box.x1+bar_width/4
-            label_box.x2=bar_box.x2
-            label_box.y1=38*box_width/93
-            label_box.y2=63*box_width/93
+            label_box = clutter.ActorBox()
+            label_box.x1 = bar_box.x1 + bar_width/2
+            label_box.x2 = bar_box.x2
+            label_box.y1 = bar_box.y1
+            label_box.y2 = label_box.y1 + 20
             self.label.allocate(label_box,flags)
 
         scroller_box = clutter.ActorBox()
         if self.h == False :
-            scroller_box.x1 = self.padding 
+            scroller_box.x1 = self.padding
             scroller_box.x2 = scroller_box.x1 + scroller_width
         else :
-            #scroller_box.y1 = self.padding 
-            scroller_box.y1 = 20*box_width/93
+            scroller_box.y1 = self.padding
             scroller_box.y2 = scroller_box.y1 + scroller_width
         self.scroller_position -= scroller_height/2
         if self.scroller_position >= box_height - 2*self.padding - scroller_height:
