@@ -215,6 +215,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
             scroller_box.x2 = scroller_box.x1 + scroller_width
         else :
             scroller_box.y1 = self.padding
+            if self.position == 'top' :
+                scroller_box.y1 += self.padding
             scroller_box.y2 = scroller_box.y1 + scroller_width
         self.scroller_position -= scroller_height/2
         if self.scroller_position >= box_height - 2*self.padding - scroller_height:
