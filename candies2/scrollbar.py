@@ -80,6 +80,20 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.h = horizontal
         self.flags = None
         self.box = None
+        self.scale_positions_list = None
+        self.scale_list = None
+
+    def draw_scale_percent(self, scale_positions_percent_list):
+        self.scale_list = list()
+        self.scale_positions_list = list()
+        for position_percent in scale_positions_percent_list :
+            position = position_percent*(self.height-2*self.padding-self.scroller_height)+self.scroller_height/2 + self.padding + 1
+            self.scale_positions_list.append(position)
+            scale = clutter.Rectangle()
+            scale.set_color('#FFFFFF30')
+            scale.set_parent(self)
+            self.scale_list.append(scale)
+        self.queue_relayout()
 
     def on_scroll_press(self, source, event):
         self.last_event_y = event.y
@@ -147,7 +161,12 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
         scroller_width = box_width - 2*self.padding
         self.scroller_height=scroller_height = scroller_width
-        bar_width = box_width/4
+        if not self.h and self.scrollbar_background.get_preferred_size()[2] > 0 and self.position == 'center':
+            bar_width = self.scrollbar_background.get_preferred_size()[2]
+        elif self.h and self.scrollbar_background.get_preferred_size()[3] > 0 and self.position == 'center':
+            bar_width = self.scrollbar_background.get_preferred_size()[3]
+        else :
+            bar_width = box_width/4
         bar_height = box_height - 2*self.padding - scroller_height + bar_width
 
         bar_box = clutter.ActorBox()
@@ -172,6 +191,15 @@ class Scrollbar(clutter.Actor, clutter.Container):
             bar_box.y2 = bar_box.y1 + bar_width
             bar_box.x2 = bar_box.x1 + bar_height
         self.scrollbar_background.allocate(bar_box, flags)
+
+        if self.scale_positions_list is not None :
+            for i, item in enumerate(self.scale_list) :
+                scale_box = clutter.ActorBox()
+                scale_box.x1 = self.scale_positions_list[i]
+                scale_box.y1 = bar_box.y1
+                scale_box.x2 = scale_box.x1 + 2
+                scale_box.y2 = bar_box.y2
+                item.allocate(scale_box, flags)
 
         if self.show_label :
             label_box = clutter.ActorBox()
@@ -204,16 +232,22 @@ class Scrollbar(clutter.Actor, clutter.Container):
         scroll_position_percent = (self.scroller_position)/(box_height - 2*self.padding - scroller_height)
         self.emit("scroll_position", scroll_position_percent)
         clutter.Actor.do_allocate(self, box, flags)
-    
+
     def do_foreach(self, func, data=None):
         children = (self.scrollbar_background, self.scroller)
         for child in children :
             func(child, data)
         if self.show_label:
             func(self.label,data)
-    
+        if self.scale_positions_list is not None :
+            for scale in self.scale_list :
+                func(scale, data)
+
     def do_paint(self):
         self.scrollbar_background.paint()
+        if self.scale_positions_list is not None :
+            for scale in self.scale_list :
+                scale.paint()
         if self.show_label:
             self.label.paint()
         self.scroller.paint()
@@ -223,7 +257,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if self.show_label:
             self.label.paint()
         self.scroller.paint()
-    
+        if self.scale_positions_list is not None :
+            for scale in self.scale_list :
+                scale.paint()
+
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'scrollbar_background'):
@@ -241,6 +278,12 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 self.scroller.unparent()
                 self.scroller.destroy()
                 self.scroller = None
+        if self.scale_positions_list is not None :
+            for child in self.scale_list :
+                if child is not None :
+                    child.unparent()
+                    child.destroy()
+                    child = None
 
 class Clipper (clutter.Actor, clutter.Container):
     '''
