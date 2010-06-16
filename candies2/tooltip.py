@@ -9,7 +9,7 @@ from text import TextContainer
 class ToolTipManager(clutter.Actor, clutter.Container):
     __gtype_name__ = 'ToolTipManager'
     
-    def __init__(self, content_actor=None, tooltip_actor=None, h_direction='middle', v_direction='top', clickable=True, long_click=True, tooltip_duration=0, animation_duration=500):
+    def __init__(self, content_actor=None, tooltip_actor=None, h_direction='middle', v_direction='top', clickable=True, long_click=True, tooltip_duration=0, animation_duration=500, tooltip_x_padding=0, tooltip_y_padding=0):
         clutter.Actor.__init__(self)
         
         self.h_direction = h_direction
@@ -27,6 +27,8 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.tooltip_actor = None
         self._tooltip_connection = None
         self._tooltip_displayed = False
+        self.tooltip_x_padding = tooltip_x_padding
+        self.tooltip_y_padding = tooltip_y_padding
         self.tooltip_pointer = clutter.Texture()
         self.tooltip_pointer.hide()
         self.tooltip_pointer.set_parent(self)
@@ -181,20 +183,20 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 
                 if self.h_direction == 'left':
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
-                    tooltip_x_pos = int((box_width + pointer_width) / 2.0) - tooltip_width
+                    tooltip_x_pos = int((box_width + pointer_width) / 2.0) - tooltip_width + self.tooltip_x_padding
                 elif self.h_direction == 'right':
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
-                    tooltip_x_pos = pointer_x_pos
+                    tooltip_x_pos = pointer_x_pos - self.tooltip_x_padding
                 else:
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
                     tooltip_x_pos = int((box_width - tooltip_width) / 2.0)
                 
                 if self.v_direction == 'top':
                     pointer_y_pos = 0 - pointer_height
-                    tooltip_y_pos = 0 - tooltip_height - pointer_height
+                    tooltip_y_pos = 0 - tooltip_height - pointer_height + self.tooltip_y_padding
                 else:
                     pointer_y_pos = box_height
-                    tooltip_y_pos = box_height + pointer_height
+                    tooltip_y_pos = box_height + pointer_height - self.tooltip_y_padding
                 
                 pointer_box = clutter.ActorBox()
                 pointer_box.x1 = pointer_x_pos

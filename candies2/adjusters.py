@@ -4,6 +4,7 @@
 import sys
 import gobject
 import clutter
+from text import TextContainer
 from buttons import ClassicButton
 from box import Box
 
@@ -37,67 +38,71 @@ class NumberAdjuster(Box):
         self.value = default
         self.increment = increment
         if factor is None:
-            factor = 1
-        self.factor = factor
+            self.factor = 1
+        else:
+            self.factor = factor
         
-        minus = ClassicButton("-", texture=texture)
-        minus.set_font_name(self.button_font_size)
-        minus.set_font_color(self.button_font_color)
-        minus.set_inner_color(self.button_inner_color)
-        minus.set_border_color(self.button_border_color)
-        minus.set_size(self.button_size, self.button_size)
-        minus.connect("button-release-event", self.dec)
+        self.minus = ClassicButton('-', texture=texture)
+        self.minus.set_font_name(self.button_font_size)
+        self.minus.set_font_color(self.button_font_color)
+        self.minus.set_inner_color(self.button_inner_color)
+        self.minus.set_border_color(self.button_border_color)
+        self.minus.set_size(self.button_size, self.button_size)
+        self.minus.connect('button-release-event', self.dec)
 
-        self.value_btn = ClassicButton('', texture=texture)
+        self.value_btn = ClassicButton(texture=texture)
         self.value_btn.set_font_name(self.button_font_size)
         self.value_btn.set_font_color(self.button_font_color)
         self.value_btn.set_inner_color(self.button_inner_color)
         self.value_btn.set_border_color(self.button_border_color)
-        self.value_btn.set_width(2*self.button_size) #minimum size
+        self.value_btn.set_size(2*self.button_size, self.button_size) #minimum size
 
         self.update_rounded_value()
         # set default value
 
-        plus = ClassicButton("+", texture=texture)
-        plus.set_font_name(self.button_font_size)
-        plus.set_font_color(self.button_font_color)
-        plus.set_inner_color(self.button_inner_color)
-        plus.set_border_color(self.button_border_color)
-        plus.connect("button-release-event", self.inc)
-        plus.set_size(self.button_size, self.button_size)
-
+        self.plus = ClassicButton('+', texture=texture)
+        self.plus.set_font_name(self.button_font_size)
+        self.plus.set_font_color(self.button_font_color)
+        self.plus.set_inner_color(self.button_inner_color)
+        self.plus.set_border_color(self.button_border_color)
+        self.plus.set_size(self.button_size, self.button_size)
+        self.plus.connect('button-release-event', self.inc)
+        
+        self.label = None
         if text is not None:
-            label = ClassicButton(str(text), padding=0)
-            label.set_font_name(self.label_font_size)
-            label.set_font_color(self.label_font_color)
-            label.set_inner_color('#00000000')
-            label.set_border_color('#00000000')
-            self.add({'name': 'text', 'center': True, 'object': label, 'resizable': 0.7})
+            self.label = TextContainer(str(text), padding=0)
+            self.label.set_font_name(self.label_font_size)
+            self.label.set_font_color(self.label_font_color)
+            self.label.set_inner_color('#00000000')
+            self.label.set_border_color('#00000000')
+            self.add_element(self.label, 'minus', expand=True, resizable=0.7)
+            value_btn_size = 0.3
+        else:
+            value_btn_size = 1.0
 
-        self.add(
-            {'name': 'minus', 'center': True, 'object': minus},
-            {'name': 'value','expand': True, 'resizable': 0.3, 'object': self.value_btn},
-            {'name': 'plus', 'center': True, 'object': plus})
+        self.add_element(self.minus, 'minus', expand=True)
+        self.add_element(self.value_btn, 'value', expand=True, resizable=value_btn_size)
+        self.add_element(self.plus, 'plus', expand=True)
 
     def inc(self, button, event):
-        button.rect.set_color(self.button_highlight_color)
+        button.set_inner_color(self.button_highlight_color)
         if self.value + self.increment <= self.max:
             self.value += self.increment
             self.update()
         elif self.value != self.max:
             self.value = self.max
             self.update()
-        gobject.timeout_add(200, button.rect.set_color, self.button_inner_color)
+        gobject.timeout_add(200, button.set_inner_color, self.button_inner_color)
 
     def dec(self, button, event):
-        button.rect.set_color(self.button_highlight_color)
+        button.set_inner_color(self.button_highlight_color)
         if self.value - self.increment >= self.min:
             self.value -= self.increment
             self.update()
         elif self.value != self.min:
             self.value = self.min
             self.update()
-        gobject.timeout_add(200, button.rect.set_color, self.button_inner_color)
+        gobject.timeout_add(200, button.set_inner_color, self.button_inner_color)
 
     def update(self):
         self.update_rounded_value()
@@ -110,7 +115,6 @@ class NumberAdjuster(Box):
             self.increment = value
         else:
             raise TypeError('Unknown property ' + pspec.name)
-        #self.queue_redraw()
 
     def do_get_property(self, pspec):
         if pspec.name == 'color':
@@ -146,13 +150,11 @@ class NumberAdjuster(Box):
 
 
 if __name__ == '__main__':
-
     stage_width = 640
     stage_height = 480
     stage = clutter.Stage()
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', clutter.main_quit)
-
 
     def update_callback(source, value):
         print "Test value has been updated", value
