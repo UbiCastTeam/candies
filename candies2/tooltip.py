@@ -230,7 +230,7 @@ if __name__ == '__main__':
     rect2.set_position(200, 200)
     rect2.set_color('#00ff00ff')
     
-    test = ToolTip(rect, rect2, tooltip_duration=0, animation_duration=500)
+    test = ToolTipManager(rect, rect2, tooltip_duration=0, animation_duration=500)
     test.set_content(rect)
     test.h_direction = 'left'
     test.v_direction = 'top'
