@@ -27,6 +27,12 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.tooltip_actor = None
         self._tooltip_connection = None
         self._tooltip_displayed = False
+        self.tooltip_pointer = clutter.Texture()
+        self.tooltip_pointer.hide()
+        self.tooltip_pointer.set_parent(self)
+        self.tooltip_show_animation.apply(self.tooltip_pointer)
+        self.tooltip_hide_animation.apply(self.tooltip_pointer)
+        
         if content_actor:
             self.set_content(content_actor)
         if tooltip_actor:
@@ -40,6 +46,9 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.tooltip_hide_timeline = clutter.Timeline(self.animation_duration)
         alpha = clutter.Alpha(self.tooltip_hide_timeline, clutter.EASE_IN_EXPO)
         self.tooltip_hide_animation = clutter.BehaviourOpacity(255, 0, alpha=alpha)
+    
+    def set_pointer_texture(self, texture_src):
+        self.tooltip_pointer.set_from_file(texture_src)
     
     def set_content(self, content_actor):
         if self.content_actor:
@@ -115,6 +124,8 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self._tooltip_displayed = True
             self.tooltip_actor.set_opacity(0)
             self.tooltip_actor.show()
+            self.tooltip_pointer.set_opacity(0)
+            self.tooltip_pointer.show()
             self.tooltip_show_timeline.start()
             if self.tooltip_duration > 0:
                 gobject.timeout_add(self.tooltip_duration, self._hide_tooltip)
@@ -130,6 +141,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         if self.tooltip_actor:
             self._tooltip_displayed = False
             self.tooltip_actor.hide()
+            self.tooltip_pointer.hide()
         return False
     
     def do_get_preferred_width(self, for_height):
@@ -163,44 +175,66 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 tooltip_width = preferred_size[2]
                 tooltip_height = preferred_size[3]
                 
+                preferred_size = self.tooltip_pointer.get_preferred_size()
+                pointer_width = preferred_size[2]
+                pointer_height = preferred_size[3]
+                
                 if self.h_direction == 'left':
-                    x_pos = box_width - tooltip_width
+                    pointer_x_pos = int((box_width - pointer_width) / 2.0)
+                    tooltip_x_pos = int((box_width + pointer_width) / 2.0) - tooltip_width
                 elif self.h_direction == 'right':
-                    x_pos = 0
+                    pointer_x_pos = int((box_width - pointer_width) / 2.0)
+                    tooltip_x_pos = pointer_x_pos
                 else:
-                    x_pos = int(float(box_width - tooltip_width) / 2.0)
+                    pointer_x_pos = int((box_width - pointer_width) / 2.0)
+                    tooltip_x_pos = int((box_width - tooltip_width) / 2.0)
                 
                 if self.v_direction == 'top':
-                    y_pos = 0 - tooltip_height
+                    pointer_y_pos = 0 - pointer_height
+                    tooltip_y_pos = 0 - tooltip_height - pointer_height
                 else:
-                    y_pos = box_height
+                    pointer_y_pos = box_height
+                    tooltip_y_pos = box_height + pointer_height
+                
+                pointer_box = clutter.ActorBox()
+                pointer_box.x1 = pointer_x_pos
+                pointer_box.y1 = pointer_y_pos
+                pointer_box.x2 = pointer_x_pos + pointer_width
+                pointer_box.y2 = pointer_y_pos + pointer_height
+                self.tooltip_pointer.allocate(pointer_box, flags)
                 
                 tooltip_box = clutter.ActorBox()
-                tooltip_box.x1 = x_pos
-                tooltip_box.y1 = y_pos
-                tooltip_box.x2 = x_pos + tooltip_width
-                tooltip_box.y2 = y_pos + tooltip_height
+                tooltip_box.x1 = tooltip_x_pos
+                tooltip_box.y1 = tooltip_y_pos
+                tooltip_box.x2 = tooltip_x_pos + tooltip_width
+                tooltip_box.y2 = tooltip_y_pos + tooltip_height
                 self.tooltip_actor.allocate(tooltip_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
-        if self.content_actor:
-            func(self.content_actor, data)
+        if self.tooltip_pointer:
+            func(self.tooltip_pointer, data)
         if self.tooltip_actor:
             func(self.tooltip_actor, data)
+        if self.content_actor:
+            func(self.content_actor, data)
         
     def do_paint(self):
-        if self.content_actor:
-            self.content_actor.paint()
+        if self.tooltip_pointer:
+            self.tooltip_pointer.paint()
         if self.tooltip_actor:
             self.tooltip_actor.paint()
+        if self.content_actor:
+            self.content_actor.paint()
     
     def do_pick(self, color):
-        if self.content_actor:
-            self.content_actor.paint()
+        if self.tooltip_pointer:
+            self.tooltip_pointer.paint()
         if self.tooltip_actor:
             self.tooltip_actor.paint()
+        if self.content_actor:
+            self.content_actor.paint()
     
     def do_destroy(self):
         self.unparent()
@@ -214,6 +248,11 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 self.tooltip_actor.unparent()
                 self.tooltip_actor.destroy()
                 self.tooltip_actor = None
+        if hasattr(self, 'tooltip_pointer'):
+            if self.tooltip_pointer:
+                self.tooltip_pointer.unparent()
+                self.tooltip_pointer.destroy()
+                self.tooltip_pointer = None
 
 if __name__ == '__main__':
     stage = clutter.Stage()
@@ -232,6 +271,7 @@ if __name__ == '__main__':
     
     test = ToolTipManager(rect, rect2, tooltip_duration=0, animation_duration=500)
     test.set_content(rect)
+    test.set_pointer_texture('/home/sdiemer/sources/candies/trunk/candies2/pointer.png')
     test.h_direction = 'left'
     test.v_direction = 'top'
     gobject.timeout_add(1000, test.display_tooltip, True)
