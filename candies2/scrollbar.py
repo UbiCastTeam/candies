@@ -63,10 +63,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scroller = clutter.Rectangle()
             self.scroller.set_color('Gray')
             self.scroller_image_path = None
-        if scroller_press_image_path != None and os.path.exist(scroller_image_press_path):
-            self.scroller_press_image_path = scroller_press_image_path
-        else :
-            self.scroller_press_image_path = None
+        #if scroller_press_image_path != None and os.path.exist(scroller_image_press_path):
+        #    self.scroller_press_image_path = scroller_press_image_path
+        #else :
+        self.scroller_press_image_path = None
         self.scroller.set_parent(self)
         self.scroller.set_reactive(True)
         self.scroller.connect('button-press-event', self.on_scroll_press)
