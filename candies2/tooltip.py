@@ -271,7 +271,6 @@ if __name__ == '__main__':
     
     test = ToolTipManager(rect, rect2, tooltip_duration=0, animation_duration=500)
     test.set_content(rect)
-    test.set_pointer_texture('/home/sdiemer/sources/candies/trunk/candies2/pointer.png')
     test.h_direction = 'left'
     test.v_direction = 'top'
     gobject.timeout_add(1000, test.display_tooltip, True)

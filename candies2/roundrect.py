@@ -224,7 +224,7 @@ if __name__ == '__main__':
         
         max_count = 20000
         
-        texture_path = '/home/sdiemer/sources/candies/main/candies2/light.png'
+        texture_path = '/path/to/an/image'
         texture = cogl.texture_new_from_file(light_path)
         
         def create_test_object():
