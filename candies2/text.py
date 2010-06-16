@@ -291,18 +291,24 @@ class TextContainer(clutter.Actor, clutter.Container):
                 lbl_width = self.label.get_preferred_size()[2]
                 lbl_height = self.label.get_preferred_size()[3]
                 if self._alignment == 'right':
+                    # minimum of 5 px for label width
                     x1_padding = inner_width - lbl_width
+                    if x1_padding > inner_width - 5:
+                        x1_padding -= 5
                     x2_padding = 0
                 elif self._alignment == 'left':
+                    # minimum of 5 px for label width
                     x1_padding = 0
                     x2_padding = inner_width - lbl_width
+                    if x2_padding > inner_width - 5:
+                        x2_padding -= 5
                 else:
                     x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
         lbl_box.x1 = base_x + self.padding + x1_padding
-        lbl_box.y1 = base_y + round(self.padding + (inner_height - lbl_height) / 2)
+        lbl_box.y1 = base_y + self.padding + int((inner_height - lbl_height) / 2.0)
         lbl_box.x2 = base_x + width - self.padding - x2_padding
-        lbl_box.y2 = base_y + round(lbl_box.y1 + lbl_height)
+        lbl_box.y2 = base_y + lbl_box.y1 + lbl_height
         self.label.allocate(lbl_box, flags)
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
@@ -334,12 +340,12 @@ class TextContainer(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'rect'):
-            if self.rect is not None:
+            if self.rect:
                 self.rect.unparent()
                 self.rect.destroy()
                 self.rect = None
         if hasattr(self, 'label'):
-            if self.label is not None:
+            if self.label:
                 self.label.unparent()
                 self.label.destroy()
                 self.label = None
