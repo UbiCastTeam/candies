@@ -173,6 +173,10 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.content_actor.allocate(content_box, flags)
         
             if self.tooltip_actor:
+                box_x, box_y = self.get_transformed_position()
+                box_x = int(box_x)
+                box_y = int(box_y)
+                
                 preferred_size = self.tooltip_actor.get_preferred_size()
                 tooltip_width = preferred_size[2]
                 tooltip_height = preferred_size[3]
@@ -183,10 +187,16 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 
                 if self.h_direction == 'left':
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
-                    tooltip_x_pos = int((box_width + pointer_width) / 2.0) - tooltip_width + self.tooltip_x_padding
+                    if pointer_width > 0:
+                        tooltip_x_pos = int((box_width + pointer_width) / 2.0) - tooltip_width + self.tooltip_x_padding
+                    else:
+                        tooltip_x_pos = box_width - tooltip_width + self.tooltip_x_padding
                 elif self.h_direction == 'right':
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
-                    tooltip_x_pos = pointer_x_pos - self.tooltip_x_padding
+                    if pointer_width > 0:
+                        tooltip_x_pos = pointer_x_pos - self.tooltip_x_padding
+                    else:
+                        tooltip_x_pos = 0 - self.tooltip_x_padding
                 else:
                     pointer_x_pos = int((box_width - pointer_width) / 2.0)
                     tooltip_x_pos = int((box_width - tooltip_width) / 2.0)
@@ -197,6 +207,10 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 else:
                     pointer_y_pos = box_height
                     tooltip_y_pos = box_height + pointer_height - self.tooltip_y_padding
+                
+                # if the tooltip will go outside, change x_pos (10 is for padding)
+                if box_x + tooltip_x_pos < 10:
+                    tooltip_x_pos = 0 - box_x + 10
                 
                 pointer_box = clutter.ActorBox()
                 pointer_box.x1 = pointer_x_pos
@@ -267,12 +281,12 @@ if __name__ == '__main__':
     rect.set_color('#0000ffff')
     
     rect2 = clutter.Rectangle()
-    rect2.set_size(480, 60)
+    rect2.set_size(800, 60)
     rect2.set_position(200, 200)
     rect2.set_color('#00ff00ff')
     
     test = ToolTipManager(rect, rect2, tooltip_duration=0, animation_duration=500)
-    test.set_content(rect)
+    #test.set_content(rect)
     test.h_direction = 'left'
     test.v_direction = 'top'
     gobject.timeout_add(1000, test.display_tooltip, True)
