@@ -23,10 +23,10 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.build_animations()
         
         self.content_actor = None
-        self.content_connection = None
+        self._content_connection = None
         self.tooltip_actor = None
-        self.tooltip_connection = None
-        self.tooltip_displayed = False
+        self._tooltip_connection = None
+        self._tooltip_displayed = False
         if content_actor:
             self.set_content(content_actor)
         if tooltip_actor:
@@ -54,7 +54,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.tooltip_actor.unparent()
             self._disconnect_tooltip()
         self.tooltip_actor = tooltip_actor
-        self.tooltip_displayed = False
+        self._tooltip_displayed = False
         self.tooltip_actor.hide()
         self.tooltip_actor.set_parent(self)
         self._connect_tooltip()
@@ -64,15 +64,15 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.content_actor.set_reactive(True)
             if self.long_click:
                 LongClick(self.content_actor)
-                self.content_connection = self.content_actor.connect('long-press-event', self._on_content_press)
+                self._content_connection = self.content_actor.connect('long-press-event', self._on_content_press)
             else:
-                self.content_connection = self.content_actor.connect('button-press-event', self._on_content_press)
+                self._content_connection = self.content_actor.connect('button-press-event', self._on_content_press)
     
     def _disconnect_content(self):
-        if self.content_actor and self.content_connection is not None:
+        if self.content_actor and self._content_connection is not None:
             self.content_actor.set_reactive(False)
-            self.content_actor.disconnect(self.content_connection)
-            self.content_connection = None
+            self.content_actor.disconnect(self._content_connection)
+            self._content_connection = None
     
     def _on_content_press(self, source=None, event=None):
         self.toggle_tooltip_display()
@@ -81,15 +81,15 @@ class ToolTipManager(clutter.Actor, clutter.Container):
     def _connect_tooltip(self):
         if self.tooltip_actor:
             self.tooltip_actor.set_reactive(True)
-            self.tooltip_connection = self.tooltip_actor.connect('button-press-event', self._on_tooltip_press)
+            self._tooltip_connection = self.tooltip_actor.connect('button-press-event', self._on_tooltip_press)
             self.tooltip_show_animation.apply(self.tooltip_actor)
             self.tooltip_hide_animation.apply(self.tooltip_actor)
     
     def _disconnect_tooltip(self):
-        if self.content_actor and self.tooltip_connection is not None:
+        if self.content_actor and self._tooltip_connection is not None:
             self.tooltip_actor.set_reactive(False)
-            self.tooltip_actor.disconnect(self.tooltip_connection)
-            self.tooltip_connection = None
+            self.tooltip_actor.disconnect(self._tooltip_connection)
+            self._tooltip_connection = None
             self.tooltip_show_animation.remove_all()
             self.tooltip_hide_animation.remove_all()
     
@@ -98,7 +98,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         return True
     
     def toggle_tooltip_display(self):
-        if self.tooltip_displayed:
+        if self._tooltip_displayed:
             self.display_tooltip(False)
         else:
             self.display_tooltip(True)
@@ -111,8 +111,8 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self._hide_tooltip()
     
     def _show_tooltip(self):
-        if self.tooltip_actor and not self.tooltip_displayed:
-            self.tooltip_displayed = True
+        if self.tooltip_actor and not self._tooltip_displayed:
+            self._tooltip_displayed = True
             self.tooltip_actor.set_opacity(0)
             self.tooltip_actor.show()
             self.tooltip_show_timeline.start()
@@ -121,14 +121,14 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         return False
     
     def _hide_tooltip(self):
-        if self.tooltip_actor and self.tooltip_displayed:
+        if self.tooltip_actor and self._tooltip_displayed:
             self.tooltip_hide_timeline.start()
             gobject.timeout_add(self.animation_duration, self._hide_tooltip_finish)
         return False
     
     def _hide_tooltip_finish(self):
         if self.tooltip_actor:
-            self.tooltip_displayed = False
+            self._tooltip_displayed = False
             self.tooltip_actor.hide()
         return False
     

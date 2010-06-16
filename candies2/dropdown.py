@@ -88,6 +88,12 @@ class OptionLine(clutter.Actor, clutter.Container):
     def set_border_color(self, color):
         self.background.set_border_color(color)
     
+    def set_radius(self, radius):
+        self.background.set_radius(radius)
+    
+    def set_border_width(self, width):
+        self.background.set_border_width(width)
+    
     def show_background(self):
         if self.enable_background != True:
             self.enable_background = True
