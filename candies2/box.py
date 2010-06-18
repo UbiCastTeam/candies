@@ -898,19 +898,13 @@ if __name__ == '__main__':
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
+    stage.set_color('#000000ff')
     stage.connect('destroy', clutter.main_quit)
-    
-    # background texture
-    global_bg = clutter.Rectangle()
-    global_bg.set_position(0, 0)
-    global_bg.set_size(stage_width, stage_height)
-    global_bg.set_color('#000000ff')
-    stage.add(global_bg)
-    
     
     rect_bg = clutter.Rectangle()
     rect_bg.set_color('#ffffffff')
-    
+    rect_bg2 = clutter.Rectangle()
+    rect_bg2.set_color('#ccccccff')
     
     rect1 = clutter.Rectangle()
     rect1.set_size(200, 50)
@@ -928,28 +922,38 @@ if __name__ == '__main__':
     rect4.set_size(40, 40)
     rect4.set_color(clutter.color_from_string('Red'))
     
-    line = Box(horizontal=True, spacing=10, padding=20)
-    line.set_background(rect_bg)
-    line.add({'name': 'rect1',
-        'center': True,
-        'object': rect1},
+    
+    col = Box(horizontal=False, spacing=10, padding=0)
+    col.set_background(rect_bg2)
+    col.add(
         {'name': 'rect2',
-        'expand': True,
         #'resizable': 1.0,
         'keep_ratio': True,
+        'expand': True,
         'center': True,
         'object': rect2},
+        
         {'name': 'rect3',
         #'resizable': 1.0,
         'object': rect3},
+        
         {'name': 'rect4',
-        'object': rect4})
+        'object': rect4}
+    )
+        
+    line = Box(horizontal=True, spacing=10, padding=20)
+    line.set_background(rect_bg)
+    line.add_element(col, 'col', resizable=0.5, expand=True)
+    line.add_element(rect1, 'rect1', resizable=0.5)
+    
+    #col.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
     #line.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
-    #line.set_height(400)
+    line.set_height(400)
     line.set_width(500)
     #line.set_size(400, 350)
-    line.set_position(30, 30)
     line.set_bg_ignore_allocation_box(False)
+    
+    line.set_position(30, 30)
     stage.add(line)
     
     def on_click(btn_test, event):
