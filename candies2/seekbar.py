@@ -5,108 +5,6 @@ import gobject
 import clutter
 import os
 
-'''
-class bar(clutter.Actor):
-    __gtype_name__ = 'bar'
-    __gproperties__ = {
-        'color' : (
-            str, 'color', 'Color', None, gobject.PARAM_READWRITE
-        ),
-    }
-
-    def __init__(self):
-        clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string('Black')
-
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'color':
-            self._color = clutter.color_from_string(value)
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-
-    def do_get_property(self, pspec):
-        if pspec.name == 'color':
-            return self._color
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-
-    def __paint_bar(self, width, height, color):
-
-        cogl.set_source_color(color)
-        radius = height / 2
-        cogl.path_move_to(radius, height)
-        cogl.path_arc(radius, radius, radius, radius, 90, 270)
-        cogl.path_line_to(width - radius, radius - radius)
-        cogl.path_arc(radius + (width - 2 * radius), radius, -radius, -radius, -270, -90)
-        cogl.path_line_to(radius, height - radius + radius)
-        cogl.path_close()
-        cogl.path_fill()
-
-    def do_paint(self):
-        (x1, y1, x2, y2) = self.get_allocation_box()
-
-        paint_color = self._color.copy()
-
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
-
-        self.__paint_bar(x2 - x1, y2 - y1, paint_color)
-
-    def do_pick(self, pick_color):
-        if self.should_pick_paint() == False:
-            return
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_bar(x2 - x1, y2 - y1, pick_color)
-'''
-'''
-class Cursor(clutter.Actor):
-    __gtype_name__ = 'Cursor'
-    __gproperties__ = {
-        'color' : (
-            str, 'color', 'Color', None, gobject.PARAM_READWRITE
-        ),
-    }
-
-    def __init__(self):
-        clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string('White')
-
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'color':
-            self._color = clutter.color_from_string(value)
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-
-    def do_get_property(self, pspec):
-        if pspec.name == 'color':
-            return self._color
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-
-    def do_get_preferred_width(self, for_height):
-        return (20, 20)
-
-    def __paint_cursor(self, width, height, color):
-        cogl.set_source_color(color)
-        cogl.rectangle(0, 0, width, height)
-
-    def do_paint(self):
-        (x1, y1, x2, y2) = self.get_allocation_box()
-
-        paint_color = self._color.copy()
-
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
-
-        self.__paint_cursor(x2 - x1, y2 - y1, paint_color)
-
-    def do_pick(self, pick_color):
-        if self.should_pick_paint() == False:
-            return
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_cursor(x2 - x1, y2 - y1, pick_color)
-'''
-
 class SeekBar(clutter.Actor, clutter.Container):
     '''
     SeekBar class :
@@ -203,6 +101,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.cursor_width = 0.0
         self._duration = 0.0
         self.current_time = 0.0
+        self._markers = list()
+        self._markers_position = list()
+        self._marker_width = 2
 
     def set_duration(self, duration):
         self._duration = duration
@@ -219,6 +120,31 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def set_bar_color(self, color):
         self.bar.props.color = clutter.color_from_string(color)
+    
+    def set_markers(self, new_markers):
+        for marker in self._markers:
+            marker.unparent()
+            marker.destroy()
+            marker = None
+        self._markers = list()
+        self._markers_position = list()
+        for marker in new_markers:
+            new_marker = min(marker, 1.0)
+            new_marker = max(new_marker, 0.0)
+            self._markers_position.append(new_marker)
+            marker_obj = clutter.Rectangle()
+            marker_obj.set_color('#ffffffaa')
+            marker_obj.set_parent(self)
+            self._markers.append(marker_obj)
+        self.queue_relayout()
+    
+    def clear_markers(self):
+        for marker in self._markers:
+            marker.unparent()
+            marker.destroy()
+            marker = None
+        self._markers = list()
+        self._markers_position = list()
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'progression':
@@ -337,6 +263,16 @@ class SeekBar(clutter.Actor, clutter.Container):
             bar_box.y2 = main_height - self.y_padding[1]
         self.bar.allocate(bar_box, flags)
         
+        # markers
+        bar_width = bar_box.x2 - bar_box.x1
+        for i in range(len(self._markers)):
+            marker_box = clutter.ActorBox()
+            marker_box.x1 = int(bar_box.x1 - self._marker_width/2 + bar_width * self._markers_position[i])
+            marker_box.y1 = bar_box.y1
+            marker_box.x2 = marker_box.x1 + self._marker_width
+            marker_box.y2 = bar_box.y2
+            self._markers[i].allocate(marker_box, flags)
+        
         # cursor
         cursor_width = main_height
         cursor_height = main_height
@@ -351,16 +287,19 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def do_foreach(self, func, data=None):
         children = [self.background, self.bar, self.cursor]
+        children.extend(self._markers)
         for child in children:
             func(child, data)
 
     def do_paint(self):
         children = [self.background, self.bar, self.cursor]
+        children.extend(self._markers)
         for child in children:
             child.paint()
 
     def do_pick(self, color):
         children = [self.background, self.bar, self.cursor]
+        children.extend(self._markers)
         for child in children:
             child.paint()
     
@@ -381,5 +320,11 @@ class SeekBar(clutter.Actor, clutter.Container):
                 self.cursor.unparent()
                 self.cursor.destroy()
                 self.cursor = None
+        if hasattr(self, '_markers'):
+            for marker in self._markers:
+                marker.unparent()
+                marker.destroy()
+            self._markers = list()
+            self._markers_position = list()
 
 
