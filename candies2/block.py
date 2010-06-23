@@ -9,7 +9,7 @@ from text import TextContainer
 class TexturedBlock(clutter.Actor, clutter.Container):
     __gtype_name__ = 'TexturedBlock'
     
-    def __init__(self, title=' ', title_actor=None, content_actor=None, padding=10, title_padding=None, spacing=10, textures_package=None):
+    def __init__(self, title=None, title_actor=None, content_actor=None, padding=10, title_padding=None, spacing=10, textures_package=None):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.spacing = spacing
@@ -22,11 +22,18 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         self.title_actor = title_actor
         if title_actor:
             self.title_actor.set_parent(self)
+            self._has_title = True
+        elif title is not None:
+            self._has_title = True
+        else:
+            self._has_title = False
         if title_padding:
             self.title_padding = title_padding
         else:
             self.title_padding = 0
-        self.default_title_actor = TextContainer(title)
+        self.default_title_actor = TextContainer()
+        if title is not None:
+            self.default_title_actor.set_text(title)
         self.default_title_actor.set_line_alignment(1)
         self.default_title_actor.set_line_wrap(False)
         self.default_title_actor.set_parent(self)
@@ -215,18 +222,22 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         else:
             selected_title_actor = self.default_title_actor
         
-        self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
-        title_box = clutter.ActorBox()
-        title_box.x1 = self.padding + self.title_padding
-        title_box.y1 = self.padding + self.title_padding
-        title_box.x2 = self.width - self.padding - self.title_padding
-        title_box.y2 = self.padding + self.title_padding + self._title_height
-        selected_title_actor.allocate(title_box, flags)
+        if self._has_title:
+            self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
+            title_box = clutter.ActorBox()
+            title_box.x1 = self.padding + self.title_padding
+            title_box.y1 = self.padding + self.title_padding
+            title_box.x2 = self.width - self.padding - self.title_padding
+            title_box.y2 = self.padding + self.title_padding + self._title_height
+            selected_title_actor.allocate(title_box, flags)
         
         if self.content_actor:
             content_box = clutter.ActorBox()
             content_box.x1 = self.padding
-            content_box.y1 = self.padding + 2*self.title_padding + self._title_height + self.spacing
+            if self._has_title:
+                content_box.y1 = self.padding + 2*self.title_padding + self._title_height + self.spacing
+            else:
+                content_box.y1 = self.padding
             content_box.x2 = self.width - self.padding
             content_box.y2 = self.height - self.padding
             self.content_actor.allocate(content_box, flags)
@@ -362,20 +373,22 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         elif self._highlighted:
             self._paint_light()
         
-        if self.title_actor:
-            self.title_actor.paint()
-        else:
-            self.default_title_actor.paint()
+        if self._has_title:
+            if self.title_actor:
+                self.title_actor.paint()
+            else:
+                self.default_title_actor.paint()
         if self.content_actor:
             self.content_actor.paint()
     
     def do_pick(self, color):
         clutter.Actor.do_pick(self, color)
         
-        if self.title_actor:
-            self.title_actor.paint()
-        else:
-            self.default_title_actor.paint()
+        if self._has_title:
+            if self.title_actor:
+                self.title_actor.paint()
+            else:
+                self.default_title_actor.paint()
         if self.content_actor:
             self.content_actor.paint()
     

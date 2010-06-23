@@ -65,19 +65,10 @@ class ImageButton(ClassicButton):
             self.image.set_from_file(image_src)
         self.image.set_parent(self)
         
-        self.default_font_size = '16'
-        self.default_font_color = '#000000ff'
-        self.default_inner_color = '#aaaaaaff'
-        self.default_highlight_color = '#ffffff88'
-        self.default_border_color = '#888888ff'
-        self.default_active_color = '#00000088'
-        
-        self.set_font_name(self.default_font_size)
-        self.set_font_color(self.default_font_color)
-        self.set_inner_color(self.default_inner_color)
-        self.set_border_color(self.default_border_color)
-        
-        self.last_color = self.default_inner_color
+        self.set_font_name('16')
+        self.set_font_color('#000000ff')
+        self.set_inner_color('#aaaaaaff')
+        self.set_border_color('#888888ff')
     
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
