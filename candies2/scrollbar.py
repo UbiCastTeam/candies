@@ -111,14 +111,14 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if self.h == False : 
             if self.last_event_y is None: return
             clutter.grab_pointer(self.scroller)
-            self.last_event_y = event.y - self.get_transformed_position()[1] - self.padding
-            scroller_position = event.y - self.get_transformed_position()[1] - self.padding
+            self.last_event_y = event.y - self.get_transformed_position()[1] - self.padding - self.scroller_height/2
+            scroller_position = event.y - self.get_transformed_position()[1] - self.padding - self.scroller_height/2
             self.scroller_position_percent = scroller_position/(self.height - 2*self.padding - self.scroller_height)
         else :
             if self.last_event_x is None: return
             clutter.grab_pointer(self.scroller)
-            self.last_event_x = event.x - self.get_transformed_position()[0] - self.padding
-            scroller_position = event.x - self.get_transformed_position()[0] - self.padding
+            self.last_event_x = event.x - self.get_transformed_position()[0] - self.padding - self.scroller_height/2
+            scroller_position = event.x - self.get_transformed_position()[0] - self.padding - self.scroller_height/2
             self.scroller_position_percent = scroller_position/(self.height - 2*self.padding - self.scroller_height)
         self.queue_relayout()
 
