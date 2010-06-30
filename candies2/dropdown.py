@@ -16,6 +16,7 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.name = name
         self.padding = padding
         self.spacing = spacing
+        self._children = list()
         
         self.font = font
         self.font_color = font_color
@@ -27,13 +28,13 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.background.set_color(self.default_color)
         self.background.set_border_color(self.default_border_color)
         self.background.set_border_width(3)
-        self.background.props.radius = 10
-        self.background.set_parent(self)
+        self.background.set_radius(10)
         if enable_background:
             self.enable_background = True
         else:
             self.enable_background = False
             self.background.hide()
+        self._add(self.background)
         # icon
         self.icon_height = icon_height
         self.icon_path = icon_path
@@ -42,14 +43,18 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.icon.set_from_file(icon_path)
         else:
             self.icon.hide()
-        self.icon.set_parent(self)
+        self._add(self.icon)
         # label
         self.label = TextContainer(text, padding=0)
         self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')
         self.label.set_border_color('#00000000')
-        self.label.set_parent(self)
+        self._add(self.label)
+    
+    def _add(self, actor):
+        actor.set_parent(self)
+        self._children.append(actor)
     
     def set_line_wrap(self, boolean):
         self.label.set_line_wrap(boolean)
@@ -143,32 +148,20 @@ class OptionLine(clutter.Actor, clutter.Container):
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
-        childrens = [self.background, self.icon, self.label]
-        for children in childrens:
-            func(children, data)
+        for child in self._children:
+            func(child, data)
     
     def do_paint(self):
-        self.background.paint()
-        self.icon.paint()
-        self.label.paint()
+        for actor in self._children:
+            actor.paint()
     
     def do_destroy(self):
         self.unparent()
-        if hasattr(self, 'background'):
-            if self.background is not None:
-                self.background.unparent()
-                self.background.destroy()
-                self.background = None
-        if hasattr(self, 'icon'):
-            if self.icon is not None:
-                self.icon.unparent()
-                self.icon.destroy()
-                self.icon = None
-        if hasattr(self, 'label'):
-            if self.label is not None:
-                self.label.unparent()
-                self.label.destroy()
-                self.label = None
+        if hasattr(self, '_children'):
+            for child in self._children:
+                child.unparent()
+                child.destroy()
+            self._children = list()
     
 
 class Select(clutter.Actor, clutter.Container):
