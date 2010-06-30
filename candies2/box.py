@@ -858,7 +858,7 @@ class MultiLayerContainer(clutter.Actor, clutter.Container):
             self._children[child_index] = sibling
         else:
             self._children.remove(child)
-            self._children.insert(child, 0)
+            self._children.insert(0, child)
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
