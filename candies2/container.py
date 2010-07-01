@@ -27,6 +27,15 @@ class ContainerAdapter:
                 raise Exception("Actor %s is not a child of %s" % (
                     child, self))
 
+    def do_get_preferred_width(self, for_height):
+        raise NotImplementedError('do_get_preferred_width')
+
+    def do_get_preferred_height(self, for_width):
+        raise NotImplementedError('do_get_preferred_height')
+
+    def do_allocate(self, box, flags):
+        raise NotImplementedError('do_allocate')
+    
     def do_foreach(self, func, data=None):
         for child in self._children:
             func(child, data)
@@ -38,15 +47,6 @@ class ContainerAdapter:
     def do_pick(self, color):
         for actor in self._children:
             actor.paint()
-    
-    def do_get_preferred_width(self, for_height):
-        raise NotImplementedError('do_get_preferred_width')
-
-    def do_get_preferred_height(self, for_width):
-        raise NotImplementedError('do_get_preferred_height')
-
-    def do_allocate(self, box, flags):
-        raise NotImplementedError('do_allocate')
     
     def do_destroy(self):
         self.unparent()

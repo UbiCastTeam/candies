@@ -110,7 +110,10 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.background.hide()
     
     def do_get_preferred_width(self, for_height):
-        preferred_width = self.icon_height + 2*self.padding + self.spacing + self.label.get_preferred_width(for_height=for_height)[1]
+        if for_height != -1:
+            for_height -= 2*self.padding
+        preferred_width = self.icon_height + 2*self.padding + self.spacing
+        preferred_width += self.label.get_preferred_width(for_height)[1]
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
@@ -130,11 +133,12 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.background.allocate(background_box, flags)
         
         # icon
+        icon_y_padding = int(float(main_height - self.icon_height)/2.0)
         icon_box = clutter.ActorBox()
         icon_box.x1 = self.padding
-        icon_box.y1 = self.padding
-        icon_box.x2 = main_height - self.padding
-        icon_box.y2 = main_height - self.padding
+        icon_box.y1 = icon_y_padding
+        icon_box.x2 = self.padding + self.icon_height
+        icon_box.y2 = icon_box.y1 + self.icon_height
         self.icon.allocate(icon_box, flags)
         
         # label

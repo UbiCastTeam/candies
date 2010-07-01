@@ -232,10 +232,14 @@ class TextContainer(clutter.Actor, clutter.Container):
             raise TypeError('Unknown property ' + pspec.name)
     
     def do_get_preferred_width(self, for_height):
+        if for_height != -1:
+            for_height -= 2*self.padding
         min, nat = self.label.get_preferred_width(for_height)
         return min + 2*self.padding, nat + 2*self.padding
     
     def do_get_preferred_height(self, for_width):
+        if for_width != -1:
+            for_width -= 2*self.padding
         min, nat = self.label.get_preferred_height(for_width)
         return min + 2*self.padding, nat + 2*self.padding
     
