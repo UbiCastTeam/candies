@@ -21,6 +21,8 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.tooltip_duration = tooltip_duration
         self.animation_duration = animation_duration
         self.build_animations()
+        self._hide_timeout_id = None
+        self._animation_timeout_id = None
         
         self.content_actor = None
         self._content_connection = None
@@ -130,13 +132,17 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.tooltip_pointer.show()
             self.tooltip_show_timeline.start()
             if self.tooltip_duration > 0:
-                gobject.timeout_add(self.tooltip_duration, self._hide_tooltip)
+                if self._hide_timeout_id is not None:
+                    gobject.source_remove(self._hide_timeout_id)
+                self._hide_timeout_id = gobject.timeout_add(self.tooltip_duration, self._hide_tooltip)
         return False
     
     def _hide_tooltip(self):
         if self.tooltip_actor and self._tooltip_displayed:
             self.tooltip_hide_timeline.start()
-            gobject.timeout_add(self.animation_duration, self._hide_tooltip_finish)
+            if self._animation_timeout_id is not None:
+                gobject.source_remove(self._animation_timeout_id)
+            self._animation_timeout_id = gobject.timeout_add(self.animation_duration, self._hide_tooltip_finish)
         return False
     
     def _hide_tooltip_finish(self):
