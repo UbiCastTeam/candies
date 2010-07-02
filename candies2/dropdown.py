@@ -57,6 +57,9 @@ class OptionLine(clutter.Actor, clutter.Container):
             child.set_parent(self)
             self._children.append(child)
     
+    def set_texture(self, texture):
+        self.background.set_texture(texture)
+    
     def set_line_wrap(self, boolean):
         self.label.set_line_wrap(boolean)
             
