@@ -72,6 +72,14 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.tooltip_actor.set_parent(self)
         self._connect_tooltip()
     
+    def set_clickable(self, boolean):
+        if boolean and not self.clickable:
+            self.clickable = True
+            self._connect_content()
+        elif not boolean and self.clickable:
+            self.clickable = False
+            self._disconnect_content()
+    
     def _connect_content(self):
         if self.content_actor and self.clickable:
             self.content_actor.set_reactive(True)

@@ -52,9 +52,10 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.label.set_border_color('#00000000')
         self._add(self.label)
     
-    def _add(self, actor):
-        actor.set_parent(self)
-        self._children.append(actor)
+    def _add(self, *children):
+        for child in children:
+            child.set_parent(self)
+            self._children.append(child)
     
     def set_line_wrap(self, boolean):
         self.label.set_line_wrap(boolean)
