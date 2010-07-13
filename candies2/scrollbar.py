@@ -306,47 +306,63 @@ class Clipper (clutter.Actor, clutter.Container):
     '''
     __gtype_name__ = 'Clipper'
     
-    def __init__(self, actor, expand=False):
+    def __init__(self, actor=None, expand=False):
         clutter.Actor.__init__(self)
         self.actor = actor
-        self.actor.set_parent(self)
+        if self.actor is not None:
+            self.actor.set_parent(self)
         self.clipper_position = 0
         self.expand = expand
+    
+    def set_actor(self, actor):
+        self.remove_actor()
+        self.actor = actor
+        self.actor.set_parent(self)
+        self.queue_relayout()
+    
+    def remove_actor(self):
+        if self.actor is not None:
+            self.actor.unparent()
+        self.actor = None
         
     def callback_position(self, source, position):
         self.clipper_position = position
         self.queue_relayout()
         
-    def do_allocate (self, box, flags):
+    def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
         
-        if self.expand == True:
-            position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
-            self.actor.set_anchor_point(0, position)
-            self.actor.set_clip(0, position, box_width, box_height)
-            objbox = clutter.ActorBox()
-            objbox.x1 = 0
-            objbox.y1 = 0
-            objbox.x2 = box_width
-            objbox.y2 = box_height
-            self.actor.allocate(objbox, flags)
-            clutter.Actor.do_allocate(self, box, flags)
-        else:
-            position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
-            self.actor.set_anchor_point(0, position)
-            self.actor.set_clip(0, position, box_width, box_height)
-            self.actor.allocate_preferred_size(flags)
-            clutter.Actor.do_allocate(self, box, flags)
+        if self.actor is not None:
+            if self.expand == True:
+                position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
+                self.actor.set_anchor_point(0, position)
+                self.actor.set_clip(0, position, box_width, box_height)
+                objbox = clutter.ActorBox()
+                objbox.x1 = 0
+                objbox.y1 = 0
+                objbox.x2 = box_width
+                objbox.y2 = box_height
+                self.actor.allocate(objbox, flags)
+            else:
+                position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
+                self.actor.set_anchor_point(0, position)
+                self.actor.set_clip(0, position, box_width, box_height)
+                self.actor.allocate_preferred_size(flags)
+        
+        clutter.Actor.do_allocate(self, box, flags)
         
     def do_foreach(self, func, data=None):
-        func(self.actor, data)
+        if self.actor is not None:
+            func(self.actor, data)
     
     def do_paint(self):
-        self.actor.paint()
+        if self.actor is not None:
+            self.actor.paint()
 
     def do_pick(self, color):
-        self.actor.paint()
+        if self.actor is not None:
+            self.actor.paint()
     
     def do_destroy(self):
         self.unparent()
