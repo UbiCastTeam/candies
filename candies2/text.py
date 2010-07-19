@@ -174,10 +174,14 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_inner_color(self, color):
         if self.rect is not None:
             self.rect.set_color(color)
+        else:
+            self.rect.set_color(color)
     
     def set_border_color(self, color):
         if self._rounded:
             self.rect.set_border_color(color)
+        else:
+            self.rect.set_color(color)
     
     def set_border_width(self, width):
         if self._rounded:
