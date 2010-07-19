@@ -130,6 +130,11 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_line_wrap(False)
         self.label.set_line_alignment(1)
         
+        self.sizer = clutter.Text()
+        self.sizer.set_text(self._text)
+        self.sizer.set_line_wrap(False)
+        self.sizer.set_line_alignment(1)
+        
         if rounded:
             self._rounded = True
             self.rect = RoundRectangle(texture=texture)
@@ -145,6 +150,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_text(self, text):
         self._text = text
         self.label.set_text(self._text)
+        self.sizer.set_text(self._text)
         self.queue_relayout()
     
     def get_text(self):
@@ -163,6 +169,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def set_font_name(self, font_name):
         self.label.set_font_name(font_name)
+        self.sizer.set_font_name(font_name)
     
     def set_inner_color(self, color):
         if self.rect is not None:
@@ -180,40 +187,45 @@ class TextContainer(clutter.Actor, clutter.Container):
         if boolean:
             self._line_wrap = True
             self.label.set_line_wrap(True)
+            self.sizer.set_line_wrap(True)
         else:
             self._line_wrap = False
             self.label.set_line_wrap(False)
+            self.sizer.set_line_wrap(False)
             
     def set_line_alignment(self, alignment):
         if alignment == 'center':
             self._alignment = 'center'
             self.label.set_line_alignment(1)
+            self.sizer.set_line_alignment(1)
         elif alignment == 'right':
             self._alignment = 'right'
             self.label.set_line_alignment(2)
+            self.sizer.set_line_alignment(2)
         elif alignment == 'left':
             self._alignment = 'left'
             self.label.set_line_alignment(3)
+            self.sizer.set_line_alignment(3)
     
     def set_justify(self, boolean):
         if boolean:
             self.label.set_justify(True)
+            self.sizer.set_justify(True)
         else:
             self.label.set_justify(False)
+            self.sizer.set_justify(False)
     
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
-            self.rect.props.color = value
+            self.set_inner_color(value)
         elif pspec.name == 'text':
-            self._text = value
-            self.label.set_text(self._text)
-            self.queue_relayout()
+            self.set_text(value)
         elif pspec.name == 'font-color':
-            self.label.props.color = clutter.color_from_string(value)
+            self.set_font_color(value)
         elif pspec.name == 'border-color':
-            self.rect.props.border_color = value
+            self.set_border_color(value)
         elif pspec.name == 'border-width':
-            self.rect.props.border_width = value
+            self.set_border_width(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -234,13 +246,13 @@ class TextContainer(clutter.Actor, clutter.Container):
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
             for_height -= 2*self.padding
-        min, nat = self.label.get_preferred_width(for_height)
+        min, nat = self.sizer.get_preferred_width(for_height)
         return min + 2*self.padding, nat + 2*self.padding
     
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
             for_width -= 2*self.padding
-        min, nat = self.label.get_preferred_height(for_width)
+        min, nat = self.sizer.get_preferred_height(for_width)
         return min + 2*self.padding, nat + 2*self.padding
     
     def _wrap_singleline_label(self, min, max, max_width):
@@ -353,6 +365,11 @@ class TextContainer(clutter.Actor, clutter.Container):
                 self.label.unparent()
                 self.label.destroy()
                 self.label = None
+        if hasattr(self, 'sizer'):
+            if self.sizer:
+                self.sizer.unparent()
+                self.sizer.destroy()
+                self.sizer = None
 
 
 if __name__ == '__main__':
@@ -379,6 +396,7 @@ if __name__ == '__main__':
     #t.set_line_alignment('center')
     #t.set_justify(True)
     t.set_font_name('20')
+    print t.get_preferred_height(for_width=300)
     stage.add(t)
 
     stage.show()

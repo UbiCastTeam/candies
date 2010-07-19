@@ -328,7 +328,21 @@ class Clipper (clutter.Actor, clutter.Container):
     def callback_position(self, source, position):
         self.clipper_position = position
         self.queue_relayout()
-        
+    
+    def do_get_preferred_width(self, for_height):
+        if self.actor is not None:
+            preferred_width = self.actor.get_preferred_width(for_height)[1]
+        else:
+            preferred_width = 0
+        return preferred_width, preferred_width
+
+    def do_get_preferred_height(self, for_width):
+        if self.actor is not None:
+            preferred_height = self.actor.get_preferred_height(for_width)[1]
+        else:
+            preferred_height = 0
+        return preferred_height, preferred_height
+    
     def do_allocate(self, box, flags):
         box_width = box.x2 - box.x1
         box_height = box.y2 - box.y1
@@ -338,11 +352,7 @@ class Clipper (clutter.Actor, clutter.Container):
                 position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
                 self.actor.set_anchor_point(0, position)
                 self.actor.set_clip(0, position, box_width, box_height)
-                objbox = clutter.ActorBox()
-                objbox.x1 = 0
-                objbox.y1 = 0
-                objbox.x2 = box_width
-                objbox.y2 = box_height
+                objbox = clutter.ActorBox(0, 0, box_width, box_height)
                 self.actor.allocate(objbox, flags)
             else:
                 position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))

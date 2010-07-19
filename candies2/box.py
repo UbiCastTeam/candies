@@ -51,6 +51,12 @@ class Box(clutter.Actor, clutter.Container):
         else:
             self.bg_ignore_allocation_box = False
     
+    def get_children(self):
+        children = list()
+        for element in self.elements:
+            children.append(element['object'])
+        return children
+    
     def get_by_name(self, name):
         for element in self.elements:
             if element['name'] == name:
