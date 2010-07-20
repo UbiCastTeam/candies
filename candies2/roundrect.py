@@ -115,9 +115,12 @@ class RoundRectangle(clutter.Actor):
         self._radius = radius
         self.queue_redraw()
     
-    def set_color(self, color):
+    def set_inner_color(self, color):
         self._color = clutter.color_from_string(color)
         self.queue_redraw()
+    
+    def set_color(self, color):
+        self.set_inner_color(color)
     
     def set_border_color(self, color):
         self._border_color = clutter.color_from_string(color)
