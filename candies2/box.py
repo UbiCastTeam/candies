@@ -40,6 +40,7 @@ class Box(clutter.Actor, clutter.Container):
         self.elements = list()
         self.background = None
         self.overlay = None
+        self._overlay_displayed = False
         self.spacing = spacing
         self.padding = padding
         if horizontal:
@@ -89,7 +90,8 @@ class Box(clutter.Actor, clutter.Container):
             self.overlay = None
     
     def show_overlay(self):
-        if self.overlay:
+        if self.overlay and not self._overlay_displayed:
+            self._overlay_displayed = True
             if self.background:
                 self.background.hide()
             for element in self.elements:
@@ -97,7 +99,8 @@ class Box(clutter.Actor, clutter.Container):
             self.overlay.show()
     
     def hide_overlay(self):
-        if self.overlay:
+        if self.overlay and self._overlay_displayed:
+            self._overlay_displayed = False
             self.overlay.hide()
             if self.background:
                 self.background.show()
@@ -109,6 +112,8 @@ class Box(clutter.Actor, clutter.Container):
             if 'name' not in new_ele or 'object' not in new_ele:
                 raise KeyError('Can not add element to box. Element to add must be a dict with at least "name" and "object" in his keys')
             self.elements.append(new_ele)
+            if self._overlay_displayed:
+                new_ele['object'].hide()
             new_ele['object'].set_parent(self)
         self.queue_relayout()
     
@@ -120,6 +125,8 @@ class Box(clutter.Actor, clutter.Container):
             self.elements.append(element)
         else:
             self.elements.insert(index, element)
+        if self._overlay_displayed:
+            obj.hide()
         obj.set_parent(self)
         self.queue_relayout()
     

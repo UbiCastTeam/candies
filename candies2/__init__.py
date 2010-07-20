@@ -3,7 +3,7 @@ from version import VERSION as __revision__
 from box import Box, VBox, HBox, AlignedElement, MultiLayerContainer
 from block import TexturedBlock
 from flowbox import FlowBox
-from progressbar import SimpleProgressBar, SkinnedProgressBar
+from progressbar import ProgressBar
 from circle import Circle
 from roundrect import RoundRectangle
 from buttons import CheckButton, ClassicButton, ImageButton
