@@ -19,7 +19,7 @@ class ProgressBar(clutter.Actor):
         ),
     }
 
-    def __init__(self, texture=None, progress_texture=None):
+    def __init__(self, horizontal=True, reverse=False, texture=None, progress_texture=None):
         clutter.Actor.__init__(self)
         self._radius = 0.0
         self._color = clutter.color_from_string('Black')
@@ -29,6 +29,8 @@ class ProgressBar(clutter.Actor):
         self._texture = texture
         self._progress_texture = progress_texture
         self._progress = 0.0
+        self._horizontal = horizontal
+        self._reverse = reverse
     
     def set_progress(self, value):
         if value > 1.0: self._progress = 1.0
@@ -145,31 +147,82 @@ class ProgressBar(clutter.Actor):
                 
                 if progress_color is not None:
                     # progress round rectangle
-                    progress_width = int(self._progress * inner_width)
-                    progress_height = inner_height
-                    if self._progress > 0 and inner_width > 0:
-                        progress_radius = inner_radius
-                        if progress_width < 2 * progress_radius:
-                            new_radius = int(float(progress_width) / 2.0)
-                            progress_height -= 2*(progress_radius - new_radius)
-                            progress_radius = new_radius
-                        if progress_height < 2 * progress_radius:
-                            new_radius = int(float(progress_height) / 2.0)
-                            progress_width -= 2*(progress_radius - new_radius)
-                            progress_radius = new_radius
-                        
-                        progress_y = int((height - progress_height) / 2.0)
-                        clutter.cogl.path_round_rectangle(padding_x, progress_y, padding_x + progress_width, progress_y + progress_height, progress_radius, 1)
-                        clutter.cogl.path_close()
-                        clutter.cogl.set_source_color(progress_color)
-                        clutter.cogl.path_fill()
-                        
-                        # progress_texture
-                        if self._progress_texture:
-                            clutter.cogl.path_round_rectangle(padding_x, progress_y, padding_x + progress_width, progress_y + progress_height, progress_radius, 1)
+                    if self._horizontal:
+                        progress_width = int(self._progress * inner_width)
+                        progress_height = inner_height
+                        if self._progress > 0 and inner_width > 0:
+                            progress_radius = inner_radius
+                            if progress_width < 2 * progress_radius:
+                                new_radius = int(float(progress_width) / 2.0)
+                                progress_height -= 2*(progress_radius - new_radius)
+                                progress_radius = new_radius
+                            if progress_height < 2 * progress_radius:
+                                new_radius = int(float(progress_height) / 2.0)
+                                progress_width -= 2*(progress_radius - new_radius)
+                                progress_radius = new_radius
+                            
+                            progress_y = int((height - progress_height) / 2.0)
+                            
+                            if not self._reverse:
+                                x1 = padding_x
+                                y1 = progress_y
+                                x2 = padding_x + progress_width
+                                y2 = progress_y + progress_height
+                            else:
+                                x1 = width - padding_x - progress_width
+                                y1 = progress_y
+                                x2 = width - padding_x
+                                y2 = progress_y + progress_height
+                            
+                            clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
                             clutter.cogl.path_close()
-                            clutter.cogl.set_source_texture(self._progress_texture)
+                            clutter.cogl.set_source_color(progress_color)
                             clutter.cogl.path_fill()
+                            
+                            # progress_texture
+                            if self._progress_texture:
+                                clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                                clutter.cogl.path_close()
+                                clutter.cogl.set_source_texture(self._progress_texture)
+                                clutter.cogl.path_fill()
+                    else:
+                        progress_width = inner_width
+                        progress_height = int(self._progress * inner_height)
+                        if self._progress > 0 and inner_height > 0:
+                            progress_radius = inner_radius
+                            if progress_height < 2 * progress_radius:
+                                new_radius = int(float(progress_height) / 2.0)
+                                progress_width -= 2*(progress_radius - new_radius)
+                                progress_radius = new_radius
+                            if progress_width < 2 * progress_radius:
+                                new_radius = int(float(progress_width) / 2.0)
+                                progress_height -= 2*(progress_radius - new_radius)
+                                progress_radius = new_radius
+                            
+                            progress_x = int((width - progress_width) / 2.0)
+                            
+                            if not self._reverse:
+                                x1 = progress_x
+                                y1 = padding_y
+                                x2 = progress_x + progress_width
+                                y2 = padding_y + progress_height
+                            else:
+                                x1 = progress_x
+                                y1 = height - padding_y - progress_height
+                                x2 = progress_x + progress_width
+                                y2 = height - padding_y
+                            
+                            clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                            clutter.cogl.path_close()
+                            clutter.cogl.set_source_color(progress_color)
+                            clutter.cogl.path_fill()
+                            
+                            # progress_texture
+                            if self._progress_texture:
+                                clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                                clutter.cogl.path_close()
+                                clutter.cogl.set_source_texture(self._progress_texture)
+                                clutter.cogl.path_fill()
     
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()

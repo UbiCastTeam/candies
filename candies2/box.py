@@ -880,8 +880,8 @@ class MultiLayerContainer(clutter.Actor, clutter.Container):
             child_box = clutter.ActorBox()
             child_box.x1 = 0
             child_box.y1 = 0
-            child_box.x2 = main_width - 0
-            child_box.y2 = main_height - 0
+            child_box.x2 = main_width
+            child_box.y2 = main_height
             child.allocate(child_box, flags)
         clutter.Actor.do_allocate(self, box, flags)
     

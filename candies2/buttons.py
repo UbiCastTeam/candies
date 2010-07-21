@@ -70,6 +70,9 @@ class ImageButton(ClassicButton):
         self.set_inner_color('#aaaaaaff')
         self.set_border_color('#888888ff')
     
+    def set_image_src(self, image_src):
+        self.image.set_from_file(image_src)
+    
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
