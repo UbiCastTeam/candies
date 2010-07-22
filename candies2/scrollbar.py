@@ -47,6 +47,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scrollbar_background = clutter.Rectangle()
             self.scrollbar_background.set_color('LightBlue')
         self.scrollbar_background.set_parent(self)
+        self.scrollbar_background.set_reactive(True)
+        self.scrollbar_background.connect('scroll-event', self.on_mouse_scroll)
 
         if label != None :
             self.label = clutter.Text()
@@ -72,6 +74,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.scroller.connect('button-press-event', self.on_scroll_press)
         self.scroller.connect('button-release-event', self.on_scroll_release)
         self.scroller.connect('motion-event', self.on_scroll_move)
+        self.scroller.connect('scroll-event', self.on_mouse_scroll)
 
         self.scroller_position_percent = value
         self.height = 0
@@ -91,8 +94,18 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 rect.set_color('#FFFFFF30')
                 rect.set_parent(self)
                 self.scale_list.append(rect)
-        self.queue_relayout()
 
+    def on_mouse_scroll(self, source, event):
+        current_pos = self.get_scroller_position_percent()
+        if event.direction == clutter.SCROLL_UP:
+            current_pos -= 0.1
+        else:
+            current_pos += 0.1
+        current_pos = max(current_pos, 0.0)
+        current_pos = min(current_pos, 1.0)
+        if current_pos != self.get_scroller_position_percent():
+            self.set_scroller_position_percent(current_pos)
+    
     def on_scroll_press(self, source, event):
         self.last_event_y = event.y
         self.last_event_x = event.x
@@ -123,7 +136,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if self.reallocate :
             self.do_allocate(self.box,self.flags)
 
-    def set_scroller_position_percent(self,position):
+    def set_scroller_position_percent(self, position):
         self.scroller_position_percent = position
         self.queue_relayout()
 
