@@ -171,6 +171,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             if len(used_edit_points) % 2 == 1:
                 used_edit_points = used_edit_points[:len(used_edit_points)-1]
             nb_sequences = int(len(used_edit_points) / 2)
+            self._sequence_color = self.sequence_color_2
             for sequence_index in range(nb_sequences):
                 sequence = clutter.Rectangle()
                 if self._sequence_color == self.sequence_color_2:
