@@ -149,8 +149,17 @@ class SeekBar(clutter.Actor, clutter.Container):
         #self.emit('seek_request_lazy', self._progress)
         #if self.callback is not None:
         #    self.callback(self, self._progress * self._duration, self._progress, self._duration)
-
+    
+    def set_edit_points(self, edit_points):
+        for point in edit_points:
+            self._add_edit_point(point)
+        self.queue_relayout()
+    
     def add_edit_point(self, time):
+        self._add_edit_point(time)
+        self.queue_relayout()
+    
+    def _add_edit_point(self, time):
         edit_point = time
         if self._duration != 0:
             if time > self._duration:
@@ -163,7 +172,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         for sequence_block in list(self._sequence_blocks):
             sequence_block.unparent()
             sequence_block.destroy()
-            self._sequence_blocks.remove(sequence_block)
         self._sequence_blocks = list()
 
         if len(self.edit_points) > 1:
@@ -181,7 +189,6 @@ class SeekBar(clutter.Actor, clutter.Container):
                 sequence.set_color(self._sequence_color)
                 sequence.set_parent(self)
                 self._sequence_blocks.append(sequence)
-        self.queue_relayout()
 
     def clear_edit_points(self):
         self.edit_points = list()
