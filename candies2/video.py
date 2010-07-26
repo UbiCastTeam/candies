@@ -30,7 +30,6 @@ class VideoPlayer(VideoTexture):
 
     Available properties are:
         "buffer-percent"           gint                  : Read
-        "can-seek"                 gboolean              : Read
         "duration"                 gint                  : Read
         "playing"                  gboolean              : Read / Write
         "position"                 gint                  : Read / Write
@@ -47,20 +46,17 @@ class VideoPlayer(VideoTexture):
     """
     __gsignals__ = {'position_update' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
 
-    def __init__(self, uri=None, preview_proportion=0.5,
-                 progress_callback=None, end_callback=None, is_seekable=False, got_duration_callback=None):
+    def __init__(self, uri=None, preview_proportion=0.5, progress_callback=None, end_callback=None, got_duration_callback=None):
         VideoTexture.__init__(self)
-
+        self._last_progress = None
+        
         self.uri = uri
-        self.is_seekable = is_seekable
         self.got_duration_callback = got_duration_callback
         self.end_callback = end_callback
         self.preview_proportion = preview_proportion
         self.set_position(100, 50)
         if uri is not None:
             self.set_uri(uri)
-
-        self.was_playing_before_seek = False
 
         self._init_gst_bus()
 
@@ -89,81 +85,73 @@ class VideoPlayer(VideoTexture):
                 logger.debug("Calling end callback")
                 self.end_callback()
             else:
-                self.rewind()
                 self.stop()
+                self.rewind()
 
     def on_duration(self, source, duration):
         duration = source.get_duration()
-        if duration > 0:
-            if self.got_duration_callback is not None:
-                self.got_duration_callback(duration)
-                self.is_seekable = False
+        if duration > 0 and self.got_duration_callback is not None:
+            self.got_duration_callback(duration)
 
-    def set_filename(self, path):
+    def set_filename(self, path=None):
         if self.get_playing():
             self.stop()
-        if self.uri is None:
-            self.is_seekable = False
+            self.rewind()
+        self._last_progress = None
+        if path is not None:
             self.uri = "file://" + path
             self.set_uri(self.uri)
-            self.play()
-            self.stop()
         else:
-            self.change_filename(path)
+            self.uri = None
+        # play stop to fix first paint
+        self.play()
+        self.stop()
 
-    def change_filename(self, path):
-        self.is_seekable = False
-        if self.get_playing():
-            self.stop()
-        self.set_uri("file://" + path)
+    def seek_at_percent(self, percent):
+        self.set_progress(percent)
+        self.emit_position_update(percent)
 
-    def on_seek_request(self, source, arg):
-        self.set_progress(arg)
-
-    def emit_position_update(self, new_position):
-        self.emit('position_update', new_position, self.get_progress(), self.get_duration())
+    def emit_position_update(self, progress):
+        if progress != self._last_progress:
+            self._last_progress = progress
+            self.emit('position_update', progress * self.get_duration(), progress, self.get_duration())
 
     def on_seek_relative(self, arg):
         new_position = self.get_progress() * self.get_duration()
         if arg > 0:
-            if  new_position + arg < self.get_duration():
+            if new_position + arg < self.get_duration():
                 new_position = new_position + arg
                 self.set_progress(new_position / self.get_duration())
             else:
                 self.set_progress(1)
         else:
-            if  new_position + arg > 0:
+            if new_position + arg > 0:
                 new_position = new_position + arg
                 self.set_progress(new_position / self.get_duration())
             else:
                 self.set_progress(0)
-        gobject.timeout_add(1000, self.emit_position_update, new_position)
-        return True
 
     def play(self):
         logger.info("Playing file %s", self.uri)
         self.set_playing(True)
-        self.was_playing_before_seek = True
 
-    def on_progress(self, source, position):
-        new_position = self.get_progress() * self.get_duration()
-        if new_position > 0:
-            self.emit_position_update(new_position)
+    def on_progress(self, source, progress):
+        if self.get_progress() > 0:
+            self.emit_position_update(self.get_progress())
 
     def stop(self):
         logger.info("Stopping playback for file %s", self.uri)
         self.set_playing(False)
-        self.was_playing_before_seek = False
 
     def toggle_playing(self):
         if self.get_playing():
             self.stop()
-        elif not self.get_playing():
+        else:
             self.play()
 
     def rewind(self):
         logger.debug("Rewinding")
         self.set_playing(False)
-        self.was_playing_before_seek = False
         self.set_progress(0)
         self.emit_position_update(0)
+

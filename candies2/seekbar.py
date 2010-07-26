@@ -12,7 +12,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     * Properties :
         - bar :          clutter.Rectangle       bar seekbar
         - cursor :              clutter.Rectangle       cursor
-        - widthbar :            float                   width size of seekbar
         - cursor_width :        float                   width size of cursor
         - duration :            float                   total time of video
         - current_time :        float                   real time of video
@@ -50,10 +49,10 @@ class SeekBar(clutter.Actor, clutter.Container):
                         'seek_request_lazy' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     __gtype_name__ = 'SeekBar'
     __gproperties__ = {
-        'cursor_color' : (
+        'cursor_color': (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
         ),
-        'bar_color' : (
+        'bar_color': (
             str, 'color', 'Color', None, gobject.PARAM_READWRITE
         ),
         'progression': (
@@ -61,60 +60,145 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_x_padding=(-1, -1), bar_y_padding=(-1, -1), bar_image_path=None, cursor_image_path=None, callback=None):
+    def __init__(self, bar_x_padding=(0, 0), bar_y_padding=(0, 0), bar_image_path=None, cursor_image_path=None, seek_function=None):
         clutter.Actor.__init__(self)
-        self._progression = 0.0
-        self.callback = callback
+        self._progress = 0.0
+        self._last_event_x = None
+        self.cursor_width = 0.0
+        self.seek_function = seek_function
         self.x_padding = bar_x_padding
         self.y_padding = bar_y_padding
+        self._duration = 0.0
+        # Time markers
+        self._markers = list()
+        self._markers_position = list()
+        self._marker_width = 2
+        # Sequences blocks
+        self._edit_points = list()
+        self._sequence_blocks = list()
+        self.sequence_color_1 = '#444444ff'
+        self.sequence_color_2 = '#666666ff'
+        self._sequence_color = self.sequence_color_2
         
+        # background
+        self.background = clutter.Rectangle()
+        self.background.set_color('#00000000')
+        self.background.connect('button-press-event', self._on_press)
+        self.background.connect('button-release-event', self._on_release)
+        self.background.connect('motion-event', self._on_move)
+        self.background.connect('scroll-event', self._on_mouse_scroll)
+        self.background.set_parent(self)
+        self.background.set_reactive(True)
+        
+        # bar
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.bar = clutter.Texture()
             self.bar.set_from_file(bar_image_path)
         else:
             self.bar = clutter.Rectangle()
-            self.bar.set_color('LightBlue')
+            self.bar.set_color('#000000ff')
         self.bar.set_parent(self)
         
-        self.background = clutter.Rectangle()
-        self.background.set_color('#00000000')
-        self.background.set_reactive(True)
-        self.background.connect('button-release-event', self.on_background_click)
-        self.background.set_parent(self)
-
-        #self.cursor = Cursor()
+        # cursor
         if cursor_image_path != None and os.path.exists(cursor_image_path):
             self.cursor = clutter.Texture()
             self.cursor.set_from_file(cursor_image_path)
         else:
             self.cursor = clutter.Rectangle()
             self.cursor.set_color('Gray')
-        self.cursor.set_reactive(True)
-        self.cursor.connect('button-press-event', self.on_press)
-        self.cursor.connect('button-release-event', self.on_release)
-        self.cursor.connect('motion-event', self.on_move)
         self.cursor.set_parent(self)
+    
+    def _on_press(self, source, event):
+        clutter.grab_pointer(self.background)
+        self._last_event_x = event.x
+        self.set_progress_with_event(event)
 
-        self.last_event_x = None
-        self.widthbar = 0.0
-        #self.radius = 0.0
-        self.cursor_width = 0.0
-        self._duration = 0.0
-        self.current_time = 0.0
-        self._markers = list()
-        self._markers_position = list()
-        self._marker_width = 2
+    def _on_release(self, source, event):
+        clutter.ungrab_pointer()
+        self._last_event_x = None
 
+    def _on_move(self, source, event):
+        self.set_progress_with_event(event)
+    
+    def _on_mouse_scroll(self, source, event):
+        current_pos = self._progress
+        if event.direction == clutter.SCROLL_UP:
+            current_pos += 0.1
+        else:
+            current_pos -= 0.1
+        self.set_progress(current_pos)
+    
+    def set_progress_with_event(self, event):
+        if self._last_event_x is None: return
+        self._last_event_x = event.x - self.get_transformed_position()[0] - self.cursor_width/2
+        position = self._last_event_x/(self._width - self.cursor_width)
+        self.set_progress(position)
+        self.emit_seek_request()
+
+    def set_progress(self, position):
+        new_position = max(position, 0.0)
+        new_position = min(new_position, 1.0)
+        if new_position != self._progress:
+            self._progress = new_position
+            self.queue_relayout()
+    
+    def emit_seek_request(self):
+        if self.seek_function is not None:
+            self.seek_function(self._progress)
+        #self.emit('seek_request_realtime', self._progress)
+        #self.emit('seek_request_lazy', self._progress)
+        #if self.callback is not None:
+        #    self.callback(self, self._progress * self._duration, self._progress, self._duration)
+
+    def add_edit_point(self, time):
+        edit_point = time
+        if self._duration != 0:
+            if time > self._duration:
+                edit_point = time
+            elif time < 0:
+                edit_point = 0
+        self.edit_points.append(edit_point)
+        self.edit_points.sort()
+
+        for sequence_block in list(self._sequence_blocks):
+            sequence_block.unparent()
+            sequence_block.destroy()
+            self._sequence_blocks.remove(sequence_block)
+        self._sequence_blocks = list()
+
+        if len(self.edit_points) > 1:
+            used_edit_points = list(self.edit_points)
+            if len(used_edit_points) % 2 == 1:
+                used_edit_points = used_edit_points[:len(used_edit_points)-1]
+            nb_sequences = int(len(used_edit_points) / 2)
+            for sequence_index in range(nb_sequences):
+                sequence = clutter.Rectangle()
+                if self._sequence_color == self.sequence_color_2:
+                    self._sequence_color = self.sequence_color_1
+                else:
+                    self._sequence_color = self.sequence_color_2
+                sequence.set_color(self._sequence_color)
+                sequence.set_parent(self)
+                self._sequence_blocks.append(sequence)
+        self.queue_relayout()
+
+    def clear_edit_points(self):
+        self.edit_points = list()
+        self._sequence_blocks = list()
+        self.queue_relayout()
+
+    def update_position(self, source, current_time, position, duration):
+        if self._last_event_x is None:
+            self.set_duration(duration)
+            self.set_progress(position)
+
+    def seek_at_progression(self, new_progression):
+        self.set_progress(new_progression)
+        self.emit_seek_request()
+    
     def set_duration(self, duration):
         self._duration = duration
     
-    def set_progression(self, value):
-        self._progression = value
-        self.queue_relayout()
-
-    def finish(self):
-        self.set_progression(1)
-
     def set_cursor_color(self, color):
         self.cursor.props.color = clutter.color_from_string(color)
 
@@ -160,7 +244,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def do_get_property(self, pspec):
         if pspec.name == 'progression':
-            return self._progression
+            return self._progress
         elif pspec.name == 'cursor_color':
             return self.cursor.props.color
         elif pspec.name == 'bar_color':
@@ -168,69 +252,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
-    def on_background_click(self, source, event):
-        bar_x1, bar_y1, bar_x2, bar_y2 = self.get_allocation_box()
-        bar_width = bar_x2 - bar_x1
-        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / (bar_width - self.cursor_width)
-        self.queue_relayout()
-        self._progression = max(self._progression, 0.0)
-        self._progression = min(self._progression, 1.0)
-        self.emit('seek_request_realtime', self._progression)
-        self.emit('seek_request_lazy', self._progression)
-        if self._progression == 0 and self.callback != None:
-            self.callback(self, 0.0, 0.0, 0.0, None)
-        return True
-
-    def on_press(self, source, event):
-        self.last_event_x = event.x
-        return True
-
-    def on_move(self, source, event):
-        if self.last_event_x is None: return
-        clutter.grab_pointer(self.cursor)
-        bar_x1, bar_y1, bar_x2, bar_y2 = self.get_allocation_box()
-        bar_width = bar_x2 - bar_x1
-        self._progression = (event.x - self.cursor_width / 2 - self.get_transformed_position()[0]) / (bar_width - self.cursor_width)
-        self._progression = max(self._progression, 0.0)
-        self._progression = min(self._progression, 1.0)
-        self.queue_relayout()
-        self.last_event_x = event.x
-        self.emit('seek_request_realtime', self._progression)
-        if self._progression == 0 and self.callback != None:
-            self.callback(self, 0.0, 0.0, 0.0, None)
-
-    def convert_date(self, duration):
-        hour = duration // 3600
-        min = (duration % 3600) // 60
-        sec = duration % 60
-        date = "%02d:%02d:%02d" %(hour, min, sec)
-        return date
-
-    def update_position(self, source, current_time, progression, duration):
-        if self.last_event_x is None:
-            self._progression = progression
-            self.current_time = self.convert_date(current_time)
-            self._duration = duration
-            self.queue_relayout()
-
-    def on_release(self, source, event):
-        clutter.ungrab_pointer()
-        self.last_event_x = None
-        self.emit('seek_request_realtime', self._progression)
-        self.emit('seek_request_lazy', self._progression)
-        if self._progression == 0 and self.callback != None:
-            self.callback(self, 0.0, 0.0, 0.0, None)
-    
-    def seek_at_progression(self, new_progression):
-        self._progression = new_progression
-        self._progression = max(self._progression, 0.0)
-        self._progression = min(self._progression, 1.0)
-        self.emit('seek_request_realtime', self._progression)
-        self.emit('seek_request_lazy', self._progression)
-        if self._progression == 0 and self.callback != None:
-            self.callback(self, 0.0, 0.0, 0.0, None)
-        self.queue_relayout()
-    
     def do_get_preferred_height(self, for_width):
         return 40, 40
     
@@ -238,32 +259,33 @@ class SeekBar(clutter.Actor, clutter.Container):
         return 200, 200
     
     def do_allocate(self, box, flags):
-        main_width = box.x2 - box.x1
-        main_height = box.y2 - box.y1
+        self._width = box.x2 - box.x1
+        self._height = box.y2 - box.y1
         
         #background
-        background_box = clutter.ActorBox()
-        background_box.x1 = 0
-        background_box.y1 = 0
-        background_box.x2 = main_width
-        background_box.y2 = main_height
+        background_box = clutter.ActorBox(0, 0, self._width, self._height)
         self.background.allocate(background_box, flags)
         
         # bar
         bar_box = clutter.ActorBox()
-        if self.x_padding == (-1, -1):
-            bar_box.x1 = int(main_height/2)
-            bar_box.x2 = main_width - int(main_height/2)
-        else:
-            bar_box.x1 = self.x_padding[0]
-            bar_box.x2 = main_width - self.x_padding[1]
-        if self.y_padding == (-1, -1):
-            bar_box.y1 = 0
-            bar_box.y2 = main_height
-        else:
-            bar_box.y1 = self.y_padding[0]
-            bar_box.y2 = main_height - self.y_padding[1]
+        bar_box.x1 = self.x_padding[0]
+        bar_box.x2 = self._width - self.x_padding[1]
+        bar_box.y1 = self.y_padding[0]
+        bar_box.y2 = self._height - self.y_padding[1]
         self.bar.allocate(bar_box, flags)
+        
+        # sequences
+        if self._duration != 0:
+            for sequence_index in range(len(self._sequence_blocks)):
+                start_percent = float(self.edit_points[0 + 2*sequence_index])/float(self._duration)
+                end_percent = float(self.edit_points[1 + 2*sequence_index])/float(self._duration)
+                sequence = self._sequence_blocks[sequence_index]
+                sequence_box = clutter.ActorBox()
+                sequence_box.x1 = int(bar_box.x1 + int(start_percent * (bar_box.x2 - bar_box.x1)))
+                sequence_box.y1 = int(bar_box.y1)
+                sequence_box.x2 = int(bar_box.x1 + int(end_percent * (bar_box.x2 - bar_box.x1)))
+                sequence_box.y2 = int(bar_box.y2)
+                sequence.allocate(sequence_box, flags)
         
         # markers
         bar_width = bar_box.x2 - bar_box.x1
@@ -276,34 +298,35 @@ class SeekBar(clutter.Actor, clutter.Container):
             self._markers[i].allocate(marker_box, flags)
         
         # cursor
-        cursor_width = main_height
-        cursor_height = main_height
+        cursor_width = self._height
+        cursor_height = self._height
         self.cursor_width = cursor_width
         cursor_box = clutter.ActorBox()
-        cursor_box.x1 = int(self._progression * (main_width - cursor_width))
+        cursor_box.x1 = int(self._progress * (self._width - cursor_width))
         cursor_box.y1 = 0
-        cursor_box.x2 = int(cursor_box.x1 + cursor_width)
+        cursor_box.x2 = cursor_box.x1 + cursor_width
         cursor_box.y2 = cursor_height
         self.cursor.allocate(cursor_box, flags)
         clutter.Actor.do_allocate(self, box, flags)
 
     def do_foreach(self, func, data=None):
-        children = [self.background, self.bar, self.cursor]
+        children = [self.background, self.bar]
+        children.extend(self._sequence_blocks)
         children.extend(self._markers)
+        children.append(self.cursor)
         for child in children:
             func(child, data)
 
     def do_paint(self):
-        children = [self.background, self.bar, self.cursor]
+        children = [self.background, self.bar]
+        children.extend(self._sequence_blocks)
         children.extend(self._markers)
+        children.append(self.cursor)
         for child in children:
             child.paint()
 
     def do_pick(self, color):
-        children = [self.background, self.bar, self.cursor]
-        children.extend(self._markers)
-        for child in children:
-            child.paint()
+        self.background.paint()
     
     def do_destroy(self):
         self.unparent()
@@ -322,6 +345,12 @@ class SeekBar(clutter.Actor, clutter.Container):
                 self.cursor.unparent()
                 self.cursor.destroy()
                 self.cursor = None
+        if hasattr(self, '_sequence_blocks'):
+            for sequence_block in self._sequence_blocks:
+                sequence_block.unparent()
+                sequence_block.destroy()
+            self._sequence_blocks = list()
+            self.edit_points = list()
         if hasattr(self, '_markers'):
             for marker in self._markers:
                 marker.unparent()

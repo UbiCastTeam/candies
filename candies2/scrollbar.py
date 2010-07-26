@@ -31,15 +31,22 @@ class Scrollbar(clutter.Actor, clutter.Container):
             .do_pick
     '''
     __gtype_name__ = 'Scrollbar'
-    __gsignals__ = {'scroll_position' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
+    __gsignals__ = {'scroll_position': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     
-    def __init__(self, padding=8, position = 'center', bar_image_path=None, scroller_image_path=None, scroller_press_image_path=None, horizontal=False, reallocate=False, label=None, value = 0, scale = None):
+    def __init__(self, padding=8, position='center', bar_image_path=None, scroller_image_path=None, scroller_press_image_path=None, horizontal=False, reallocate=False, label=None, value=0, scale=None):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.position = position
         self.reallocate=reallocate
         self.show_label=False
-
+        self.scroller_position_percent = value
+        self.height = 0
+        self.last_event_y = None
+        self.last_event_x = None
+        self.h = horizontal
+        self.flags = None
+        self.box = None
+        
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.scrollbar_background = clutter.Texture()
             self.scrollbar_background.set_from_file(bar_image_path)
@@ -77,17 +84,9 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.event_listener.connect('button-release-event', self.on_scroll_release)
         self.event_listener.connect('motion-event', self.on_scroll_move)
         self.event_listener.connect('scroll-event', self.on_mouse_scroll)
-
-        self.scroller_position_percent = value
-        self.height = 0
-        self.last_event_y = None
-        self.last_event_x = None
-        self.h = horizontal
-        self.flags = None
-        self.box = None
+    
         self.scale_positions_list = None
         self.scale_list = None
-
         self.scale_positions_percent = scale
         if scale is not None :
             self.scale_list = list()
@@ -100,19 +99,24 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def on_mouse_scroll(self, source, event):
         current_pos = self.scroller_position_percent
         if event.direction == clutter.SCROLL_UP:
-            current_pos -= 0.1
+            if self.h:
+                current_pos += 0.1
+            else:
+                current_pos -= 0.1
         else:
-            current_pos += 0.1
-        self.set_scroller_position_percent(current_pos)
+            if self.h:
+                current_pos -= 0.1
+            else:
+                current_pos += 0.1
+        self.set_scroller_progress_percent(current_pos)
     
     def on_scroll_press(self, source, event):
         clutter.grab_pointer(self.event_listener)
         self.last_event_y = event.y
         self.last_event_x = event.x
-        self.set_position_with_event(event)
+        self.set_progress_with_event(event)
         if self.scroller_press_image_path is not None:
             self.scroller.set_from_file(self.scroller_press_image_path)
-        return True
 
     def on_scroll_release(self, source, event):
         clutter.ungrab_pointer()
@@ -122,21 +126,21 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scroller.set_from_file( self.scroller_image_path)
 
     def on_scroll_move(self, source, event):
-        self.set_position_with_event(event)
+        self.set_progress_with_event(event)
     
-    def set_position_with_event(self, event):
+    def set_progress_with_event(self, event):
         if self.h:
             if self.last_event_x is None: return
             self.last_event_x = event.x - self.get_transformed_position()[0] - self.padding - self.scroller_height/2
             position = self.last_event_x/(self.height - 2*self.padding - self.scroller_height)
-            self.set_scroller_position_percent(position)
+            self.set_scroller_progress_percent(position)
         else:
             if self.last_event_y is None: return
             self.last_event_y = event.y - self.get_transformed_position()[1] - self.padding - self.scroller_height/2
             position = self.last_event_y/(self.height - 2*self.padding - self.scroller_height)
-            self.set_scroller_position_percent(position)
+            self.set_scroller_progress_percent(position)
 
-    def set_scroller_position_percent(self, position):
+    def set_scroller_progress_percent(self, position):
         new_position = max(position, 0.0)
         new_position = min(new_position, 1.0)
         if new_position != self.scroller_position_percent:
@@ -150,7 +154,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         return self.scroller_position_percent
 
     def go_to_top(self):
-        self.set_scroller_position_percent(0)
+        self.set_scroller_progress_percent(0)
 
     def do_get_preferred_height(self, for_width):
         if self.h:
