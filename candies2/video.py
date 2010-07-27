@@ -24,36 +24,28 @@ class VideoPlayer(VideoTexture):
     It can be called with an optional uri (either http:// or file://),
     or media initialization can be called later.
 
-    preview_proportion is an optional percentage parameter that, if
-    the media is seekable, lets you specify the place used as preview
-    position.
-
     Available properties are:
         "buffer-percent"           gint                  : Read
         "duration"                 gint                  : Read
         "playing"                  gboolean              : Read / Write
         "position"                 gint                  : Read / Write
         "uri"                      gchar*                : Read / Write
-        "volume"                   gdouble               : Read / Write
 
     Available signals are:
         Position_update:
                         new_position    gfloat          : current_time
                         get_progress    gfloat          : pourcent of video
                         get_duration    gfloat          : total time of video
-    TODOs:
-    * handle volume
     """
     __gsignals__ = {'position_update' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT, gobject.TYPE_FLOAT, gobject.TYPE_FLOAT])}
 
-    def __init__(self, uri=None, preview_proportion=0.5, progress_callback=None, end_callback=None, got_duration_callback=None):
+    def __init__(self, uri=None, progress_callback=None, end_callback=None, got_duration_callback=None):
         VideoTexture.__init__(self)
         self._last_progress = None
         
         self.uri = uri
         self.got_duration_callback = got_duration_callback
         self.end_callback = end_callback
-        self.preview_proportion = preview_proportion
         self.set_position(100, 50)
         if uri is not None:
             self.set_uri(uri)
