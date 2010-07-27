@@ -147,6 +147,9 @@ class SeekBar(clutter.Actor, clutter.Container):
             self._progress = new_position
             self.queue_relayout()
     
+    def set_seek_function(self, seek_function):
+        self.seek_function = seek_function
+    
     def emit_seek_request(self):
         if self.seek_function is not None:
             self.seek_function(self._progress)
