@@ -42,6 +42,8 @@ class VideoPlayer(VideoTexture):
     def __init__(self, uri=None, progress_callback=None, end_callback=None, got_duration_callback=None):
         VideoTexture.__init__(self)
         self._last_progress = None
+        self._seeking_timeout_id = None
+        self._next_seek_value = None
         
         self.uri = uri
         self.got_duration_callback = got_duration_callback
@@ -90,6 +92,7 @@ class VideoPlayer(VideoTexture):
             self.stop()
             self.rewind()
         self._last_progress = None
+        self._next_seek_value = None
         if path is not None:
             self.uri = "file://" + path
             self.set_uri(self.uri)
@@ -100,8 +103,20 @@ class VideoPlayer(VideoTexture):
         self.stop()
 
     def seek_at_percent(self, percent):
+        self._next_seek_value = percent
+        if self._seeking_timeout_id is None:
+            self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
+    
+    def _execute_seek_request(self):
+        gobject.source_remove(self._seeking_timeout_id)
+        percent = self._next_seek_value
+        self._next_seek_value = None
         self.set_progress(percent)
         self.emit_position_update(percent)
+        if self._next_seek_value is not None:
+            self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
+        else:
+            self._seeking_timeout_id = None
 
     def emit_position_update(self, progress):
         if progress != self._last_progress:
