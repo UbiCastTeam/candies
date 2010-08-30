@@ -62,6 +62,9 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self.content_actor.set_parent(self)
         self._connect_content()
     
+    def get_tooltip_displayed(self):
+        return self._tooltip_displayed
+    
     def set_tooltip(self, tooltip_actor):
         if self.tooltip_actor:
             self.tooltip_actor.unparent()
