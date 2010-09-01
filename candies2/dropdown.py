@@ -213,7 +213,7 @@ class Select(clutter.Actor, clutter.Container):
         new_option = OptionLine(name, hname, padding=self.padding, spacing=self.spacing, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
         new_option.set_parent(self)
         new_option.set_reactive(True)
-        new_option.connect('button-press-event', self._on_click)
+        new_option.connect('button-release-event', self._on_click)
         self.options.append(new_option)
         if self.selected == None:
             self.selected = new_option
@@ -229,6 +229,13 @@ class Select(clutter.Actor, clutter.Container):
             if option.name == name:
                 self.options.remove(option)
                 option.unparent()
+                break
+    
+    def remove_all_options(self):
+        for option in list(self.options):
+            self.options.remove(option)
+            option.unparent()
+        self.selected = None
     
     def _on_click(self, source, event):
         if source == self.selected:
