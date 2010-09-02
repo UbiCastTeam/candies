@@ -599,7 +599,7 @@ class VBox(Box):
 class AlignedElement(clutter.Actor, clutter.Container):
     __gtype_name__ = 'AlignedElement'
 
-    def __init__(self, align='center', padding=0, expand=False, keep_ratio=True, pick_enabled=True):
+    def __init__(self, align='center', margin=0, padding=0, expand=False, keep_ratio=True, pick_enabled=True):
         clutter.Actor.__init__(self)
         if align == 'top_left':
             self.align = 'top_left'
@@ -622,6 +622,7 @@ class AlignedElement(clutter.Actor, clutter.Container):
         else:
             self.align = 'center'
         self.padding = padding
+        self.margin = margin
         self.expand = expand
         self.keep_ratio = keep_ratio
         self.element = None
@@ -674,12 +675,13 @@ class AlignedElement(clutter.Actor, clutter.Container):
                 element_height = preferred_size[3]
                 if self.keep_ratio == True and element_width != 0 and element_height != 0 and for_height != -1:
                     ratio = float(float(element_width) / float(element_height))
-                    prefered_width = int(for_height * ratio) + 2*self.padding
+                    prefered_width = int(for_height * ratio)
                 else:
-                    prefered_width = element_width + 2*self.padding
+                    prefered_width = element_width
             else:
                 element_width = self.element.get_preferred_size()[2]
-                prefered_width = element_width + 2*self.padding
+                prefered_width = element_width
+            prefered_width += 2*self.margin + 2*self.padding
             return prefered_width, prefered_width
         else:
             return 0, 0
@@ -692,12 +694,13 @@ class AlignedElement(clutter.Actor, clutter.Container):
                 element_height = preferred_size[3]
                 if self.keep_ratio == True and element_width != 0 and element_height != 0 and for_width != -1:
                     ratio = float(float(element_height) / float(element_width))
-                    prefered_height = int(for_width / ratio) + 2*self.padding
+                    prefered_height = int(for_width / ratio)
                 else:
-                    prefered_height = element_height + 2*self.padding
+                    prefered_height = element_height
             else:
                 element_height = self.element.get_preferred_size()[3]
-                prefered_height = element_height + 2*self.padding
+                prefered_height = element_height
+            prefered_height += 2*self.margin + 2*self.padding
             return prefered_height, prefered_height
         else:
             return 0, 0
@@ -705,24 +708,24 @@ class AlignedElement(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.padding
-        inner_height = main_height - 2*self.padding
+        inner_width = main_width - 2*self.margin - 2*self.padding
+        inner_height = main_height - 2*self.margin - 2*self.padding
         
         #box background
         if self.background:
             bgbox = clutter.ActorBox()
-            bgbox.x1 = 0
-            bgbox.y1 = 0
-            bgbox.x2 = main_width
-            bgbox.y2 = main_height
+            bgbox.x1 = self.margin
+            bgbox.y1 = self.margin
+            bgbox.x2 = main_width - self.margin
+            bgbox.y2 = main_height - self.margin
             self.background.allocate(bgbox, flags)
         
         if self.element:
             element_width, element_height = self.element.get_preferred_size()[2:]
-            ele_x1 = self.padding
-            ele_y1 = self.padding
-            ele_x2 = self.padding
-            ele_y2 = self.padding
+            ele_x1 = 0
+            ele_y1 = 0
+            ele_x2 = 0
+            ele_y2 = 0
             if self.expand == True:
                 if self.keep_ratio == True and element_height != 0:
                     ratio = float(float(element_width) / float(element_height))
@@ -734,38 +737,39 @@ class AlignedElement(clutter.Actor, clutter.Container):
                     if element_height > inner_height:
                         element_height = inner_height
                         element_width = int(element_height * ratio)
-                    ele_x1 = self.padding + int((inner_width - element_width)/2)
-                    ele_y1 = self.padding + int((inner_height - element_height)/2)
-                    ele_x2 = main_width - self.padding - int((inner_width - element_width)/2)
-                    ele_y2 = main_height - self.padding - int((inner_height - element_height)/2)
+                    ele_x1 = int((inner_width - element_width)/2)
+                    ele_y1 = int((inner_height - element_height)/2)
+                    ele_x2 = inner_width - int((inner_width - element_width)/2)
+                    ele_y2 = inner_height - int((inner_height - element_height)/2)
                 else:
-                    ele_x1 = self.padding
-                    ele_y1 = self.padding
-                    ele_x2 = main_width - self.padding
-                    ele_y2 = main_height - self.padding
+                    ele_x1 = 0
+                    ele_y1 = 0
+                    ele_x2 = inner_width
+                    ele_y2 = inner_height
             else:
                 if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
-                    ele_x1 = self.padding
-                    ele_x2 = self.padding + element_width
+                    ele_x1 = 0
+                    ele_x2 = element_width
                 if self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
-                    ele_x1 = main_width - self.padding - element_width
-                    ele_x2 = main_width - self.padding
+                    ele_x1 = inner_width - element_width
+                    ele_x2 = inner_width
                 if self.align == 'top_left' or self.align == 'top' or self.align == 'top_right':
-                    ele_y1 = self.padding
-                    ele_y2 = self.padding + element_height
+                    ele_y1 = 0
+                    ele_y2 = element_height
                 if self.align == 'bottom_left' or self.align == 'bottom' or self.align == 'bottom_right':
-                    ele_y1 = main_height - self.padding - element_height
-                    ele_y2 = main_height - self.padding
+                    ele_y1 = inner_height - element_height
+                    ele_y2 = inner_height
                 if self.align == 'center':
-                    ele_x1 = self.padding + int((inner_width-element_width)/2)
-                    ele_x2 = self.padding + int((inner_width-element_width)/2) + element_width
-                    ele_y1 = self.padding + int((inner_height-element_height)/2)
-                    ele_y2 = self.padding + int((inner_height-element_height)/2) + element_height
+                    ele_x1 = int((inner_width-element_width)/2)
+                    ele_x2 = ele_x1 + element_width
+                    ele_y1 = int((inner_height-element_height)/2)
+                    ele_y2 = ele_y1 + element_height
             elebox = clutter.ActorBox()
-            elebox.x1 = ele_x1
-            elebox.y1 = ele_y1
-            elebox.x2 = ele_x2
-            elebox.y2 = ele_y2
+            base_pos = self.padding + self.margin
+            elebox.x1 = base_pos + ele_x1
+            elebox.y1 = base_pos + ele_y1
+            elebox.x2 = base_pos + ele_x2
+            elebox.y2 = base_pos + ele_y2
             self.element.allocate(elebox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
