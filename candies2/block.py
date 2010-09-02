@@ -22,17 +22,14 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         self.title_actor = title_actor
         if title_actor:
             self.title_actor.set_parent(self)
-            self._has_title = True
-        elif title is not None:
-            self._has_title = True
-        else:
-            self._has_title = False
         if title_padding:
             self.title_padding = title_padding
         else:
             self.title_padding = 0
         self.default_title_actor = TextContainer()
-        if title is not None:
+        self.title_text = title
+        self.check_title()
+        if self.title_text is not None:
             self.default_title_actor.set_text(title)
         self.default_title_actor.set_line_alignment(1)
         self.default_title_actor.set_line_wrap(False)
@@ -176,12 +173,23 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         if self.content_actor:
             self.content_actor.set_parent(self)
     
+    def check_title(self):
+        if self.title_actor:
+            self._has_title = True
+        elif self.title_text is not None:
+            self._has_title = True
+        else:
+            self._has_title = False
+    
     def set_title(self, title):
-        self.default_title_actor.set_text(title)
+        self.title_text = title
+        self.check_title()
+        if self.title_text is not None:
+            self.default_title_actor.set_text(title)
         self.queue_relayout()
     
     def get_title(self):
-        return self.default_title_actor.get_text(title)
+        return self.title_text
     
     def get_title_actor(self):
         if self.title_actor:
@@ -195,8 +203,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     def do_get_preferred_width(self, for_height):
         if self.title_actor:
             max_width = self.title_actor.get_preferred_width(for_height)[1]
-        else:
+        elif self._has_title:
             max_width = self.default_title_actor.get_preferred_width(for_height)[1]
+        else:
+            max_width = 0
         if self.content_actor:
             max_width = max(max_width, self.content_actor.get_preferred_width(for_height)[1])
         preferred_width = 2*self.padding + max_width
@@ -206,10 +216,14 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         preferred_height = 2*self.padding
         if self.title_actor:
             preferred_height += self.title_actor.get_preferred_height(for_width)[1]
-        else:
+            if self.content_actor:
+                preferred_height += self.spacing
+        elif self._has_title:
             preferred_height += self.default_title_actor.get_preferred_height(for_width)[1]
+            if self.content_actor:
+                preferred_height += self.spacing
         if self.content_actor:
-            preferred_height += self.spacing + self.content_actor.get_preferred_height(for_width)[1]
+            preferred_height += self.content_actor.get_preferred_height(for_width)[1]
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
