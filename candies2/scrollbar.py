@@ -313,7 +313,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
 class Clipper (clutter.Actor, clutter.Container):
     '''
-    Clipper class
+    OldClipper class
         need clutter.Actor and gsignals
         variables :
             .actor : clutter.Actor object to move
@@ -404,6 +404,91 @@ class Clipper (clutter.Actor, clutter.Container):
                 self.actor = None
 
 
+class CoglClipper (clutter.Group):
+    '''
+    Clipper class
+        need clutter.Actor and gsignals
+        variables :
+            .actor : clutter.Actor object to move
+            .clipper_position = float position of the clipper
+        functions :
+            .callback_position : need float which indicate how to move clipper
+            .do_allocate : move clipper
+            .do_foreach
+            .do_paint
+            .do_pick 
+    '''
+    __gtype_name__ = 'CoglClipper'
+    
+    def __init__(self, actor=None, expand=False):
+        clutter.Group.__init__(self)
+        self._width = 0
+        self._height = 0
+        self.actor = actor
+        if self.actor is not None:
+            self.add(self.actor)
+        self.clipper_position = 0
+        self.expand = expand
+    
+    def set_actor(self, actor):
+        if self.actor is not None:
+            self.remove_actor()
+        self.actor = actor
+        self.add(self.actor)
+        if self.expand:
+            self.actor.set_width(self._width)
+    
+    def remove_actor(self):
+        if self.actor is not None:
+            self.remove(self.actor)
+        self.actor = None
+        
+    def callback_position(self, source, position):
+        self.clipper_position = position
+        if self.actor is not None:
+            if self.expand:
+                position = 0 - int(self.clipper_position * (self.actor.get_preferred_size()[3] - self._height))
+            else:
+                position = 0 - int(self.clipper_position * (self.actor.get_preferred_size()[3] - self._height))
+            self.actor.set_position(0, position)
+    
+    def do_get_preferred_width(self, for_height):
+        if self.actor is not None:
+            preferred_width = self.actor.get_preferred_width(for_height)[1]
+        else:
+            preferred_width = 0
+        return preferred_width, preferred_width
+
+    def do_get_preferred_height(self, for_width):
+        if self.actor is not None:
+            preferred_height = self.actor.get_preferred_height(for_width)[1]
+        else:
+            preferred_height = 0
+        return preferred_height, preferred_height
+    
+    def do_allocate(self, box, flags):
+        new_width = box.x2 - box.x1
+        new_height = box.y2 - box.y1
+        if new_width != self._width or new_height != self._height:
+            self._width = box.x2 - box.x1
+            self._height = box.y2 - box.y1
+            if self.expand:
+                self.actor.set_width(self._width)
+        clutter.Group.do_allocate(self, box, flags)
+    
+    def do_paint(self):
+        # Draw a rectangle to cut animation
+        clutter.cogl.path_rectangle(0, 0, self._width, self._height)
+        clutter.cogl.path_close()
+        # Start the clip
+        clutter.cogl.clip_push_from_path()
+
+        clutter.Group.do_paint(self)
+
+        # Finish the clip
+        clutter.cogl.clip_pop()
+
+
 #main to test scrollbar
 if __name__ == '__main__':
 
@@ -411,22 +496,26 @@ if __name__ == '__main__':
     stage.connect('destroy',clutter.main_quit)
 
     scrollbar = Scrollbar()
-    scrollbar.set_size(40,480)
+    scrollbar.set_size(40, 480)
+    scrollbar.set_position(600, 0)
     stage.add(scrollbar)
 
-    image=clutter.Texture('grr.jpg')
-    
     label = clutter.Text()
-    auto_source = open('scrollbar.py')
-    label.set_text(auto_source.read())
-    auto_source.close()
+    label.set_text('test')
+    
+    image = clutter.Texture('test.jpg')
     
     clipper = Clipper(image)
-    clipper.set_size(600,400)
-    clipper.set_position(100,40)
-    scrollbar.connect('scroll_position',clipper.callback_position)
+    clipper.set_size(600, 480)
+    clipper.set_position(0, 0)
+    scrollbar.connect('scroll_position', clipper.callback_position)
     stage.add(clipper)
     
     stage.show()
+    clutter.main()
 
-    clutter.main() 
+
+
+
+
+
