@@ -60,7 +60,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_x_padding=(0, 0), bar_y_padding=(0, 0), bar_image_path=None, cursor_image_path=None, end_locked=False, seek_function=None):
+    def __init__(self, bar_x_padding=(0, 0), bar_y_padding=(0, 0), bar_image_path=None, cursor_image_path=None, seek_function=None):
         clutter.Actor.__init__(self)
         self._progress = 0.0
         self._last_event_x = None
@@ -79,11 +79,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.sequence_color_1 = '#444444ff'
         self.sequence_color_2 = '#666666ff'
         self._sequence_color = self.sequence_color_2
-        self._end_locked = end_locked
-        self.locked_sequence = clutter.Rectangle()
-        self.locked_sequence.set_color('#440000ff')
-        self.locked_sequence.set_parent(self)
-        self.locked_sequence.hide()
+        self._min = None
+        self._max = None
         
         # background
         self.background = clutter.Rectangle()
@@ -112,6 +109,12 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.cursor = clutter.Rectangle()
             self.cursor.set_color('Gray')
         self.cursor.set_parent(self)
+    
+    def set_min_progress(self, mini=None):
+        self._min = mini
+    
+    def set_max_progress(self, maxi=None):
+        self._max = maxi
     
     def _on_press(self, source, event):
         clutter.grab_pointer(self.background)
@@ -143,6 +146,10 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_progress(self, position):
         new_position = max(position, 0.0)
         new_position = min(new_position, 1.0)
+        if self._min is not None:
+            new_position = max(new_position, self._min)
+        if self._max is not None:
+            new_position = min(new_position, self._max)
         if new_position != self._progress:
             self._progress = new_position
             self.queue_relayout()
@@ -159,23 +166,19 @@ class SeekBar(clutter.Actor, clutter.Container):
         #    self.callback(self, self._progress * self._duration, self._progress, self._duration)
     
     def set_edit_points(self, edit_points):
+        self._clear_edit_points()
         for point in edit_points:
             self._add_edit_point(point)
-        self.check_locked_sequence()
         self.queue_relayout()
     
-    def add_edit_point(self, time):
-        self._add_edit_point(time)
-        self.check_locked_sequence()
+    def add_edit_point(self, progression):
+        self._add_edit_point(progression)
         self.queue_relayout()
     
-    def _add_edit_point(self, time):
-        edit_point = time
-        if self._duration != 0:
-            if time > self._duration:
-                edit_point = time
-            elif time < 0:
-                edit_point = 0
+    def _add_edit_point(self, progression):
+        edit_point = progression
+        progression = min(progression, 1.0)
+        progression = max(progression, 0.0)
         self.edit_points.append(edit_point)
         self.edit_points.sort()
 
@@ -200,18 +203,19 @@ class SeekBar(clutter.Actor, clutter.Container):
                 sequence.set_parent(self)
                 self._sequence_blocks.append(sequence)
     
-    def check_locked_sequence(self):
-        if self._end_locked and len(self._sequence_blocks) > 0:
-            self.locked_sequence.show()
-        else:
-            self.locked_sequence.hide()
-
     def clear_edit_points(self):
-        self.edit_points = list()
-        self._sequence_blocks = list()
-        self.check_locked_sequence()
+        self._clear_edit_points()
         self.queue_relayout()
 
+    def _clear_edit_points(self):
+        for sequence_index in range(len(self._sequence_blocks)):
+            sequence = self._sequence_blocks[sequence_index]
+            sequence.unparent()
+            sequence.destroy()
+            sequence = None
+        self.edit_points = list()
+        self._sequence_blocks = list()
+    
     def update_position(self, source, current_time, position, duration):
         if self._last_event_x is None:
             self.set_duration(duration)
@@ -302,22 +306,13 @@ class SeekBar(clutter.Actor, clutter.Container):
         # sequences
         if self._duration != 0:
             for sequence_index in range(len(self._sequence_blocks)):
-                start_percent = float(self.edit_points[0 + 2*sequence_index])/float(self._duration)
-                end_percent = float(self.edit_points[1 + 2*sequence_index])/float(self._duration)
                 sequence = self._sequence_blocks[sequence_index]
                 sequence_box = clutter.ActorBox()
-                sequence_box.x1 = int(bar_box.x1 + int(start_percent * (bar_box.x2 - bar_box.x1)))
+                sequence_box.x1 = int(bar_box.x1 + int(self.edit_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
                 sequence_box.y1 = bar_box.y1
-                sequence_box.x2 = int(bar_box.x1 + int(end_percent * (bar_box.x2 - bar_box.x1)))
+                sequence_box.x2 = int(bar_box.x1 + int(self.edit_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
                 sequence_box.y2 = bar_box.y2
                 sequence.allocate(sequence_box, flags)
-            if self._end_locked and len(self._sequence_blocks) > 0:
-                locked_sequence_box = clutter.ActorBox()
-                locked_sequence_box.x1 = sequence_box.x2
-                locked_sequence_box.y1 = bar_box.y1
-                locked_sequence_box.x2 = bar_box.x2
-                locked_sequence_box.y2 = bar_box.y2
-                self.locked_sequence.allocate(locked_sequence_box, flags)
         
         # markers
         bar_width = bar_box.x2 - bar_box.x1
@@ -344,8 +339,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def do_foreach(self, func, data=None):
         children = [self.background, self.bar]
         children.extend(self._sequence_blocks)
-        if self._end_locked:
-            children.append(self.locked_sequence)
         children.extend(self._markers)
         children.append(self.cursor)
         for child in children:
@@ -354,8 +347,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def do_paint(self):
         children = [self.background, self.bar]
         children.extend(self._sequence_blocks)
-        if self._end_locked:
-            children.append(self.locked_sequence)
         children.extend(self._markers)
         children.append(self.cursor)
         for child in children:
@@ -381,11 +372,6 @@ class SeekBar(clutter.Actor, clutter.Container):
                 self.cursor.unparent()
                 self.cursor.destroy()
                 self.cursor = None
-        if hasattr(self, 'locked_sequence'):
-            if self.locked_sequence is not None:
-                self.locked_sequence.unparent()
-                self.locked_sequence.destroy()
-                self.locked_sequence = None
         if hasattr(self, '_sequence_blocks'):
             for sequence_block in self._sequence_blocks:
                 sequence_block.unparent()
