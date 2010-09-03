@@ -11,7 +11,7 @@ class OptionLine(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'OptionLine'
     
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True):
         clutter.Actor.__init__(self)
         self.name = name
         self.padding = padding
@@ -24,11 +24,15 @@ class OptionLine(clutter.Actor, clutter.Container):
         self.default_border_color = border_color
         
         # background
-        self.background = RoundRectangle(texture=texture)
-        self.background.set_color(self.default_color)
-        self.background.set_border_color(self.default_border_color)
-        self.background.set_border_width(3)
-        self.background.set_radius(10)
+        if rounded:
+            self.background = RoundRectangle(texture=texture)
+            self.background.set_color(self.default_color)
+            self.background.set_border_color(self.default_border_color)
+            self.background.set_border_width(3)
+            self.background.set_radius(10)
+        else:
+            self.background = clutter.Rectangle()
+            self.background.set_color(self.default_color)
         if enable_background:
             self.enable_background = True
         else:
@@ -45,7 +49,7 @@ class OptionLine(clutter.Actor, clutter.Container):
             self.icon.hide()
         self._add(self.icon)
         # label
-        self.label = TextContainer(text, padding=0)
+        self.label = TextContainer(text, padding=0, rounded=False)
         self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')
