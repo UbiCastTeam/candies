@@ -140,7 +140,7 @@ class TextContainer(clutter.Actor, clutter.Container):
             self.rect = RoundRectangle(texture=texture)
             self.rect.set_border_color(self.default_border_color)
             self.rect.set_border_width(3)
-            self.rect.props.radius = 10
+            self.rect.set_radius(10)
         else:
             self._rounded = False
             self.rect = clutter.Rectangle()

@@ -110,6 +110,9 @@ class OptionLine(clutter.Actor, clutter.Container):
     def set_border_width(self, width):
         self.background.set_border_width(width)
     
+    def set_icon_opacity(self, opacity):
+        self.icon.set_opacity(opacity)
+    
     def show_background(self):
         if self.enable_background != True:
             self.enable_background = True
