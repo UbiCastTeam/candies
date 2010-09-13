@@ -95,7 +95,23 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 rect.set_color('#FFFFFF30')
                 rect.set_parent(self)
                 self.scale_list.append(rect)
-
+    
+    def set_bar_image_path(self, path):
+        if isinstance(self.scrollbar_background, clutter.Rectangle):
+            self.scrollbar_background.unparent()
+            self.scrollbar_background.destroy()
+            self.scrollbar_background = clutter.Texture()
+            self.scrollbar_background.set_parent(self)
+        self.scrollbar_background.set_from_file(path)
+    
+    def set_scroller_image_path(self, path):
+        if isinstance(self.scroller, clutter.Rectangle):
+            self.scroller.unparent()
+            self.scroller.destroy()
+            self.scroller = clutter.Texture()
+            self.scroller.set_parent(self)
+        self.scroller.set_from_file(path)
+    
     def on_mouse_scroll(self, source, event):
         current_pos = self.scroller_position_percent
         if event.direction == clutter.SCROLL_UP:
