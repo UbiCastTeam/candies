@@ -38,6 +38,9 @@ class AutoScrollPanel(HBox):
     def set_scroller_image_path(self, path):
         self._scrollbar.set_scroller_image_path(path)
     
+    def go_to_top(self):
+        self._scrollbar.go_to_top()
+    
     # Function to check and add a scrollbar if needed
     def check_scrollbar(self, relayout=True):
         #print '---------------------------', self._max_height
@@ -62,7 +65,7 @@ class AutoScrollPanel(HBox):
                     self._clipper.remove_actor()
                     self._actor.set_anchor_point(0, 0)
                     self._actor.remove_clip()
-                    self._scrollbar.go_to_top()
+                    self.go_to_top()
                     self.add_element(self._actor, 'actor', expand=True, resizable=1.0)
         if relayout:
             self.queue_relayout()

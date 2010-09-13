@@ -171,6 +171,9 @@ class Box(clutter.Actor, clutter.Container):
             self.overlay.destroy()
             self.overlay = None
     
+    def get_elements(self):
+        return self.elements
+    
     def do_get_preferred_width(self, for_height):
         inner_height = for_height - 2*self.padding
         preferred_width = 0

@@ -4,6 +4,8 @@
 import clutter
 from roundrect import RoundRectangle
 from text import TextContainer
+from box import VBox
+from autoscroll import AutoScrollPanel
 
 class OptionLine(clutter.Actor, clutter.Container):
     """
@@ -79,6 +81,9 @@ class OptionLine(clutter.Actor, clutter.Container):
     def set_text(self, text):
         self.label.set_text(text)
         self.queue_relayout()
+    
+    def set_name(self, text):
+        self.name = text
     
     def set_hname(self, text):
         self.label.set_text(text)
@@ -192,13 +197,15 @@ class Select(clutter.Actor, clutter.Container):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.spacing = spacing
+        self.stage_padding = 10
         self.on_change_callback = on_change_callback
         self.icon_height = icon_height
-        self.options = list()
-        self.opened = False
-        self.selected = None
-        self.selected_icon = None
+        self._stage_width, self._stage_height = 0, 0
+        self._opened = False
+        
+        self._selected = None
         self.open_icon = open_icon_path
+        self._background_box = None
         
         self.font = font
         self.font_color = font_color
@@ -208,188 +215,263 @@ class Select(clutter.Actor, clutter.Container):
         self.option_color = option_color
         self.texture = texture
         
-        self.background = RoundRectangle()
-        self.background.set_color(self.default_color)
-        self.background.set_border_color(self.default_border_color)
-        self.background.set_border_width(3)
-        self.background.props.radius = 10
-        self.background.set_parent(self)
-        
+        # hidder is to catch click event on all stage when the select input is opened
+        self._hidder = clutter.Rectangle()
+        self._hidder.set_color('#00000000')
+        self._hidder.connect('button-release-event', self._on_hidder_click)
+        self._hidder.set_reactive(True)
+        self._hidder.set_parent(self)
+        # background
+        self._background = RoundRectangle()
+        self._background.set_color(self.default_color)
+        self._background.set_border_color(self.default_border_color)
+        self._background.set_border_width(3)
+        self._background.set_radius(10)
+        self._background.set_parent(self)
+        # list of options displayed when the select input is opened
+        self._list = VBox()
+        # auto scroll panel
+        self._auto_scroll = AutoScrollPanel(self._list)
+        self._auto_scroll.hide()
+        self._auto_scroll.set_parent(self)
+        # selected option is displayed when the select input is closed
+        self._selected_option = OptionLine('empty', '', padding=self.padding, spacing=self.spacing, icon_path=self.open_icon, icon_height=self.icon_height, enable_background=True, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
+        self._selected_option.set_reactive(True)
+        self._selected_option.connect('button-release-event', self._on_selected_click)
+        self._selected_option.set_parent(self)
+    
+    def get_stage(self):
+        obj = self
+        if obj.get_parent():
+            has_parent = True
+            obj = obj.get_parent()
+            while has_parent:
+                if obj.get_parent():
+                    has_parent = True
+                    obj = obj.get_parent()
+                else:
+                    has_parent = False
+        if isinstance(obj, clutter.Stage):
+            return obj
+        else:
+            return None
+    
+    def get_selected(self):
+        return self._selected
+    
+    def set_locked(self, lock):
+        if lock:
+            self._selected_option.set_reactive(False)
+            self._selected_option.icon.hide()
+        else:
+            self._selected_option.set_reactive(True)
+            self._selected_option.icon.show()
     
     def add_option(self, name, hname, icon_path=None):
         new_option = OptionLine(name, hname, padding=self.padding, spacing=self.spacing, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
-        new_option.set_parent(self)
         new_option.set_reactive(True)
         new_option.connect('button-release-event', self._on_click)
-        self.options.append(new_option)
-        if self.selected == None:
-            self.selected = new_option
-            self.selected.show_background()
-            self.selected.set_font_color(self.selected_font_color)
-            self.selected_icon = self.selected.icon_path
-            self.selected.set_icon(self.open_icon)
-        else:
-            new_option.hide()
+        self._list.add_element(new_option, 'option_%s' %name, expand=True)
+        self.check_scrollbar()
+        
+        if self._selected is None:
+            self._selected = new_option
+            self._selected.set_font_color(self.selected_font_color)
+            self._selected.show_background()
+            self._selected_option.set_name(name)
+            self._selected_option.set_text(hname)
     
     def remove_option(self, name):
-        for option in list(self.options):
-            if option.name == name:
-                self.options.remove(option)
-                option.unparent()
-                break
+        if self._list.get_elements_count() == 1:
+            self.remove_all_options()
+        else:
+            self._list.remove_element('option_%s' %name)
+            self.check_scrollbar()
     
     def remove_all_options(self):
-        for option in list(self.options):
-            self.options.remove(option)
-            option.unparent()
-        self.selected = None
+        self._list.remove_all_elements()
+        self.check_scrollbar()
+        self._selected = None
+        self._selected_option.set_name('empty')
+        self._selected_option.set_text('')
+    
+    def check_scrollbar(self):
+        self._auto_scroll.check_scrollbar()
     
     def _on_click(self, source, event):
-        if source == self.selected:
-            if self.opened == True:
-                self._close_options()
+        if self._opened:
+            if source == self._selected:
+                self.close_options()
             else:
-                self._open_options()
-        elif self.opened == True:
-            self.selected.set_font_color(self.font_color)
-            self.selected = source
-            self.selected.set_font_color(self.selected_font_color)
-            self._close_options()
-            if self.on_change_callback is not None:
-                self.on_change_callback(source, event)
+                self._select_option(source, silent=False)
+                self.close_options()
     
-    def _open_options(self):
-        self.opened = True
-        self.selected.set_icon(self.selected_icon)
-        self.selected.show_background()
-        for option in self.options:
-            option.show()
+    def _on_selected_click(self, source, event):
+        self.open_options()
+    
+    def _on_hidder_click(self, source, event):
+        self.close_options()
+    
+    def open_options(self):
+        if not self._opened:
+            self._opened = True
+            stage = self.get_stage()
+            if stage:
+                self._stage_width, self._stage_height = stage.get_size()
+            else:
+                self._stage_width, self._stage_height = 0, 0
+            self._selected_option.hide()
+            self._auto_scroll.show()
+            self.queue_relayout()
+    
+    def close_options(self):
+        if self._opened:
+            self._opened = False
+            self._auto_scroll.hide()
+            self._selected_option.show()
+            self._auto_scroll.go_to_top()
+            self.queue_relayout()
+    
+    def select_option(self, name, silent=True):
+        element = self._list.get_by_name('option_%s' %name)
+        if element is not None:
+            option = element['object']
+            self._select_option(option, silent=silent)
         self.queue_relayout()
     
-    def _close_options(self):
-        self.opened = False
-        for option in self.options:
-            if option != self.selected:
-                option.hide()
-                option.hide_background()
-        self.selected.show_background()
-        self.selected_icon = self.selected.icon_path
-        self.selected.set_icon(self.open_icon)
-        self.queue_relayout()
+    def _select_option(self, option, silent=True):
+        if option != self._selected:
+            if self._selected is not None:
+                self._selected.hide_background()
+                self._selected.set_font_color(self.font_color)
+            
+            self._selected = option
+            self._selected.set_font_color(self.selected_font_color)
+            self._selected.show_background()
+            
+            self._selected_option.set_name(option.name)
+            self._selected_option.set_text(option.get_text())
+            
+            if self.on_change_callback is not None and not silent:
+                self.on_change_callback(self._selected, None)
     
-    def select_option(self, option_name, silent=True):
-        for option in self.options:
-            if option.name == option_name and option != self.selected:
-                last_selection = self.selected
-                self.selected.hide_background()
-                self.selected.set_icon(self.selected_icon)
-                self.selected.set_font_color(self.font_color)
-                self.selected = option
-                self.selected.set_font_color(self.selected_font_color)
-                self.selected.show_background()
-                if self.opened == True:
-                    self.selected_icon = self.selected.icon_path
-                else:
-                    last_selection.hide()
-                    self.selected.show()
-                    self.selected_icon = self.selected.icon_path
-                    self.selected.set_icon(self.open_icon)
-                self.queue_relayout()
-                if self.on_change_callback is not None and silent == False:
-                    self.on_change_callback(self.selected, None)
-                break
+    def set_bar_image_path(self, path):
+        self._auto_scroll.set_bar_image_path(path)
     
-    def do_remove(self, actor):
-        if self.background == actor:
-            actor.unparent()
-            self.background = None
-        for option in list(self.options):
-            if option == actor:
-                self.options.remove(option)
-                option.unparent()
+    def set_scroller_image_path(self, path):
+        self._auto_scroll.set_scroller_image_path(path)
     
     def do_get_preferred_width(self, for_height):
-        preferred = 0
-        for option in self.options:
-            if preferred < option.get_preferred_width(for_height)[0]:
-                preferred = option.get_preferred_width(for_height)[0]
+        preferred = max(self._auto_scroll.get_preferred_width(for_height)[1], self._selected_option.get_preferred_width(for_height)[1])
         return preferred, preferred
     
     def do_get_preferred_height(self, for_width):
-        preferred = 0
-        for option in self.options:
-            if preferred < option.get_preferred_height(for_width)[0]:
-                preferred = option.get_preferred_height(for_width)[0]
+        preferred = self._selected_option.get_preferred_height(for_width)[1]
         return preferred, preferred
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
         
-        if self.opened:
-            total_height = (self.icon_height + 2*self.padding) * len(self.options)
+        if self._opened:
+            option_box = clutter.ActorBox(0, 0, main_width, main_height)
+            self._selected_option.allocate(option_box, flags)
             
-            background_box = clutter.ActorBox()
-            background_box.x1 = 0
-            background_box.y1 = 0
-            background_box.x2 = main_width
-            background_box.y2 = total_height
-            self.background.allocate(background_box, flags)
-            index = 0
-            for option in self.options:
-                option_box = clutter.ActorBox()
-                option_box.x1 = 0
-                option_box.y1 = index*(self.icon_height + 2*self.padding)
-                option_box.x2 = main_width
-                option_box.y2 = (index + 1)*(self.icon_height + 2*self.padding)
-                option.allocate(option_box, flags)
-                index += 1
+            box_x, box_y = self.get_transformed_position()
+            box_x = int(box_x)
+            box_y = int(box_y)
+            
+            if self._stage_height > 0 and self._stage_width > 0:
+                hidder_box = clutter.ActorBox(-box_x, -box_y, self._stage_width-box_x, self._stage_height-box_y)
+            else:
+                hidder_box = clutter.ActorBox(self.padding, self.padding, self.padding, self.padding)
+            self._hidder.allocate(hidder_box, flags)
+            
+            total_height = (self.icon_height + 2*self.padding) * len(self._list.get_elements())
+            base_y = 0
+            if self._stage_height > 0 and box_y + total_height > self._stage_height - self.stage_padding:
+                if total_height > self._stage_height - 2*self.stage_padding:
+                    total_height = self._stage_height - 2*self.stage_padding
+                    base_y -= box_y - self.stage_padding
+                    #TODO enable scrollbar
+                else:
+                    base_y -= box_y - (self._stage_height - self.stage_padding - total_height)
+            self._background_box = clutter.ActorBox(0, base_y, main_width, base_y + total_height)
+            self._background.allocate(self._background_box, flags)
+            list_box = clutter.ActorBox(0, base_y, main_width, base_y + total_height)
+            self._auto_scroll.allocate(list_box, flags)
         else:
-            background_box = clutter.ActorBox()
-            background_box.x1 = 0
-            background_box.y1 = 0
-            background_box.x2 = main_width
-            background_box.y2 = main_height
-            self.background.allocate(background_box, flags)
-            for option in self.options:
-                option_box = clutter.ActorBox()
-                option_box.x1 = 0
-                option_box.y1 = 0
-                option_box.x2 = main_width
-                option_box.y2 = main_height
-                option.allocate(option_box, flags)
+            hidder_box = clutter.ActorBox(self.padding, self.padding, self.padding, self.padding)
+            self._hidder.allocate(hidder_box, flags)
+            self._background_box = clutter.ActorBox(0, 0, main_width, main_height)
+            self._background.allocate(self._background_box, flags)
+            option_box = clutter.ActorBox(0, 0, main_width, main_height)
+            self._selected_option.allocate(option_box, flags)
+            list_box = clutter.ActorBox(0, 0, main_width, main_height)
+            self._auto_scroll.allocate(list_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
-        func(self.background, data)
-        for option in self.options:
-            func(option, data)
+        func(self._hidder, data)
+        func(self._background, data)
+        func(self._selected_option, data)
+        func(self._auto_scroll, data)
     
     def do_paint(self):
-        #last painted must be selected option
-        self.background.paint()
-        for option in self.options:
-            if option != self.selected:
-                option.paint()
-        if self.selected:
-            self.selected.paint()
+        self._hidder.paint()
+        self._background.paint()
+        self._selected_option.paint()
+        
+        # Clip auto scroll panel
+        if self._background_box is not None:
+            # Draw a rectangle to cut scroller
+            clutter.cogl.path_round_rectangle(
+                self._background_box.x1 + 3,
+                self._background_box.y1 + 3,
+                self._background_box.x2 - 3,
+                self._background_box.y2 - 3,
+                7,
+                1
+            )
+            clutter.cogl.path_close()
+            # Start the clip
+            clutter.cogl.clip_push_from_path()
+        
+            self._auto_scroll.paint()
+            
+            # Finish the clip
+            clutter.cogl.clip_pop()
+        else:
+            self._auto_scroll.paint()
     
     def do_pick(self, color):
         self.do_paint()
     
     def do_destroy(self):
         self.unparent()
-        if hasattr(self, 'options'):
-            for option in list(self.options):
-                option.unparent()
-                option.destroy()
-            self.options = list()
-        if hasattr(self, 'background'):
-            if self.background is not None:
-                self.background.unparent()
-                self.background.destroy()
-                self.background = None
+        if hasattr(self, '_hidder'):
+            if self._hidder is not None:
+                self._hidder.unparent()
+                self._hidder.destroy()
+                self._hidder = None
+        if hasattr(self, '_background'):
+            if self._background is not None:
+                self._background.unparent()
+                self._background.destroy()
+                self._background = None
+        if hasattr(self, '_selected_option'):
+            if self._selected_option is not None:
+                self._selected_option.unparent()
+                self._selected_option.destroy()
+                self._selected_option = None
+        if hasattr(self, 'auto_scroll'):
+            if self._auto_scroll is not None:
+                self._auto_scroll.unparent()
+                self._auto_scroll.destroy()
+                self._auto_scroll = None
+        self._selected = None
+        self._list = None
 
 
 if __name__ == '__main__':
