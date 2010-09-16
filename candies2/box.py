@@ -5,6 +5,7 @@ import gobject
 import clutter
 
 class Box(clutter.Actor, clutter.Container):
+    __gtype_name__ = 'Box'
     """
     A stacking box container.
     
@@ -33,9 +34,8 @@ class Box(clutter.Actor, clutter.Container):
         - center (bool) : if True, the element is centered (vertically for
           horizontal box and vice-versa).
     """
-    __gtype_name__ = 'Box'
     
-    def __init__(self, horizontal=True, spacing=0, padding=0, bg_ignore_allocation_box=True):
+    def __init__(self, horizontal=True, spacing=0, padding=0, bg_ignore_allocation_box=True, pick_enabled=True):
         clutter.Actor.__init__(self)
         self.elements = list()
         self.background = None
@@ -43,6 +43,7 @@ class Box(clutter.Actor, clutter.Container):
         self._overlay_displayed = False
         self.spacing = spacing
         self.padding = padding
+        self.pick_enabled = pick_enabled
         if horizontal:
             self._horizontal = True
         else:
@@ -569,7 +570,10 @@ class Box(clutter.Actor, clutter.Container):
             obj.paint()
     
     def do_pick(self, color):
-        self.do_paint()
+        if self.pick_enabled:
+            self.do_paint()
+        else:
+            clutter.Actor.do_pick(self, color)
     
     def do_destroy(self):
         self.unparent()
@@ -590,11 +594,13 @@ class Box(clutter.Actor, clutter.Container):
                 self.overlay = None
 
 class HBox(Box):
+    __gtype_name__ = 'HBox'
     
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=True, *args, **kw)
 
 class VBox(Box):
+    __gtype_name__ = 'VBox'
     
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
