@@ -337,7 +337,7 @@ class Select(clutter.Actor, clutter.Container):
         if element is not None:
             option = element['object']
             self._select_option(option, silent=silent)
-        self.queue_relayout()
+            self.queue_relayout()
     
     def _select_option(self, option, silent=True):
         if option != self._selected:
