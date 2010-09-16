@@ -240,6 +240,12 @@ class Select(clutter.Actor, clutter.Container):
         self._selected_option.connect('button-release-event', self._on_selected_click)
         self._selected_option.set_parent(self)
     
+    def set_disabled(self, boolean):
+        if boolean:
+            self._selected_option.set_reactive(False)
+        else:
+            self._selected_option.set_reactive(True)
+    
     def get_stage(self):
         obj = self
         if obj.get_parent():
