@@ -139,7 +139,7 @@ class Box(clutter.Actor, clutter.Container):
             if self.overlay == child:
                 child.unparent()
                 self.overlay = None
-            for element in self.elements:
+            for element in list(self.elements):
                 if element['object'] == child:
                     child.unparent()
                     self.elements.remove(element)
@@ -149,6 +149,7 @@ class Box(clutter.Actor, clutter.Container):
         if element:
             element['object'].unparent()
             self.elements.remove(element)
+            self.queue_relayout()
             return True
         else:
             return False
