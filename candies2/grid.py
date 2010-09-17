@@ -3,9 +3,9 @@
 
 import gobject
 import clutter
-from container import ContainerAdapter
+from container import BaseContainer
 
-class Grid(ContainerAdapter, clutter.Actor, clutter.Container):
+class Grid(BaseContainer):
     """
     A Grid container.
 
@@ -13,14 +13,13 @@ class Grid(ContainerAdapter, clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Grid'
     __gproperties__ = {
-            'nb_cols': (gobject.TYPE_INT, 'Number of columns', 'Numbers of columns in the grid',
-                0, None, 0, gobject.PARAM_READWRITE),
-            'nb_rows': (gobject.TYPE_INT, 'Number of rows', 'Numbers of rows in the grid',
-                0, None, 0, gobject.PARAM_READWRITE),
+        'nb_cols': (gobject.TYPE_INT, 'Number of columns', 'Numbers of columns in the grid',
+            0, None, 0, gobject.PARAM_READWRITE),
+        'nb_rows': (gobject.TYPE_INT, 'Number of rows', 'Numbers of rows in the grid',
+            0, None, 0, gobject.PARAM_READWRITE),
     }
     def __init__(self, cols=0, rows=0):
-        ContainerAdapter.__init__(self)
-        clutter.Actor.__init__(self)
+        BaseContainer.__init__(self)
         self._cols = cols
         self._rows = rows
 

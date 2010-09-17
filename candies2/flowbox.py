@@ -3,9 +3,9 @@
 
 import operator
 import clutter
-from container import ContainerAdapter
+from container import BaseContainer
 
-class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
+class FlowBox(BaseContainer):
     """
     A Flow container.
 
@@ -13,9 +13,26 @@ class FlowBox(ContainerAdapter, clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'FlowBox'
     def __init__(self, orientation=0):
-        ContainerAdapter.__init__(self)
-        clutter.Actor.__init__(self)
+        BaseContainer.__init__(self)
         self._orientation = orientation
+
+    def do_add(self, *children):
+        for child in children:
+            if child in self._children:
+                raise Exception("Actor %s is already a children of %s" % (
+                    child, self))
+            self._add(child)
+            self.queue_relayout()
+    
+    def do_remove(self, *children):
+        for child in children:
+            if child in self._children:
+                self._children.remove(child)
+                child.unparent()
+                self.queue_relayout()
+            else:
+                raise Exception("Actor %s is not a child of %s" % (
+                    child, self))
 
     def do_get_preferred_width(self, for_height):
         #sys.stdout.write('do_get_preferred_width(%s)' %(for_height))

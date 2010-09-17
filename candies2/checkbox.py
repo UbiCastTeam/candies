@@ -3,12 +3,13 @@
 
 import clutter
 from text import TextContainer
+from container import BaseContainer
 
-class CheckBox(clutter.Actor, clutter.Container):
+class CheckBox(BaseContainer):
     __gtype_name__ = 'CheckBox'
     
     def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64):
-        clutter.Actor.__init__(self)
+        BaseContainer.__init__(self)
         self._children = list()
         self.checked = checked
         self.callback = callback
@@ -106,33 +107,5 @@ class CheckBox(clutter.Actor, clutter.Container):
         self._catcher.allocate(catcher_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
-    
-    #-----------------------------------------------------------
-    def _add(self, *children):
-        for child in children:
-            child.set_parent(self)
-            self._children.append(child)
-    
-    def do_foreach(self, func, data=None):
-        for child in self._children:
-            func(child, data)
-        
-    def do_paint(self):
-        for actor in self._children:
-            actor.paint()
-    
-    def do_pick(self, color):
-        for actor in self._children:
-            actor.paint()
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, '_children'):
-            for child in self._children:
-                child.unparent()
-                child.destroy()
-            self._children = list()
-
-
 
 

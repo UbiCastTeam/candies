@@ -1,40 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-class ContainerAdapter:
-    """
-    An abstract container class to be subclass by common Candies containers.
-    """
-    def __init__(self):
-        self._children = []
+import clutter
 
-    def do_add(self, *children):
-        for child in children:
-            if child in self._children:
-                raise Exception("Actor %s is already a children of %s" % (
-                    child, self))
-            self._children.append(child)
-            child.set_parent(self)
-            self.queue_relayout()
+class BaseContainer(clutter.Actor, clutter.Container):
+    """
+    A container class wich implements all standard container functions.
+    """
+    __gtype_name__ = 'BaseContainer'
     
-    def do_remove(self, *children):
+    def __init__(self):
+        clutter.Actor.__init__(self)
+        self._children = list()
+    
+    def _add(self, *children):
+        for child in children:
+            child.set_parent(self)
+            self._children.append(child)
+    
+    def _remove(self, *children):
         for child in children:
             if child in self._children:
                 self._children.remove(child)
-                child.unparent()
-                self.queue_relayout()
-            else:
-                raise Exception("Actor %s is not a child of %s" % (
-                    child, self))
-
-    def do_get_preferred_width(self, for_height):
-        raise NotImplementedError('do_get_preferred_width')
-
-    def do_get_preferred_height(self, for_width):
-        raise NotImplementedError('do_get_preferred_height')
-
-    def do_allocate(self, box, flags):
-        raise NotImplementedError('do_allocate')
+                child.unparent
     
     def do_foreach(self, func, data=None):
         for child in self._children:
@@ -55,4 +43,6 @@ class ContainerAdapter:
                 child.unparent()
                 child.destroy()
             self._children = list()
+
+
 

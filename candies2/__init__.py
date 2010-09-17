@@ -1,5 +1,6 @@
 from version import VERSION as __revision__
 
+from container import BaseContainer
 from box import Box, VBox, HBox, AlignedElement, MultiLayerContainer
 from block import TexturedBlock
 from flowbox import FlowBox
