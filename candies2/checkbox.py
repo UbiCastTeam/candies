@@ -49,7 +49,10 @@ class CheckBox(BaseContainer):
         self.checked = not self.checked
         self.refresh_image()
         if self.callback is not None:
-            self.callback(self.checked, self.data)
+            if self.data is not None:
+                self.callback(self.checked, self.data)
+            else:
+                self.callback(self.checked)
     
     def set_checked(self, boolean):
         if boolean and not self.checked:
