@@ -240,7 +240,11 @@ class Select(clutter.Actor, clutter.Container):
         self._selected_option.set_reactive(True)
         self._selected_option.connect('button-release-event', self._on_selected_click)
         self._selected_option.set_parent(self)
-    
+
+    def set_lock(self, status):
+        self.set_disabled(status)
+        self.set_opacity(255 - status*128)
+
     def set_disabled(self, boolean):
         if boolean:
             self._selected_option.set_reactive(False)
