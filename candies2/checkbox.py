@@ -53,7 +53,15 @@ class CheckBox(BaseContainer):
                 self.callback(self.checked, self.data)
             else:
                 self.callback(self.checked)
-    
+
+    def set_lock(self, status):
+        if status:
+            self._catcher.set_reactive(False)
+            self.set_opacity(128)
+        else:
+            self._catcher.set_reactive(True)
+            self.set_opacity(255)
+
     def set_checked(self, boolean):
         if boolean and not self.checked:
             self.toggle_check()

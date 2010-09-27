@@ -84,6 +84,15 @@ class NumberAdjuster(Box):
         self.add_element(self.value_btn, 'value', expand=True, resizable=value_btn_size)
         self.add_element(self.plus, 'plus', expand=True)
 
+    def set_lock(self, status):
+        self.set_all_reactive(not status)
+        self.set_opacity(255 - status*128)
+
+    def set_all_reactive(self, status):
+        self.plus.set_reactive(status)
+        self.minus.set_reactive(status)
+        self.value_btn.set_reactive(status)
+
     def inc(self, button, event):
         button.set_inner_color(self.button_highlight_color)
         if self.value + self.increment <= self.max:
