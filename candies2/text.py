@@ -167,6 +167,9 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_font_color(self, color):
         self.label.set_color(color)
     
+    def get_font_name(self):
+        return self.label.get_font_name()
+    
     def set_font_name(self, font_name):
         self.label.set_font_name(font_name)
         self.sizer.set_font_name(font_name)
