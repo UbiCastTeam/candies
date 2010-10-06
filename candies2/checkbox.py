@@ -8,12 +8,12 @@ from container import BaseContainer
 class CheckBox(BaseContainer):
     __gtype_name__ = 'CheckBox'
     
-    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, data=None):
+    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, user_data=None):
         BaseContainer.__init__(self)
         self._children = list()
         self.checked = checked
         self.callback = callback
-        self.data = data
+        self.user_data = user_data
         self.spacing = 16
         self._image_size = size
         self._checked_image_path = None
@@ -49,8 +49,8 @@ class CheckBox(BaseContainer):
         self.checked = not self.checked
         self.refresh_image()
         if self.callback is not None:
-            if self.data is not None:
-                self.callback(self.checked, self.data)
+            if self.user_data is not None:
+                self.callback(self.checked, self.user_data)
             else:
                 self.callback(self.checked)
 

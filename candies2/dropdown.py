@@ -193,13 +193,13 @@ class Select(clutter.Actor, clutter.Container):
     """
     __gtype_name__ = 'Select'
     
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, data=None):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.spacing = spacing
         self.stage_padding = 10
         self.on_change_callback = on_change_callback
-        self.data = data
+        self.user_data = user_data
         self.icon_height = icon_height
         self._stage_width, self._stage_height = 0, 0
         self._opened = False
@@ -364,8 +364,8 @@ class Select(clutter.Actor, clutter.Container):
             self._selected_option.set_text(option.get_text())
             
             if self.on_change_callback is not None and not silent:
-                if self.data is not None:
-                    self.on_change_callback(self._selected, self.data)
+                if self.user_data is not None:
+                    self.on_change_callback(self._selected, self.user_data)
                 else:
                     self.on_change_callback(self._selected)
     
