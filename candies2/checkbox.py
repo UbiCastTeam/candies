@@ -120,4 +120,18 @@ class CheckBox(BaseContainer):
         
         clutter.Actor.do_allocate(self, box, flags)
 
+#main to test
+if __name__ == '__main__':
+    stage = clutter.Stage()
+    stage.connect('destroy',clutter.main_quit)
+    
+    def callback(checked):
+        print checked
+    
+    checkbox = CheckBox('Test', callback=callback)
+    checkbox.set_reactive(True)
+    checkbox.set_position(50, 50)
+    stage.add(checkbox)
 
+    stage.show()
+    clutter.main()
