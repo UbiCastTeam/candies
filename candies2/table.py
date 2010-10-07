@@ -22,7 +22,7 @@ class Table(clutter.Actor, clutter.Container):
         This container uses TableCellAligner to manage actor alignment,
         then the actor's parent is not always the table
     """
-    def __init__(self, rows=0, columns=0, margin=0, padding=0, spacing=0, pick_enabled=True):
+    def __init__(self, rows=0, columns=0, margin=(0, 0), padding=(0, 0), spacing=(0, 0), pick_enabled=True):
         clutter.Actor.__init__(self)
         self.pick_enabled = pick_enabled
         self.margin = margin
@@ -34,20 +34,20 @@ class Table(clutter.Actor, clutter.Container):
         elif isinstance(rows, list):
             self._rows = rows
         else:
-            raise TypeError('Columns type and must be int or list')
+            raise TypeError('Columns type must be int or list')
         if isinstance(columns, int):
             self._columns = ['auto' for i in range(columns)]
         elif isinstance(columns, list):
             self._columns = columns
         else:
-            raise TypeError('Columns type and must be int or list')
+            raise TypeError('Columns type must be int or list')
         self._size = len(self._columns) * len(self._rows)
         self._matrix = [[None for i in range(len(self._columns))] for i in range(len(self._rows))]
     
-    def add(self, actor, column=-1, row=-1, align='center', expand=False, keep_ratio=False):
+    def add(self, actor, row=-1, column=-1, align='center', expand=False, keep_ratio=False):
         if actor.get_parent() != self:
             place = (None, None)
-            if column == -1 and row == -1:
+            if row == -1 and column == -1:
                 added = False
                 for r in range(len(self._rows)):
                     for c in range(len(self._columns)):
@@ -60,38 +60,32 @@ class Table(clutter.Actor, clutter.Container):
                 if not added:
                     # No place in table
                     raise Exception('No remaining place in table %s to add actor %s' %(self, actor))
-            elif row != -1:
-                if row < self._rows:
-                    if column == -1:
-                        for c in range(len(self._columns)):
-                            if self._matrix[row][c] is None:
-                                column = c
-                                break
-                    if column == -1:
-                        raise Exception('No remaining place in row %s of table %s to add actor %s' %(row, self, actor))
+            elif row != -1 and column == -1:
+                if row < len(self._rows):
+                    for c in range(len(self._columns)):
+                        if self._matrix[row][c] is None:
+                            column = c
+                            break
                     place = (row, column)
                 else:
-                    raise IndexError('Can not add actor %s in row %s in table %s, table has only %s rows' %(actor, row, self, actor, self._rows))
-            elif column != -1:
-                if column < self._columns:
-                    if row == -1:
-                        for r in range(len(self._rows)):
-                            if self._matrix[r][column] is None:
-                                row = r
-                                break
-                    if row == -1:
-                        raise Exception('No remaining place in column %s of table %s to add actor %s' %(column, self, actor))
+                    raise IndexError('Can not add actor %s in row %s in table %s, table has only %s rows' %(actor, row, self, len(self._rows)))
+            elif row == -1 and column != -1:
+                if column < len(self._columns):
+                    for r in range(len(self._rows)):
+                        if self._matrix[r][column] is None:
+                            row = r
+                            break
                     place = (row, column)
                 else:
-                    raise IndexError('Can not add actor %s in column %s in table %s, table has only %s columns' %(actor, column, self, actor, self._columns))
+                    raise IndexError('Can not add actor %s in column %s in table %s, table has only %s columns' %(actor, column, self, len(self._columns)))
             else:
-                if column < self._columns and row < self._rows:
+                if column < len(self._columns) and row < len(self._rows):
                     place = (row, column)
                 else:
-                    if column >= self._columns:
-                        raise IndexError('Can not add actor %s in column %s in table %s, table has only %s columns' %(actor, column, self, actor, self._columns))
+                    if column >= len(self._columns):
+                        raise IndexError('Can not add actor %s in column %s in table %s, table has only %s columns' %(actor, column, self, len(self._columns)))
                     else:
-                        raise IndexError('Can not add actor %s in row %s in table %s, table has only %s rows' %(actor, row, self, actor, self._rows))
+                        raise IndexError('Can not add actor %s in row %s in table %s, table has only %s rows' %(actor, row, self, len(self._rows)))
             # add actor
             if place != (None, None):
                 if self._matrix[place[0]][place[1]] is not None:
@@ -151,12 +145,23 @@ class Table(clutter.Actor, clutter.Container):
                 break
         self.queue_relayout()
     
-    def set_column_width(self, index, width):
-        if index < len(self._columns):
-            self._columns[index] = width
-            self.queue_relayout()
-        else:
-            raise IndexError('Can not set column width in table %s, table has only %s columns' %(self, self._columns))
+    def insert_row(self, index, height='auto'):
+        self._rows.insert(index, height)
+        self._matrix.insert(index, [None for i in range(len(self._columns))])
+    
+    def add_row(self, height='auto'):
+        self._rows.append(height)
+        self._matrix.append([None for i in range(len(self._columns))])
+    
+    def insert_column(self, index, width='auto'):
+        self._columns.insert(index, width)
+        for i in range(len(self._rows)):
+            self._matrix[i].insert(index, None)
+    
+    def add_column(self, width='auto'):
+        self._columns.append(width)
+        for i in range(len(self._rows)):
+            self._matrix[i].append(None)
     
     def set_row_height(self, index, height):
         if index < len(self._rows):
@@ -165,37 +170,42 @@ class Table(clutter.Actor, clutter.Container):
         else:
             raise IndexError('Can not set row height in table %s, table has only %s rows' %(self, self._rows))
     
+    def set_column_width(self, index, width):
+        if index < len(self._columns):
+            self._columns[index] = width
+            self.queue_relayout()
+        else:
+            raise IndexError('Can not set column width in table %s, table has only %s columns' %(self, self._columns))
+    
     def do_get_preferred_width(self, for_height=-1):
-        preferred_width = (len(self._columns) - 1) * self.spacing
-        maximum = 0
-        for j in range(len(self._rows)):
-            row_width = 0
-            for i in range(len(self._columns)):
-                actor = self._matrix[j][i]
+        preferred_width = (len(self._columns) - 1) * self.spacing[0] + 2*self.margin[0] - 2*self.padding[0]
+        for j in range(len(self._columns)):
+            column_width = 0
+            for i in range(len(self._rows)):
+                actor = self._matrix[i][j]
                 if actor is not None:
-                    row_width += actor.get_preferred_width(for_height=-1)[1]
-            maximum = max(maximum, row_width)
-        preferred_width += maximum
+                    column_width = max(column_width, actor.get_preferred_width(for_height=-1)[1])
+            preferred_width += column_width
+        #print preferred_width
         return preferred_width, preferred_width
 
     def do_get_preferred_height(self, for_width=-1):
-        preferred_height = (len(self._rows) - 1) * self.spacing
-        maximum = 0
-        for i in range(len(self._columns)):
-            column_height = 0
-            for j in range(len(self._rows)):
-                actor = self._matrix[j][i]
+        preferred_height = (len(self._rows) - 1) * self.spacing[1] + 2*self.margin[1] - 2*self.padding[1]
+        for i in range(len(self._rows)):
+            row_height = 0
+            for j in range(len(self._columns)):
+                actor = self._matrix[i][j]
                 if actor is not None:
-                    column_height += actor.get_preferred_height(for_width=-1)[1]
-            maximum = max(maximum, column_height)
-        preferred_height += maximum
+                    row_height = max(row_height, actor.get_preferred_height(for_width=-1)[1])
+            preferred_height += row_height
+        #print preferred_height
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
         height = box.y2 - box.y1
-        inner_width = width - 2*self.margin - 2*self.padding
-        inner_height = height - 2*self.margin - 2*self.padding
+        inner_width = width - 2*self.margin[0] - 2*self.padding[0]
+        inner_height = height - 2*self.margin[1] - 2*self.padding[1]
         
         columns_widths = [0 for k in range(len(self._columns))]
         rows_heights = [0 for k in range(len(self._rows))]
@@ -213,7 +223,7 @@ class Table(clutter.Actor, clutter.Container):
                         column_width = max(column_width, actor.get_preferred_width(for_height=-1)[1])
                 columns_widths[j] = column_width
             total_width += columns_widths[j]
-        remaining_width = inner_width - total_width - ((len(self._columns) - 1) * self.spacing)
+        remaining_width = inner_width - total_width - ((len(self._columns) - 1) * self.spacing[0])
         # find rows heights
         total_height = 0
         for i in range(len(self._rows)):
@@ -227,7 +237,7 @@ class Table(clutter.Actor, clutter.Container):
                         row_height = max(row_height, actor.get_preferred_height(for_width=-1)[1])
                 rows_heights[i] = row_height
             total_height += rows_heights[i]
-        remaining_height = inner_height - total_height - ((len(self._rows) - 1) * self.spacing)
+        remaining_height = inner_height - total_height - ((len(self._rows) - 1) * self.spacing[1])
         
         # adjust columns widths if some space is remaining
         if remaining_width > 0:
@@ -252,8 +262,8 @@ class Table(clutter.Actor, clutter.Container):
                     if not isinstance(self._rows[j], int):
                         rows_heights[j] += height_per_row
         
-        base_x = self.margin + self.padding
-        base_y = self.margin + self.padding
+        base_x = self.margin[0] + self.padding[0]
+        base_y = self.margin[1] + self.padding[1]
         x = base_x
         y = base_y
         for i in range(len(self._rows)):
@@ -264,8 +274,8 @@ class Table(clutter.Actor, clutter.Container):
                     actor_box = clutter.ActorBox(x, y, x + columns_widths[j], y + rows_heights[i])
                     actor.allocate(actor_box, flags)
                     #print x, y, x + columns_widths[j], y + rows_heights[i]
-                x += columns_widths[j] + self.spacing
-            y += rows_heights[i] + self.spacing
+                x += columns_widths[j] + self.spacing[0]
+            y += rows_heights[i] + self.spacing[1]
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
@@ -308,7 +318,7 @@ if __name__ == '__main__':
     
     rows = 3
     columns = 3
-    table = Table(rows, columns, spacing=20)
+    table = Table(rows, columns, margin=(20, 0))
     table.set_size(600, 600)
     
     for k in range(rows * columns):
