@@ -14,7 +14,11 @@ class TableCellAligner(AlignedElement):
 class Table(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Table'
     """
-    A table layout
+    A container which presents actors in a table layout
+    
+    Warning:
+        This container uses TableCellAligner to manage actor alignment,
+        then the actor's parent is not always the table
     """
     def __init__(self, rows=0, columns=0, margin=0, padding=0, spacing=0, pick_enabled=True):
         clutter.Actor.__init__(self)
@@ -38,7 +42,7 @@ class Table(clutter.Actor, clutter.Container):
         self._size = len(self._columns) * len(self._rows)
         self._matrix = [[None for i in range(len(self._columns))] for i in range(len(self._rows))]
     
-    def add(self, actor, column=-1, row=-1, alignment='center', expand=False, keep_ratio=False):
+    def add(self, actor, column=-1, row=-1, align='center', expand=False, keep_ratio=False):
         if actor.get_parent() != self:
             place = (None, None)
             if column == -1 and row == -1:
@@ -88,15 +92,17 @@ class Table(clutter.Actor, clutter.Container):
                         raise IndexError('Can not add actor %s in row %s in table %s, table has only %s rows' %(actor, row, self, actor, self._rows))
             # add actor
             if place != (None, None):
+                if self._matrix[place[0]][place[1]] is not None:
+                    self._matrix[place[0]][place[1]].unparent()
+                    self._matrix[place[0]][place[1]] = None
                 if not expand or keep_ratio:
-                    aligner = TableCellAligner(expand=expand, keep_ratio=keep_ratio, align=alignment)
+                    aligner = TableCellAligner(expand=expand, keep_ratio=keep_ratio, align=align)
                     aligner.set_element(actor)
                     aligner.set_parent(self)
                     self._matrix[place[0]][place[1]] = aligner
                 else:
                     actor.set_parent(self)
                     self._matrix[place[0]][place[1]] = actor
-                
         self.queue_relayout()
         
         #for i in range(len(self._rows)):
@@ -104,15 +110,56 @@ class Table(clutter.Actor, clutter.Container):
         #    for j in range(len(self._columns)):
         #        print '    col %s' %j, self._matrix[i][j]
     
+    def get_actor(self, row=-1, column=-1):
+        if column >= len(self._columns):
+            raise IndexError('Can get actor of column %s in table %s, table has only %s columns' %(column, self, self._columns))
+        if row >= len(self._rows):
+            raise IndexError('Can get actor of row %s in table %s, table has only %s rows' %(row, self, self._rows))
+        for r in range(len(self._rows)):
+            for c in range(len(self._columns)):
+                if isinstance(self._matrix[r][c], TableCellAligner):
+                    actor = self._matrix[r][c].get_element()
+                else:
+                    actor = self._matrix[r][c]
+        return actor
+    
+    def clear_cell(self, row=-1, column=-1):
+        actor = self.get_actor(row, column)
+        self.do_remove(actor)
+    
+    def remove_actor(self, actor):
+        self.do_remove(actor)
+    
+    def do_remove(self, actor):
+        removed = False
+        for r in range(len(self._rows)):
+            for c in range(len(self._columns)):
+                if self._matrix[r][c] == actor:
+                    actor.unparent()
+                    self._matrix[r][c] = None
+                    removed = True
+                    break
+                elif isinstance(self._matrix[r][c], TableCellAligner) and self._matrix[r][c].get_element() == actor:
+                    self._matrix[r][c].remove_element()
+                    self._matrix[r][c].destroy()
+                    self._matrix[r][c] = None
+                    removed = True
+                    break
+            if removed:
+                break
+        self.queue_relayout()
+    
     def set_column_width(self, index, width):
         if index < len(self._columns):
             self._columns[index] = width
+            self.queue_relayout()
         else:
             raise IndexError('Can not set column width in table %s, table has only %s columns' %(self, self._columns))
     
     def set_row_height(self, index, height):
         if index < len(self._rows):
             self._rows[index] = height
+            self.queue_relayout()
         else:
             raise IndexError('Can not set row height in table %s, table has only %s rows' %(self, self._rows))
     
@@ -260,21 +307,27 @@ if __name__ == '__main__':
     rows = 3
     columns = 3
     table = Table(rows, columns, spacing=20)
-    table.set_position(50, 50)
-    #table.set_size(500, 500)
+    table.set_size(600, 600)
     
     for k in range(rows * columns):
         actor = clutter.Rectangle()
         actor.set_size(100, 100)
         actor.set_color((255, 0, 0, 255))
-        if k == 4:
+        if k == 0:
+            table.add(actor, align='top_left')
+        elif k == 4:
             actor.set_size(200, 200)
             table.add(actor, expand=True)
+        elif k == 8:
+            table.add(actor, align='bottom_right')
         else:
             table.add(actor)
     
     stage.add(table)
     #print table.get_preferred_size()
+    
+    table.remove_actor(actor)
+    #table.destroy()
 
     stage.show()
     clutter.main()

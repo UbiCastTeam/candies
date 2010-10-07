@@ -647,6 +647,9 @@ class AlignedElement(clutter.Actor, clutter.Container):
             self.background.unparent()
             self.background = None
     
+    def get_element(self):
+        return self.element
+    
     def set_element(self, new_element):
         if self.element is not None:
             self.element.unparent()
