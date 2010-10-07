@@ -16,6 +16,8 @@ class Table(clutter.Actor, clutter.Container):
     """
     A container which presents actors in a table layout
     
+    rows/columns can be a list with the size of each row/column
+    
     Warning:
         This container uses TableCellAligner to manage actor alignment,
         then the actor's parent is not always the table
@@ -127,7 +129,7 @@ class Table(clutter.Actor, clutter.Container):
         actor = self.get_actor(row, column)
         self.do_remove(actor)
     
-    def remove_actor(self, actor):
+    def remove(self, actor):
         self.do_remove(actor)
     
     def do_remove(self, actor):
@@ -326,7 +328,7 @@ if __name__ == '__main__':
     stage.add(table)
     #print table.get_preferred_size()
     
-    table.remove_actor(actor)
+    table.remove(actor)
     #table.destroy()
 
     stage.show()
