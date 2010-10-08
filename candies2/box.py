@@ -175,7 +175,7 @@ class Box(clutter.Actor, clutter.Container):
         return self.elements
     
     def do_get_preferred_width(self, for_height):
-        inner_height = for_height - 2*self._padding.y
+        inner_height = for_height - 2*self._margin.y - 2*self._padding.y
         preferred_width = 0
         if self._horizontal is False:
             #find size available for special elements with expand and keep_ratio
@@ -239,11 +239,11 @@ class Box(clutter.Actor, clutter.Container):
             if preferred_width != 0:
                 preferred_width -= self._spacing.x
         
-        preferred_width += 2*self._padding.y
+        preferred_width += 2*self._margin.x + 2*self._padding.x
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        inner_width = for_width - 2*self._padding.x
+        inner_width = for_width - 2*self._margin.x - 2*self._padding.x
         preferred_height = 0
         if self._horizontal is True:
             #find size available for special elements with expand and keep_ratio
@@ -309,14 +309,14 @@ class Box(clutter.Actor, clutter.Container):
             if preferred_height != 0:
                 preferred_height -= self._spacing.y
         
-        preferred_height += 2*self._padding.x
+        preferred_height += 2*self._margin.y + 2*self._padding.y
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self._padding.x
-        inner_height = main_height - 2*self._padding.y
+        inner_width = main_width - 2*self._margin.x - 2*self._padding.x
+        inner_height = main_height - 2*self._margin.y - 2*self._padding.y
         
         #find size available for special elements with expand and keep_ratio, ignoring elements with resizable
         special_elements = list()
@@ -423,8 +423,8 @@ class Box(clutter.Actor, clutter.Container):
                             obj_height = int(original_height*ratio)
                             element['resizable'] = float(obj_height/resizable_height)
         
-        x = self._padding.x
-        y = self._padding.y
+        x = self._margin.x + self._padding.x
+        y = self._margin.y + self._padding.y
         for element in self.elements:
             obj_width, obj_height = element['object'].get_preferred_size()[2:]
             if element.get('expand') is True:
@@ -492,24 +492,24 @@ class Box(clutter.Actor, clutter.Container):
             if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
                 if self._horizontal is True:
                     bgbox = clutter.ActorBox()
-                    bgbox.x1 = 0
-                    bgbox.y1 = 0
-                    bgbox.x2 = self._padding.x + round(x) - self._spacing.x
-                    bgbox.y2 = main_height
+                    bgbox.x1 = self._margin.x
+                    bgbox.y1 = self._margin.y
+                    bgbox.x2 = self._margin.x + self._padding.x + round(x) - self._spacing.x
+                    bgbox.y2 = main_height - self._margin.y
                     self.background.allocate(bgbox, flags)
                 else:
                     bgbox = clutter.ActorBox()
-                    bgbox.x1 = 0
-                    bgbox.y1 = 0
-                    bgbox.x2 = main_width
-                    bgbox.y2 = self._padding.y + round(y) - self._spacing.y
+                    bgbox.x1 = self._margin.x
+                    bgbox.y1 = self._margin.y
+                    bgbox.x2 = main_width - self._margin.x
+                    bgbox.y2 = self._margin.y + self._padding.y + round(y) - self._spacing.y
                     self.background.allocate(bgbox, flags)
             else:
                 bgbox = clutter.ActorBox()
-                bgbox.x1 = 0
-                bgbox.y1 = 0
-                bgbox.x2 = main_width
-                bgbox.y2 = main_height
+                bgbox.x1 = self._margin.x
+                bgbox.y1 = self._margin.y
+                bgbox.x2 = main_width - self._margin.x
+                bgbox.y2 = main_height - self._margin.y
                 self.background.allocate(bgbox, flags)
         
         #box overlay
@@ -517,24 +517,24 @@ class Box(clutter.Actor, clutter.Container):
             if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
                 if self._horizontal is True:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self._padding.x
-                    ovbox.y1 = self._padding.y
-                    ovbox.x2 = round(x) - self._spacing.x
-                    ovbox.y2 = main_height - self._padding.y
+                    ovbox.x1 = self._margin.x + self._padding.x
+                    ovbox.y1 = self._margin.y + self._padding.y
+                    ovbox.x2 = self._margin.x + round(x) - self._spacing.x
+                    ovbox.y2 = main_height - self._margin.y - self._padding.y
                     self.overlay.allocate(ovbox, flags)
                 else:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self._padding.x
-                    ovbox.y1 = self._padding.y
-                    ovbox.x2 = main_width - self._padding.x
-                    ovbox.y2 = round(y) - self._spacing.y
+                    ovbox.x1 = self._margin.x + self._padding.x
+                    ovbox.y1 = self._margin.y + self._padding.y
+                    ovbox.x2 = main_width - self._margin.x - self._padding.x
+                    ovbox.y2 = self._margin.y + round(y) - self._spacing.y
                     self.overlay.allocate(ovbox, flags)
             else:
                 ovbox = clutter.ActorBox()
-                ovbox.x1 = self._padding.x
-                ovbox.y1 = self._padding.y
-                ovbox.x2 = main_width - self._padding.x
-                ovbox.y2 = main_height - self._padding.y
+                ovbox.x1 = self._margin.x + self._padding.x
+                ovbox.y1 = self._margin.y + self._padding.y
+                ovbox.x2 = main_width - self._margin.x - self._padding.x
+                ovbox.y2 = main_height - self._margin.y - self._padding.y
                 self.overlay.allocate(ovbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -635,14 +635,14 @@ if __name__ == '__main__':
     rect4.set_color(clutter.color_from_string('Red'))
     
     
-    col = Box(horizontal=False, spacing=10, padding=0)
+    col = Box(horizontal=False, margin=40, padding=0, spacing=10)
     col.set_background(rect_bg2)
     col.add(
         {'name': 'rect2',
         #'resizable': 1.0,
         'keep_ratio': True,
         'expand': True,
-        'center': True,
+        #'center': True,
         'object': rect2},
         
         {'name': 'rect3',
@@ -652,7 +652,7 @@ if __name__ == '__main__':
         {'name': 'rect4',
         'object': rect4}
     )
-        
+    
     line = Box(horizontal=True, spacing=10, padding=20)
     line.set_background(rect_bg)
     line.add_element(col, 'col', resizable=0.5, expand=True)
