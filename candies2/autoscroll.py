@@ -10,6 +10,8 @@ from box import HBox
 class AutoScrollPanel(HBox):
     def __init__(self, actor=None, padding=0, spacing=0):
         HBox.__init__(self, spacing=spacing, padding=padding)
+        self.connect('notify::visible', self.on_show_scrolled)
+        self.contents_have_been_shown = False
         self._max_width = 0
         self._max_height = 0
         self._actor = actor
@@ -19,7 +21,13 @@ class AutoScrollPanel(HBox):
         self._scrollbar = Scrollbar()
         self._clipper = Clipper(expand=True)
         self._scrollbar.connect('scroll_position', self._clipper.callback_position)
-    
+
+    def on_show_scrolled(self, panel, event):
+        if not self.contents_have_been_shown:
+            self.contents_have_been_shown = True
+        else:
+            self._actor.props.visible = self.props.visible
+
     def get_actor(self):
         return self._actor
     
