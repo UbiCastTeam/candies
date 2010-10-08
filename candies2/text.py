@@ -4,6 +4,7 @@
 import sys
 import gobject
 import clutter
+import common
 from roundrect import RoundRectangle
 
 class StretchText(clutter.Text):
@@ -115,10 +116,10 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, text=' ', padding=6, texture=None, rounded=True):
+    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True):
         clutter.Actor.__init__(self)
-        
-        self.padding = padding
+        self._margin = common.Margin(margin)
+        self._padding = common.Padding(padding)
         self._text = text
         self._line_wrap = False
         self._multiline = False
@@ -250,15 +251,15 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
-            for_height -= 2*self.padding
+            for_height -= 2*self._padding.y
         min, nat = self.sizer.get_preferred_width(for_height)
-        return min + 2*self.padding, nat + 2*self.padding
+        return min + 2*self._padding.x, nat + 2*self._padding.x
     
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
-            for_width -= 2*self.padding
+            for_width -= 2*self._padding.x
         min, nat = self.sizer.get_preferred_height(for_width)
-        return min + 2*self.padding, nat + 2*self.padding
+        return min + 2*self._padding.y, nat + 2*self._padding.y
     
     def _wrap_singleline_label(self, min, max, max_width):
         mid = (min + max) / 2
@@ -287,8 +288,8 @@ class TextContainer(clutter.Actor, clutter.Container):
             self._wrap_multilines_label(mid, max, max_width, max_height)
     
     def _allocate_label(self, base_x, base_y, width, height, flags):
-        inner_width = width - 2*self.padding
-        inner_height = height - 2*self.padding
+        inner_width = width - 2*self._padding.x
+        inner_height = height - 2*self._padding.y
         
         self.label.set_text(self._text)
         self._multiline = False
@@ -326,9 +327,9 @@ class TextContainer(clutter.Actor, clutter.Container):
                 else:
                     x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
-        lbl_box.x1 = base_x + self.padding + x1_padding
-        lbl_box.y1 = base_y + self.padding + int((inner_height - lbl_height) / 2.0)
-        lbl_box.x2 = base_x + width - self.padding - x2_padding
+        lbl_box.x1 = base_x + self._padding.x + x1_padding
+        lbl_box.y1 = base_y + self._padding.y + int((inner_height - lbl_height) / 2.0)
+        lbl_box.x2 = base_x + width - self._padding.x - x2_padding
         lbl_box.y2 = base_y + lbl_box.y1 + lbl_height
         self.label.allocate(lbl_box, flags)
     

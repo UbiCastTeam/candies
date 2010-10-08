@@ -76,8 +76,8 @@ class ImageButton(ClassicButton):
     def do_allocate(self, box, flags):
         btn_width = box.x2 - box.x1
         btn_height = box.y2 - box.y1
-        inner_width = btn_width - 2*self.padding
-        inner_height = btn_height - 2*self.padding
+        inner_width = btn_width - 2*self._padding.x
+        inner_height = btn_height - 2*self._padding.y
         
         # allocate background
         self._allocate_rect(0, 0, btn_width, btn_height, flags)
@@ -109,8 +109,8 @@ class ImageButton(ClassicButton):
         y_padding = round((remaining_height - image_height) / 2.0)
         
         image_box = clutter.ActorBox()
-        image_box.x1 = self.padding + x_padding
-        image_box.y1 = self.padding + y_padding
+        image_box.x1 = self._padding.x + x_padding
+        image_box.y1 = self._padding.y + y_padding
         image_box.x2 = image_box.x1 + image_width
         image_box.y2 = image_box.y1 + image_height
         self.image.allocate(image_box, flags)
@@ -232,7 +232,7 @@ if __name__ == '__main__':
     stage.add(b)
     
     b = ClassicButton('E')
-    b.set_color('Pink')
+    b.set_inner_color('Pink')
     b.set_size(170, 170)
     b.set_position(425, 210)
     stage.add(b)
@@ -248,7 +248,8 @@ if __name__ == '__main__':
         max_count = 5000
         
         texture_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
-        texture = clutter.cogl.texture_new_from_file(light_path)
+        #texture = clutter.cogl.texture_new_from_file(texture_path)
+        texture = None
         
         def create_test_object():
             t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture = texture, rounded = True)

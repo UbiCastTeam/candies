@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import gobject
 import clutter
+import common
 
 class Box(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Box'
-    """
+    '''
     A stacking box container.
     
     Works horizontally and vertically (see HBox and VBox for shortcut classes).
@@ -33,16 +33,17 @@ class Box(clutter.Actor, clutter.Container):
         
         - center (bool) : if True, the element is centered (vertically for
           horizontal box and vice-versa).
-    """
+    '''
     
-    def __init__(self, horizontal=True, spacing=0, padding=0, bg_ignore_allocation_box=True, pick_enabled=True):
+    def __init__(self, horizontal=True, margin=0, padding=0, spacing=0, bg_ignore_allocation_box=True, pick_enabled=True):
         clutter.Actor.__init__(self)
+        self._margin = common.Margin(margin)
+        self._padding = common.Padding(padding)
+        self._spacing = common.Spacing(spacing)
         self.elements = list()
         self.background = None
         self.overlay = None
         self._overlay_displayed = False
-        self.spacing = spacing
-        self.padding = padding
         self.pick_enabled = pick_enabled
         if horizontal:
             self._horizontal = True
@@ -174,7 +175,7 @@ class Box(clutter.Actor, clutter.Container):
         return self.elements
     
     def do_get_preferred_width(self, for_height):
-        inner_height = for_height - 2*self.padding
+        inner_height = for_height - 2*self._padding.y
         preferred_width = 0
         if self._horizontal is False:
             #find size available for special elements with expand and keep_ratio
@@ -189,8 +190,8 @@ class Box(clutter.Actor, clutter.Container):
                         special_elements.append(element)
                     else:
                         special_height -= element['object'].get_preferred_size()[3]
-                special_height -= self.spacing
-            special_height += self.spacing
+                special_height -= self._spacing.y
+            special_height += self._spacing.y
             
             #find size available for resizable elements
             resizable_elements = list()
@@ -204,9 +205,9 @@ class Box(clutter.Actor, clutter.Container):
                     resizable_elements.append(element)
                 else:
                     resizable_height -= element['object'].get_preferred_size()[3]
-                resizable_height -= self.spacing
+                resizable_height -= self._spacing.y
             if resizable_height != inner_height:
-                resizable_height += self.spacing
+                resizable_height += self._spacing.y
                 if special_elements:
                     resizable_height -= special_height
             
@@ -233,16 +234,16 @@ class Box(clutter.Actor, clutter.Container):
                     obj_height = element['object'].get_preferred_size()[3]
                     ratio = float(obj_width) / float(obj_height)
                     used_width = int(inner_height * ratio)
-                preferred_width += used_width + self.spacing
+                preferred_width += used_width + self._spacing.x
         
             if preferred_width != 0:
-                preferred_width -= self.spacing
+                preferred_width -= self._spacing.x
         
-        preferred_width += 2*self.padding
+        preferred_width += 2*self._padding.y
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        inner_width = for_width - 2*self.padding
+        inner_width = for_width - 2*self._padding.x
         preferred_height = 0
         if self._horizontal is True:
             #find size available for special elements with expand and keep_ratio
@@ -257,8 +258,8 @@ class Box(clutter.Actor, clutter.Container):
                         special_elements.append(element)
                     else:
                         special_width -= element['object'].get_preferred_size()[2]
-                special_width -= self.spacing
-            special_width += self.spacing
+                special_width -= self._spacing.x
+            special_width += self._spacing.x
             
             #find size available for resizable elements
             resizable_elements = list()
@@ -272,9 +273,9 @@ class Box(clutter.Actor, clutter.Container):
                     resizable_elements.append(element)
                 else:
                     resizable_width -= element['object'].get_preferred_size()[2]
-                resizable_width -= self.spacing
+                resizable_width -= self._spacing.x
             if resizable_width != inner_width:
-                resizable_width += self.spacing
+                resizable_width += self._spacing.x
                 if special_elements:
                     resizable_width -= special_width
             
@@ -303,19 +304,19 @@ class Box(clutter.Actor, clutter.Container):
                     obj_width = element['object'].get_preferred_size()[2]
                     ratio = float(obj_width) / float(obj_height)
                     used_height = int(inner_width / ratio)
-                preferred_height += used_height + self.spacing
+                preferred_height += used_height + self._spacing.y
         
             if preferred_height != 0:
-                preferred_height -= self.spacing
+                preferred_height -= self._spacing.y
         
-        preferred_height += 2*self.padding
+        preferred_height += 2*self._padding.x
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.padding
-        inner_height = main_height - 2*self.padding
+        inner_width = main_width - 2*self._padding.x
+        inner_height = main_height - 2*self._padding.y
         
         #find size available for special elements with expand and keep_ratio, ignoring elements with resizable
         special_elements = list()
@@ -332,10 +333,10 @@ class Box(clutter.Actor, clutter.Container):
                 else:
                     special_width -= element['object'].get_preferred_size()[2]
                     special_height -= element['object'].get_preferred_size()[3]
-            special_width -= self.spacing
-            special_height -= self.spacing
-        special_width += self.spacing
-        special_height += self.spacing
+            special_width -= self._spacing.x
+            special_height -= self._spacing.y
+        special_width += self._spacing.x
+        special_height += self._spacing.y
         
         #check if some place will remain for resizable elements
         for element in special_elements:
@@ -389,10 +390,10 @@ class Box(clutter.Actor, clutter.Container):
                 else:
                     resizable_width -= element['object'].get_preferred_size()[2]
                     resizable_height -= element['object'].get_preferred_size()[3]
-            resizable_width -= self.spacing
-            resizable_height -= self.spacing
-        resizable_width += self.spacing
-        resizable_height += self.spacing
+            resizable_width -= self._spacing.x
+            resizable_height -= self._spacing.y
+        resizable_width += self._spacing.x
+        resizable_height += self._spacing.y
         if special_elements:
             resizable_width -= special_width
             resizable_height -= special_height
@@ -422,8 +423,8 @@ class Box(clutter.Actor, clutter.Container):
                             obj_height = int(original_height*ratio)
                             element['resizable'] = float(obj_height/resizable_height)
         
-        x = self.padding
-        y = self.padding
+        x = self._padding.x
+        y = self._padding.y
         for element in self.elements:
             obj_width, obj_height = element['object'].get_preferred_size()[2:]
             if element.get('expand') is True:
@@ -482,9 +483,9 @@ class Box(clutter.Actor, clutter.Container):
             objbox.y2 = round(y + y_offset + obj_height)
             element['object'].allocate(objbox, flags)
             if self._horizontal is True:
-                x += obj_width + self.spacing
+                x += obj_width + self._spacing.x
             else:
-                y += obj_height + self.spacing
+                y += obj_height + self._spacing.y
         
         #box background
         if self.background:
@@ -493,7 +494,7 @@ class Box(clutter.Actor, clutter.Container):
                     bgbox = clutter.ActorBox()
                     bgbox.x1 = 0
                     bgbox.y1 = 0
-                    bgbox.x2 = self.padding + round(x) - self.spacing
+                    bgbox.x2 = self._padding.x + round(x) - self._spacing.x
                     bgbox.y2 = main_height
                     self.background.allocate(bgbox, flags)
                 else:
@@ -501,7 +502,7 @@ class Box(clutter.Actor, clutter.Container):
                     bgbox.x1 = 0
                     bgbox.y1 = 0
                     bgbox.x2 = main_width
-                    bgbox.y2 = self.padding + round(y) - self.spacing
+                    bgbox.y2 = self._padding.y + round(y) - self._spacing.y
                     self.background.allocate(bgbox, flags)
             else:
                 bgbox = clutter.ActorBox()
@@ -516,24 +517,24 @@ class Box(clutter.Actor, clutter.Container):
             if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
                 if self._horizontal is True:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self.padding
-                    ovbox.y1 = self.padding
-                    ovbox.x2 = round(x) - self.spacing
-                    ovbox.y2 = main_height - self.padding
+                    ovbox.x1 = self._padding.x
+                    ovbox.y1 = self._padding.y
+                    ovbox.x2 = round(x) - self._spacing.x
+                    ovbox.y2 = main_height - self._padding.y
                     self.overlay.allocate(ovbox, flags)
                 else:
                     ovbox = clutter.ActorBox()
-                    ovbox.x1 = self.padding
-                    ovbox.y1 = self.padding
-                    ovbox.x2 = main_width - self.padding
-                    ovbox.y2 = round(y) - self.spacing
+                    ovbox.x1 = self._padding.x
+                    ovbox.y1 = self._padding.y
+                    ovbox.x2 = main_width - self._padding.x
+                    ovbox.y2 = round(y) - self._spacing.y
                     self.overlay.allocate(ovbox, flags)
             else:
                 ovbox = clutter.ActorBox()
-                ovbox.x1 = self.padding
-                ovbox.y1 = self.padding
-                ovbox.x2 = main_width - self.padding
-                ovbox.y2 = main_height - self.padding
+                ovbox.x1 = self._padding.x
+                ovbox.y1 = self._padding.y
+                ovbox.x2 = main_width - self._padding.x
+                ovbox.y2 = main_height - self._padding.y
                 self.overlay.allocate(ovbox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -603,315 +604,6 @@ class VBox(Box):
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
 
-class AlignedElement(clutter.Actor, clutter.Container):
-    __gtype_name__ = 'AlignedElement'
-    
-    ALIGNMENT = ['top_left', 'top', 'top_right', 'left', 'center', 'right', 'bottom_left', 'bottom', 'bottom_right']
-
-    def __init__(self, align='center', margin=0, padding=0, expand=False, keep_ratio=True, pick_enabled=True):
-        clutter.Actor.__init__(self)
-        if align in self.ALIGNMENT:
-            self.align = align
-        else:
-            self.align = 'center'
-        self.padding = padding
-        self.margin = margin
-        self.expand = expand
-        self.keep_ratio = keep_ratio
-        self.element = None
-        self.background = None
-        self.pick_enabled = pick_enabled
-    
-    def set_background(self, background):
-        if self.background is not None:
-            self.background.unparent()
-        self.background = background
-        background.set_parent(self)
-    
-    def remove_background(self):
-        if self.background is not None:
-            self.background.unparent()
-            self.background = None
-    
-    def get_element(self):
-        return self.element
-    
-    def set_element(self, new_element):
-        if self.element is not None:
-            self.element.unparent()
-        self.element = new_element
-        self.element.set_parent(self)
-    
-    def remove_element(self):
-        if self.element is not None:
-            self.element.unparent()
-            self.element = None
-    
-    def do_remove(self, actor):
-        if self.background == actor:
-            actor.unparent()
-            self.background = None
-        if self.element == actor:
-            actor.unparent()
-            self.elements = None
-    
-    def clear(self):
-        if self.element is not None:
-            self.element.destroy()
-            self.element = None
-        if self.background is not None:
-            self.background.destroy()
-            self.background = None
-    
-    def do_get_preferred_width(self, for_height):
-        if self.element is not None:
-            if self.expand:
-                preferred_size = self.element.get_preferred_size()
-                element_width = preferred_size[2]
-                element_height = preferred_size[3]
-                if self.keep_ratio and element_width != 0 and element_height != 0 and for_height != -1:
-                    ratio = float(float(element_width) / float(element_height))
-                    prefered_width = int(for_height * ratio)
-                else:
-                    prefered_width = element_width
-            else:
-                if for_height != -1:
-                    h = for_height - 2*self.margin - 2*self.padding
-                else:
-                    h = for_height
-                prefered_width = self.element.get_preferred_width(h)[1]
-            prefered_width += 2*self.margin + 2*self.padding
-            return prefered_width, prefered_width
-        else:
-            return 0, 0
-    
-    def do_get_preferred_height(self, for_width):
-        if self.element is not None:
-            if self.expand:
-                preferred_size = self.element.get_preferred_size()
-                element_width = preferred_size[2]
-                element_height = preferred_size[3]
-                if self.keep_ratio and element_width != 0 and element_height != 0 and for_width != -1:
-                    ratio = float(float(element_height) / float(element_width))
-                    prefered_height = int(for_width / ratio)
-                else:
-                    prefered_height = element_height
-            else:
-                if for_width != -1:
-                    w = for_width - 2*self.margin - 2*self.padding
-                else:
-                    w = for_width
-                prefered_height = self.element.get_preferred_height(w)[1]
-            prefered_height += 2*self.margin + 2*self.padding
-            return prefered_height, prefered_height
-        else:
-            return 0, 0
-    
-    def do_allocate(self, box, flags):
-        main_width = box.x2 - box.x1
-        main_height = box.y2 - box.y1
-        inner_width = main_width - 2*self.margin - 2*self.padding
-        inner_height = main_height - 2*self.margin - 2*self.padding
-        
-        #box background
-        if self.background:
-            bgbox = clutter.ActorBox()
-            bgbox.x1 = self.margin
-            bgbox.y1 = self.margin
-            bgbox.x2 = main_width - self.margin
-            bgbox.y2 = main_height - self.margin
-            self.background.allocate(bgbox, flags)
-        
-        if self.element:
-            element_width, element_height = self.element.get_preferred_size()[2:]
-            if self.expand:
-                if self.keep_ratio and element_height != 0:
-                    ratio = float(float(element_width) / float(element_height))
-                    element_width = inner_width
-                    element_height = int(element_width / ratio)
-                    if element_width > inner_width:
-                        element_width = inner_width
-                        element_height = int(element_width / ratio)
-                    if element_height > inner_height:
-                        element_height = inner_height
-                        element_width = int(element_height * ratio)
-                    ele_x1 = int((inner_width - element_width)/2)
-                    ele_y1 = int((inner_height - element_height)/2)
-                    ele_x2 = inner_width - int((inner_width - element_width)/2)
-                    ele_y2 = inner_height - int((inner_height - element_height)/2)
-                else:
-                    ele_x1 = 0
-                    ele_y1 = 0
-                    ele_x2 = inner_width
-                    ele_y2 = inner_height
-            else:
-                if self.align == 'center':
-                    ele_x1 = int((inner_width-element_width)/2)
-                    ele_x2 = ele_x1 + element_width
-                    ele_y1 = int((inner_height-element_height)/2)
-                    ele_y2 = ele_y1 + element_height
-                else:
-                    if self.align == 'top_left' or self.align == 'left' or self.align == 'bottom_left':
-                        ele_x1 = 0
-                        ele_x2 = element_width
-                    elif self.align == 'top_right' or self.align == 'right' or self.align == 'bottom_right':
-                        ele_x1 = inner_width - element_width
-                        ele_x2 = inner_width
-                    else:
-                        ele_x1 = int((inner_width-element_width)/2)
-                        ele_x2 = ele_x1 + element_width
-                    
-                    if self.align.startswith('top'):
-                        ele_y1 = 0
-                        ele_y2 = element_height
-                    elif self.align.startswith('bottom'):
-                        ele_y1 = inner_height - element_height
-                        ele_y2 = inner_height
-                    else:
-                        ele_y1 = int((inner_height-element_height)/2)
-                        ele_y2 = ele_y1 + element_height
-            base_pos = self.padding + self.margin
-            elebox = clutter.ActorBox(base_pos + ele_x1, base_pos + ele_y1, base_pos + ele_x2, base_pos + ele_y2)
-            #print elebox.x1, elebox.y1, elebox.x2, elebox.y2, '--------', main_width, main_height
-            self.element.allocate(elebox, flags)
-        
-        clutter.Actor.do_allocate(self, box, flags)
-    
-    def do_foreach(self, func, data=None):
-        if self.background is not None:
-            func(self.background, data)
-        if self.element is not None:
-            func(self.element, data)
-    
-    def do_paint(self):
-        if self.background is not None:
-            self.background.paint()
-        if self.element is not None:
-            self.element.paint()
-    
-    def do_pick(self, color):
-        if self.pick_enabled:
-            self.do_paint()
-        else:
-            clutter.Actor.do_pick(self, color)
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, 'background'):
-            if self.background is not None:
-                self.background.unparent()
-                self.background.destroy()
-                self.background = None
-        if hasattr(self, 'element'):
-            if self.element is not None:
-                self.element.unparent()
-                self.element.destroy()
-                self.element = None
-
-class MultiLayerContainer(clutter.Actor, clutter.Container):
-    __gtype_name__ = 'MultiLayerContainer'
-    """
-    A box in wich all childs have the same space allocated
-    """
-    def __init__(self):
-        clutter.Actor.__init__(self)
-        self._children = list()
-    
-    def do_add(self, *children):
-        for child in children:
-            if child in self._children:
-                raise Exception("Actor %s is already a children of %s" % (child, self))
-            self._children.append(child)
-            child.set_parent(self)
-            self.queue_relayout()
-    
-    def do_remove(self, *children):
-        for child in children:
-            if child in self._children:
-                self._children.remove(child)
-                child.unparent()
-                self.queue_relayout()
-            else:
-                raise Exception("Actor %s is not a child of %s" % (child, self))
-    
-    def remove_all(self):
-        for child in self._children:
-            child.unparent()
-        self._children = list()
-        self.queue_relayout()
-    
-    def do_get_preferred_width(self, for_height):
-        preferred_width = 0
-        for child in self._children:
-            preferred_width = max(preferred_width, child.get_preferred_width(for_height=for_height)[1])
-        return preferred_width, preferred_width
-
-    def do_get_preferred_height(self, for_width):
-        preferred_height = 0
-        for child in self._children:
-            preferred_height = max(preferred_height, child.get_preferred_height(for_width=for_width)[1])
-        return preferred_height, preferred_height
-    
-    def do_raise_child(self, child, sibling=None):
-        if child not in self._children:
-            raise Exception("Actor %s is not a child of %s" % (child, self))
-        if sibling:
-            if sibling not in self._children:
-                raise Exception("Actor %s is not a child of %s" % (sibling, self))
-            sibling_index = self._children.index(sibling)
-            child_index = self._children.index(child)
-            self._children[sibling_index] = child
-            self._children[child_index] = sibling
-        else:
-            self._children.remove(child)
-            self._children.append(child)
-    
-    def do_lower_child(self, child, sibling=None):
-        if child not in self._children:
-            raise Exception("Actor %s is not a child of %s" % (child, self))
-        if sibling:
-            if sibling not in self._children:
-                raise Exception("Actor %s is not a child of %s" % (sibling, self))
-            sibling_index = self._children.index(sibling)
-            child_index = self._children.index(child)
-            self._children[sibling_index] = child
-            self._children[child_index] = sibling
-        else:
-            self._children.remove(child)
-            self._children.insert(0, child)
-    
-    def do_allocate(self, box, flags):
-        main_width = box.x2 - box.x1
-        main_height = box.y2 - box.y1
-        for child in self._children:
-            child_box = clutter.ActorBox()
-            child_box.x1 = 0
-            child_box.y1 = 0
-            child_box.x2 = main_width
-            child_box.y2 = main_height
-            child.allocate(child_box, flags)
-        clutter.Actor.do_allocate(self, box, flags)
-    
-    def do_foreach(self, func, data=None):
-        for child in self._children:
-            func(child, data)
-    
-    def do_paint(self):
-        for actor in self._children:
-            actor.paint()
-    
-    def do_pick(self, color):
-        for actor in self._children:
-            actor.paint()
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, '_children'):
-            for child in self._children:
-                child.unparent()
-                child.destroy()
-            self._children = list()
-
 if __name__ == '__main__':
     # stage
     stage = clutter.Stage()
@@ -976,43 +668,7 @@ if __name__ == '__main__':
     line.set_position(30, 30)
     stage.add(line)
     
-    def on_click(btn_test, event):
-        color_a = '#ff000088'
-        color_b = '#ff0000ff'
-        current_color = line.get_by_name('rect4')['object'].get_color()
-        if str(current_color) == color_a:
-            line.get_by_name('rect4')['object'].set_color(color_b)
-        else:
-            line.get_by_name('rect4')['object'].set_color(color_a)
-    btn_test = AlignedElement()
-    btn_rect = clutter.Rectangle()
-    btn_rect.set_color('#ff00ffff')
-    btn_test.set_background(btn_rect)
-    btn_test.set_position(80, 480)
-    btn_test.set_size(50, 50)
-    btn_test.set_reactive(True)
-    btn_test.connect('button-press-event', on_click)
-    stage.add(btn_test)
-    
-    
-    
-    rect5 = clutter.Rectangle()
-    rect5.set_size(250, 150)
-    rect5.set_color('#ffffffff')
-    
-    rect6 = clutter.Rectangle()
-    rect6.set_size(5, 5)
-    rect6.set_color('#00ff0088')
-    
-    rect_bg_2 = clutter.Rectangle()
-    rect_bg_2.set_color('#ffffffff')
-    
-    test_layer = MultiLayerContainer()
-    test_layer.add(rect5, rect6)
-    test_layer.set_position(700, 30)
-    stage.add(test_layer)
-    
-    """
+    '''
     other_box = Box(horizontal=True, spacing=10, padding=20)
     other_box.set_background(rect_bg_2)
     other_box.add(
@@ -1028,9 +684,10 @@ if __name__ == '__main__':
     other_box.set_size(400, 300)
     other_box.set_position(700, 30)
     stage.add(other_box)
-    """
+    '''
     test_memory_usage = False
     if test_memory_usage:
+        import gobject
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
         from pprint import pprint

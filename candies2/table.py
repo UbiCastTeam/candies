@@ -3,13 +3,14 @@
 
 import gobject
 import clutter
-from box import AlignedElement
+import common
+from aligner import Aligner
 
-class TableCellAligner(AlignedElement):
+class TableCellAligner(Aligner):
     __gtype_name__ = 'TableCellAligner'
     
     def __init__(self, **args):
-        AlignedElement.__init__(self, **args)
+        Aligner.__init__(self, **args)
 
 class Table(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Table'
@@ -22,12 +23,12 @@ class Table(clutter.Actor, clutter.Container):
         This container uses TableCellAligner to manage actor alignment,
         then the actor's parent is not always the table
     """
-    def __init__(self, rows=0, columns=0, margin=(0, 0), padding=(0, 0), spacing=(0, 0), pick_enabled=True):
+    def __init__(self, rows=0, columns=0, margin=0, padding=0, spacing=0, pick_enabled=True):
         clutter.Actor.__init__(self)
+        self._margin = common.Margin(margin)
+        self._padding = common.Padding(padding)
+        self._spacing = common.Spacing(spacing)
         self.pick_enabled = pick_enabled
-        self.margin = margin
-        self.padding = padding
-        self.spacing = spacing
         
         if isinstance(rows, int):
             self._rows = ['auto' for i in range(rows)]
@@ -178,7 +179,7 @@ class Table(clutter.Actor, clutter.Container):
             raise IndexError('Can not set column width in table %s, table has only %s columns' %(self, self._columns))
     
     def do_get_preferred_width(self, for_height=-1):
-        preferred_width = (len(self._columns) - 1) * self.spacing[0] + 2*self.margin[0] - 2*self.padding[0]
+        preferred_width = (len(self._columns) - 1) * self._spacing.x + 2*self._margin.x - 2*self._padding.x
         for j in range(len(self._columns)):
             column_width = 0
             for i in range(len(self._rows)):
@@ -190,7 +191,7 @@ class Table(clutter.Actor, clutter.Container):
         return preferred_width, preferred_width
 
     def do_get_preferred_height(self, for_width=-1):
-        preferred_height = (len(self._rows) - 1) * self.spacing[1] + 2*self.margin[1] - 2*self.padding[1]
+        preferred_height = (len(self._rows) - 1) * self._spacing.y + 2*self._margin.y - 2*self._padding.y
         for i in range(len(self._rows)):
             row_height = 0
             for j in range(len(self._columns)):
@@ -204,8 +205,8 @@ class Table(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
         height = box.y2 - box.y1
-        inner_width = width - 2*self.margin[0] - 2*self.padding[0]
-        inner_height = height - 2*self.margin[1] - 2*self.padding[1]
+        inner_width = width - 2*self._margin.x - 2*self._padding.x
+        inner_height = height - 2*self._margin.y - 2*self._padding.y
         
         columns_widths = [0 for k in range(len(self._columns))]
         rows_heights = [0 for k in range(len(self._rows))]
@@ -223,7 +224,7 @@ class Table(clutter.Actor, clutter.Container):
                         column_width = max(column_width, actor.get_preferred_width(for_height=-1)[1])
                 columns_widths[j] = column_width
             total_width += columns_widths[j]
-        remaining_width = inner_width - total_width - ((len(self._columns) - 1) * self.spacing[0])
+        remaining_width = inner_width - total_width - ((len(self._columns) - 1) * self._spacing.x)
         # find rows heights
         total_height = 0
         for i in range(len(self._rows)):
@@ -237,7 +238,7 @@ class Table(clutter.Actor, clutter.Container):
                         row_height = max(row_height, actor.get_preferred_height(for_width=-1)[1])
                 rows_heights[i] = row_height
             total_height += rows_heights[i]
-        remaining_height = inner_height - total_height - ((len(self._rows) - 1) * self.spacing[1])
+        remaining_height = inner_height - total_height - ((len(self._rows) - 1) * self._spacing.y)
         
         # adjust columns widths if some space is remaining
         if remaining_width > 0:
@@ -262,8 +263,8 @@ class Table(clutter.Actor, clutter.Container):
                     if not isinstance(self._rows[j], int):
                         rows_heights[j] += height_per_row
         
-        base_x = self.margin[0] + self.padding[0]
-        base_y = self.margin[1] + self.padding[1]
+        base_x = self._margin.x + self._padding.x
+        base_y = self._margin.y + self._padding.y
         x = base_x
         y = base_y
         for i in range(len(self._rows)):
@@ -274,8 +275,8 @@ class Table(clutter.Actor, clutter.Container):
                     actor_box = clutter.ActorBox(x, y, x + columns_widths[j], y + rows_heights[i])
                     actor.allocate(actor_box, flags)
                     #print x, y, x + columns_widths[j], y + rows_heights[i]
-                x += columns_widths[j] + self.spacing[0]
-            y += rows_heights[i] + self.spacing[1]
+                x += columns_widths[j] + self._spacing.x
+            y += rows_heights[i] + self._spacing.y
         clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
