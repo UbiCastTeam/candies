@@ -4,6 +4,7 @@
 import gobject
 import clutter
 import os
+import common
 
 class SeekBar(clutter.Actor, clutter.Container):
     '''
@@ -60,14 +61,14 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, bar_x_padding=(0, 0), bar_y_padding=(0, 0), bar_image_path=None, cursor_image_path=None, seek_function=None):
+    def __init__(self, margin=0, padding=0, bar_image_path=None, cursor_image_path=None, seek_function=None):
         clutter.Actor.__init__(self)
+        self._margin = common.Margin(margin)
+        self._padding = common.Padding(padding)
         self._progress = 0.0
         self._last_event_x = None
         self.cursor_width = 0.0
         self.seek_function = seek_function
-        self.x_padding = bar_x_padding
-        self.y_padding = bar_y_padding
         self._duration = 0.0
         # Time markers
         self._markers = list()
@@ -138,8 +139,8 @@ class SeekBar(clutter.Actor, clutter.Container):
     
     def set_progress_with_event(self, event):
         if self._last_event_x is None: return
-        self._last_event_x = event.x - self.get_transformed_position()[0] - self.cursor_width/2
-        position = self._last_event_x/(self._width - self.cursor_width)
+        self._last_event_x = event.x - self.get_transformed_position()[0] - self._margin.x - self.cursor_width/2
+        position = self._last_event_x/(self._inner_width - self.cursor_width)
         self.set_progress(position)
         self.emit_seek_request()
 
@@ -290,17 +291,19 @@ class SeekBar(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         self._width = box.x2 - box.x1
         self._height = box.y2 - box.y1
+        self._inner_width = self._width - 2*self._margin.x
+        self._inner_height = self._height - 2*self._margin.y
         
         #background
-        background_box = clutter.ActorBox(0, 0, self._width, self._height)
+        background_box = clutter.ActorBox(self._margin.x, self._margin.y, self._width - self._margin.x, self._height - self._margin.y)
         self.background.allocate(background_box, flags)
         
         # bar
         bar_box = clutter.ActorBox()
-        bar_box.x1 = self.x_padding[0]
-        bar_box.y1 = self.y_padding[0]
-        bar_box.x2 = self._width - self.x_padding[1]
-        bar_box.y2 = self._height - self.y_padding[1]
+        bar_box.x1 = self._margin.x + self._padding.left
+        bar_box.y1 = self._margin.y + self._padding.top
+        bar_box.x2 = self._inner_width - self._margin.x - self._padding.right
+        bar_box.y2 = self._height - self._margin.y - self._padding.bottom
         self.bar.allocate(bar_box, flags)
         
         # sequences
@@ -325,14 +328,14 @@ class SeekBar(clutter.Actor, clutter.Container):
             self._markers[i].allocate(marker_box, flags)
         
         # cursor
-        cursor_width = self._height
-        cursor_height = self._height
+        cursor_width = self._inner_height
+        cursor_height = self._inner_height
         self.cursor_width = cursor_width
         cursor_box = clutter.ActorBox()
-        cursor_box.x1 = int(self._progress * (self._width - cursor_width))
-        cursor_box.y1 = 0
+        cursor_box.x1 = self._margin.x + int(self._progress * (self._inner_width - cursor_width))
+        cursor_box.y1 = self._margin.y
         cursor_box.x2 = cursor_box.x1 + cursor_width
-        cursor_box.y2 = cursor_height
+        cursor_box.y2 = cursor_box.y1 + cursor_height
         self.cursor.allocate(cursor_box, flags)
         clutter.Actor.do_allocate(self, box, flags)
 

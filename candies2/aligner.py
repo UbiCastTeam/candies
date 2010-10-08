@@ -11,12 +11,12 @@ class Aligner(clutter.Actor, clutter.Container):
 
     def __init__(self, align='center', margin=0, padding=0, expand=False, keep_ratio=True, pick_enabled=True):
         clutter.Actor.__init__(self)
+        self._margin = common.Margin(margin)
+        self._padding = common.Padding(padding)
         if align in self.ALIGNMENT:
             self.align = align
         else:
             self.align = 'center'
-        self._margin = common.Margin(margin)
-        self._padding = common.Padding(padding)
         self.expand = expand
         self.keep_ratio = keep_ratio
         self.element = None
