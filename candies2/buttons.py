@@ -46,15 +46,15 @@ class CheckButton(clutter.Texture):
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
     
-    def __init__(self, label=' ', padding=6, texture=None, rounded=True):
-        TextContainer.__init__(self, label, padding=padding, texture=texture, rounded=rounded)
+    def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True):
+        TextContainer.__init__(self, label, margin=margin, padding=padding, texture=texture, rounded=rounded)
         self.set_reactive(True)
 
 class ImageButton(ClassicButton):
     __gtype_name__ = 'ImageButton'
 
-    def __init__(self, label=' ', image_src=None, padding=10, spacing=10, texture=None, has_text=True, expand=False):
-        ClassicButton.__init__(self, label, padding=padding, texture=texture)
+    def __init__(self, label=' ', image_src=None, margin=0, padding=10, spacing=10, texture=None, has_text=True, expand=False):
+        ClassicButton.__init__(self, label, margin=margin, padding=padding, texture=texture)
 
         self.spacing = spacing
         self._has_text = has_text

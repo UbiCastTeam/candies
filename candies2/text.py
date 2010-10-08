@@ -251,15 +251,15 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
-            for_height -= 2*self._padding.y
+            for_height -= 2*self._margin.y + 2*self._padding.y
         min, nat = self.sizer.get_preferred_width(for_height)
-        return min + 2*self._padding.x, nat + 2*self._padding.x
+        return min + 2*self._margin.x + 2*self._padding.x, nat + 2*self._margin.x + 2*self._padding.x
     
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
-            for_width -= 2*self._padding.x
+            for_width -= 2*self._margin.x + 2*self._padding.x
         min, nat = self.sizer.get_preferred_height(for_width)
-        return min + 2*self._padding.y, nat + 2*self._padding.y
+        return min + 2*self._margin.y + 2*self._padding.y, nat + 2*self._margin.y + 2*self._padding.y
     
     def _wrap_singleline_label(self, min, max, max_width):
         mid = (min + max) / 2
@@ -288,8 +288,8 @@ class TextContainer(clutter.Actor, clutter.Container):
             self._wrap_multilines_label(mid, max, max_width, max_height)
     
     def _allocate_label(self, base_x, base_y, width, height, flags):
-        inner_width = width - 2*self._padding.x
-        inner_height = height - 2*self._padding.y
+        inner_width = width - 2*self._padding.x - 2*self._margin.x
+        inner_height = height - 2*self._padding.y - 2*self._margin.y
         
         self.label.set_text(self._text)
         self._multiline = False
@@ -327,18 +327,18 @@ class TextContainer(clutter.Actor, clutter.Container):
                 else:
                     x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
-        lbl_box.x1 = base_x + self._padding.x + x1_padding
-        lbl_box.y1 = base_y + self._padding.y + int((inner_height - lbl_height) / 2.0)
-        lbl_box.x2 = base_x + width - self._padding.x - x2_padding
+        lbl_box.x1 = base_x + self._margin.x + self._padding.x + x1_padding
+        lbl_box.y1 = base_y + self._margin.y + self._padding.y + int((inner_height - lbl_height) / 2.0)
+        lbl_box.x2 = base_x + width - self._margin.x - self._padding.x - x2_padding
         lbl_box.y2 = base_y + lbl_box.y1 + lbl_height
         self.label.allocate(lbl_box, flags)
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
         rect_box = clutter.ActorBox()
-        rect_box.x1 = base_x
-        rect_box.y1 = base_y
-        rect_box.x2 = base_x + width
-        rect_box.y2 = base_y + height
+        rect_box.x1 = base_x + self._margin.x
+        rect_box.y1 = base_y + self._margin.y
+        rect_box.x2 = base_x + width - self._margin.x
+        rect_box.y2 = base_y + height - self._margin.y
         self.rect.allocate(rect_box, flags)
     
     def do_allocate(self, box, flags):
@@ -395,7 +395,7 @@ if __name__ == '__main__':
     t.set_position(400, 250)
     stage.add(t)
     
-    t = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', padding=20)
+    t = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 0))
     t.set_size(300, 500)
     t.set_position(50, 50)
     t.set_line_wrap(True)

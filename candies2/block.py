@@ -211,11 +211,11 @@ class TexturedBlock(clutter.Actor, clutter.Container):
             max_width = 0
         if self.content_actor:
             max_width = max(max_width, self.content_actor.get_preferred_width(for_height)[1])
-        preferred_width = 2*self._padding.x + max_width
+        preferred_width = 2*self._margin.x + 2*self._padding.x + max_width
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        preferred_height = 2*self._padding.y
+        preferred_height = 2*self._margin.y + 2*self._padding.y
         if self.title_actor:
             preferred_height += self.title_actor.get_preferred_height(for_width)[1]
             if self.content_actor:
@@ -231,7 +231,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     def do_allocate(self, box, flags):
         self.width = box.x2 - box.x1
         self.height = box.y2 - box.y1
-        inner_width = self.width - 2*self._padding.x
+        inner_width = self.width - 2*self._margin.x - 2*self._padding.x
         
         if self.title_actor:
             selected_title_actor = self.title_actor
@@ -241,21 +241,21 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         if self._has_title:
             self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
             title_box = clutter.ActorBox()
-            title_box.x1 = self._padding.x + self._title_padding.x
-            title_box.y1 = self._padding.y + self._title_padding.y
-            title_box.x2 = self.width - self._padding.x - self._title_padding.x
-            title_box.y2 = self._padding.y + self._title_padding.y + self._title_height
+            title_box.x1 = self._margin.x + self._padding.x + self._title_padding.x
+            title_box.y1 = self._margin.y + self._padding.y + self._title_padding.y
+            title_box.x2 = self.width - self._margin.x - self._padding.x - self._title_padding.x
+            title_box.y2 = title_box.y1 + self._title_height
             selected_title_actor.allocate(title_box, flags)
         
         if self.content_actor:
             content_box = clutter.ActorBox()
-            content_box.x1 = self._padding.x
+            content_box.x1 = self._margin.x + self._padding.x
             if self._has_title:
-                content_box.y1 = self._padding.y + 2*self._title_padding.y + self._title_height + self._spacing.y
+                content_box.y1 = self._margin.y + self._padding.y + 2*self._title_padding.y + self._title_height + self._spacing.y
             else:
-                content_box.y1 = self._padding.y
-            content_box.x2 = self.width - self._padding.x
-            content_box.y2 = self.height - self._padding.y
+                content_box.y1 = self._margin.y + self._padding.y
+            content_box.x2 = self.width - self._margin.x - self._padding.x
+            content_box.y2 = self.height - self._margin.y - self._padding.y
             self.content_actor.allocate(content_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -270,14 +270,14 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     
     def _paint_background(self):
         if self.width > 0 and self.height > 0:
-            x1 = 0
-            y1 = 0
-            x2 = self._bg_textures_size
-            y2 = self._bg_textures_size
-            x3 = self.width - self._bg_textures_size
-            y3 = self.height - self._bg_textures_size
-            x4 = self.width
-            y4 = self.height
+            x1 = self._margin.x
+            y1 = self._margin.y
+            x2 = self._margin.x + self._bg_textures_size
+            y2 = self._margin.y + self._bg_textures_size
+            x3 = self.width - self._margin.x - self._bg_textures_size
+            y3 = self.height - self._margin.y - self._bg_textures_size
+            x4 = self.width - self._margin.x
+            y4 = self.height - self._margin.y
             
             # top_left texture
             if self._top_left:
@@ -334,12 +334,12 @@ class TexturedBlock(clutter.Actor, clutter.Container):
                 cogl.set_source_texture(self._bottom_right)
                 cogl.path_fill()
             
-            title_x1 = self._padding.x
-            title_x2 = self._padding.x + self._title_textures_size
-            title_x3 = self.width - self._padding.x - self._title_textures_size
-            title_x4 = self.width - self._padding.x
-            title_y1 = self._padding.y
-            title_y2 = self._padding.y + 2*self._title_padding.y + self._title_height
+            title_x1 = self._margin.x + self._padding.x
+            title_x2 = self._margin.y + self._padding.x + self._title_textures_size
+            title_x3 = self.width - self._margin.x - self._padding.x - self._title_textures_size
+            title_x4 = self.width - self._margin.x - self._padding.x
+            title_y1 = self._margin.y + self._padding.y
+            title_y2 = self._margin.y + self._padding.y + 2*self._title_padding.y + self._title_height
             # title_left texture
             if self._title_left:
                 cogl.path_rectangle(title_x1, title_y1, title_x2, title_y2)
@@ -360,10 +360,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
                 cogl.path_fill()
     
     def _paint_light(self):
-        x1 = self._padding.x
-        y1 = self._padding.y
-        x2 = self.width - self._padding.x
-        y2 = self.height - self._padding.y
+        x1 = self._margin.x + self._padding.x
+        y1 = self._margin.y + self._padding.y
+        x2 = self.width - self._margin.x - self._padding.x
+        y2 = self.height - self._margin.y - self._padding.y
         
         cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
         cogl.path_close()
@@ -371,10 +371,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         cogl.path_fill()
     
     def _paint_shadow(self):
-        x1 = self._padding.x
-        y1 = self._padding.y
-        x2 = self.width - self._padding.x
-        y2 = self.height - self._padding.y
+        x1 = self._margin.x + self._padding.x
+        y1 = self._margin.y + self._padding.y
+        x2 = self.width - self._margin.x - self._padding.x
+        y2 = self.height - self._margin.y - self._padding.y
         
         cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
         cogl.path_close()
@@ -436,7 +436,7 @@ if __name__ == '__main__':
     stage.connect('destroy', clutter.main_quit)
     
     textures_path = '/home/sdiemer/Bureau/textures/'
-    
+    """
     textures_package = {
         'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png')),
         'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png')),
@@ -452,6 +452,8 @@ if __name__ == '__main__':
         'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png')),
         'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png')),
     }
+    """
+    textures_package = dict()
     
     content = clutter.Rectangle()
     content.set_color('#00000088')
@@ -460,7 +462,7 @@ if __name__ == '__main__':
     title.set_height(50)
     title.set_color('#ff000088')
     
-    global_bg = TexturedBlock('Nouveau block', content_actor=content, textures_package=textures_package)
+    global_bg = TexturedBlock('Nouveau block', content_actor=content, textures_package=textures_package, margin=8, padding=5)
     #global_bg = TexturedBlock('Nouveau block', title_actor=title, content_actor=content, textures_package=textures_package)
     global_bg.set_position(50, 50)
     global_bg.set_size(800, 300)
