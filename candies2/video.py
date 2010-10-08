@@ -58,7 +58,10 @@ class VideoPlayer(VideoTexture):
         self.connect("notify::duration", self.on_duration)
 
     def _init_gst_bus(self):
-        playbin = self.get_pipeline()
+        try:
+            playbin = self.get_pipeline()
+        except:
+            playbin = self.get_playbin()
         bus = playbin.get_bus()
         bus.add_signal_watch()
         bus.connect('message', self._on_gst_message)
