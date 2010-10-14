@@ -5,8 +5,52 @@ import clutter
 from text import TextContainer
 from container import BaseContainer
 
+
+class CheckButton(clutter.Texture):
+    __gtype_name__ = 'CheckButton'
+    """
+    A check button
+    """
+    
+    def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False):
+        clutter.Texture.__init__(self)
+        self.name = name
+        self.not_checked_image_path = not_checked_image_path
+        self.checked_image_path = checked_image_path
+        if checked:
+            self.checked = True
+            if self.checked_image_path:
+                self.set_from_file(self.checked_image_path)
+        else:
+            self.checked = False
+            if self.not_checked_image_path:
+                self.set_from_file(self.not_checked_image_path)
+        self.set_reactive(True)
+    
+    def toggle_check(self):
+        if self.checked == True:
+            self.checked = False
+            self.set_from_file(self.not_checked_image_path)
+        else:
+            self.checked = True
+            self.set_from_file(self.checked_image_path)
+    
+    def set_checked(self, boolean):
+        if boolean and not self.checked:
+            self.checked = True
+            if self.checked_image_path:
+                self.set_from_file(self.checked_image_path)
+        elif not boolean and self.checked:
+            self.checked = False
+            if self.not_checked_image_path:
+                self.set_from_file(self.not_checked_image_path)
+
+
 class CheckBox(BaseContainer):
     __gtype_name__ = 'CheckBox'
+    """
+    A check button with a label
+    """
     
     def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, user_data=None):
         BaseContainer.__init__(self)
