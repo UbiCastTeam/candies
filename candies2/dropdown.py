@@ -122,7 +122,8 @@ class OptionLine(BaseContainer):
     def set_icon_allocate(self, boolean):
         if boolean and not self._icon_allocate:
             self._icon_allocate = True
-            self.icon.show()
+            if self.has_icon():
+                self.icon.show()
             self.queue_relayout()
         elif not boolean and self._icon_allocate:
             self._icon_allocate = False
@@ -291,14 +292,13 @@ class Select(clutter.Actor, clutter.Container):
     
     def add_option(self, name, hname, icon_path=None):
         new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
-        new_option.set_icon_allocate(False)
-        new_option.set_reactive(True)
-        new_option.connect('button-release-event', self._on_click)
-        
         if icon_path is not None and not self._has_icons:
             self._has_icons = True
             for element in self._list.get_elements():
                 element['object'].set_icon_allocate(True)
+        new_option.set_icon_allocate(self._has_icons)
+        new_option.set_reactive(True)
+        new_option.connect('button-release-event', self._on_click)
         
         self._list.add_element(new_option, 'option_%s' %name, expand=True)
         self.check_scrollbar()
@@ -529,9 +529,11 @@ if __name__ == '__main__':
     #test_select = Select(open_icon_path='/data/www/sdiemer/top.png')
     test_select = Select()
     test_select.set_position(0, 80)
-    test_select.add_option('test1', 'displayed')
-    test_select.add_option('test2', 'displayed regregreg')
-    test_select.add_option('test3', 'displayed fezfzefezfzef')
+    icon_path = None
+    #icon_path = 'test.jpg'
+    test_select.add_option('test1', 'displayed', icon_path=icon_path)
+    test_select.add_option('test2', 'displayed regregreg', icon_path=icon_path)
+    test_select.add_option('test3', 'displayed fezfzefezfzef', icon_path=icon_path)
     #test_select.set_size(400, 64)
     stage.add(test_select)
     
