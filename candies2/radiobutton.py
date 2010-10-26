@@ -30,7 +30,6 @@ class RadioButton(CheckBox):
     
     def set_selected(self, boolean):
         self.set_checked(boolean)
-    
-    
-
+        for btn in self._related_buttons:
+            btn.set_checked(False)
 
