@@ -155,26 +155,36 @@ class RoundRectangle(clutter.Actor):
             raise TypeError('Unknown property ' + pspec.name)
 
     def __paint_rectangle(self, width, height, color, border_color=None):
-        if border_color is not None and self._border_width > 0.0:
-            cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
+        radius_size = 2*self._radius
+        if radius_size <= width and radius_size <= height:
+            radius = self._radius
+        elif radius_size > width and radius_size <= height:
+            radius = width / 2.0
+        elif radius_size <= width and radius_size > height:
+            radius = height / 2.0
+        else:
+            radius = min(width, height) / 2.0
+        
+        if border_color is not None and self._border_width > 0 and 2*self._border_width < width and 2*self._border_width < height:
+            cogl.path_round_rectangle(0, 0, width, height, radius, 1)
             cogl.path_close()
             cogl.set_source_color(border_color)
             cogl.path_fill()
             
             w = self._border_width
-            cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+            cogl.path_round_rectangle(w, w, width - w, height - w, radius - w, 1)
             cogl.path_close()
             cogl.set_source_color(color)
             cogl.path_fill()
             
             # texture
             if self._texture:
-                cogl.path_round_rectangle(w, w, width - w, height - w, self._radius - w, 1)
+                cogl.path_round_rectangle(w, w, width - w, height - w, radius - w, 1)
                 cogl.path_close()
                 cogl.set_source_texture(self._texture)
                 cogl.path_fill()
         else:
-            cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
+            cogl.path_round_rectangle(0, 0, width, height, radius, 1)
             cogl.path_close()
             cogl.set_source_color(color)
             cogl.path_fill()
