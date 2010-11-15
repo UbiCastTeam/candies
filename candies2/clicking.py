@@ -19,13 +19,11 @@ class SimpleClick(gobject.GObject):
 
     def on_press(self, source, event):
         self._is_pressed = True
-        clutter.grab_pointer(self.actor)
         return True
 
     def on_release(self, source, event):
         if self._is_pressed == True:
             self._is_pressed = False
-            clutter.ungrab_pointer()
             self.actor.emit('simple-click-event')
             return True
         return False
@@ -56,8 +54,9 @@ class LongClick(SimpleClick):
     def on_press(self, source, event):
         if self._timeout_id:
             gobject.source_remove(self._timeout_id)
+        clutter.grab_pointer(self.actor)
         self._is_long = False
-        SimpleClick.on_press(self, source, event)
+        self._is_pressed = True
         self._timeout_id = gobject.timeout_add(self.long_delay, self.on_long_press, source)
         #if self.long_msg is not None:
         #    self.launchEvent('info', 'Hold %s seconds to %s' %(self.long_delay_ms/1000, self.long_msg))
