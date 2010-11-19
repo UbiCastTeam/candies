@@ -402,7 +402,7 @@ class Select(clutter.Actor, clutter.Container):
         self._auto_scroll.set_scroller_image_path(path)
     
     def do_get_preferred_width(self, for_height):
-        preferred = max(self._auto_scroll.get_preferred_width(for_height)[1], self._selected_option.get_preferred_width(for_height)[1])
+        preferred = self._selected_option.get_preferred_width(for_height)[1]
         return preferred, preferred
     
     def do_get_preferred_height(self, for_width):
