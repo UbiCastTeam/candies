@@ -320,12 +320,13 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 self.event_listener.unparent()
                 self.event_listener.destroy()
                 self.event_listener = None
-        if self.scale_positions_list is not None :
-            for child in self.scale_list :
-                if child is not None :
-                    child.unparent()
-                    child.destroy()
-                    child = None
+        if hasattr(self, 'scale_positions_list'):
+            if self.scale_positions_list is not None:
+                for child in self.scale_list:
+                    if child is not None:
+                        child.unparent()
+                        child.destroy()
+                        child = None
 
 class Clipper (clutter.Actor, clutter.Container):
     '''
