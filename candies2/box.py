@@ -565,6 +565,7 @@ class Box(clutter.Actor, clutter.Container):
                 draw_last_objects.append(element['object'])
             else:
                 element['object'].paint()
+        draw_last_objects.reverse()
         for obj in draw_last_objects:
             obj.paint()
     
