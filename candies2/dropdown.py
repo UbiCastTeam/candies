@@ -204,13 +204,14 @@ class Select(clutter.Actor, clutter.Container):
     A select input.
     """
     
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down"):
         clutter.Actor.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self.stage_padding = 10
         self.on_change_callback = on_change_callback
         self.user_data = user_data
+        self.direction = direction
         self.icon_height = icon_height
         self._stage_width, self._stage_height = 0, 0
         self._opened = False
@@ -436,9 +437,17 @@ class Select(clutter.Actor, clutter.Container):
                     #TODO enable scrollbar
                 else:
                     base_y -= box_y - (self._stage_height - self.stage_padding - total_height)
-            self._background_box = clutter.ActorBox(0, base_y, main_width, base_y + total_height)
+            x1 = 0
+            x2 = main_width
+            if self.direction == "up":
+                y1 = base_y - total_height + main_height
+                y2 = base_y + main_height
+            else: # down, default
+                y1 = base_y
+                y2 = base_y + total_height
+            self._background_box = clutter.ActorBox(x1, y1, x2, y2)
             self._background.allocate(self._background_box, flags)
-            list_box = clutter.ActorBox(0, base_y, main_width, base_y + total_height)
+            list_box = clutter.ActorBox(x1, y1, x2, y2)
             self._auto_scroll.allocate(list_box, flags)
         else:
             hidder_box = clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
