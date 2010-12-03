@@ -214,6 +214,8 @@ class Table(clutter.Actor, clutter.Container):
         # find columns widths
         total_width = 0
         for j in range(len(self._columns)):
+            if total_width != 0:
+                total_width += self._spacing.x
             if isinstance(self._columns[j], int):
                 columns_widths[j] = self._columns[j]
             else:
@@ -223,11 +225,33 @@ class Table(clutter.Actor, clutter.Container):
                     if actor is not None:
                         column_width = max(column_width, actor.get_preferred_width(for_height=-1)[1])
                 columns_widths[j] = column_width
+            if inner_width - total_width - columns_widths[j] < 0:
+                columns_widths[j] = inner_width - total_width
             total_width += columns_widths[j]
-        remaining_width = inner_width - total_width - ((len(self._columns) - 1) * self._spacing.x)
+        remaining_width = inner_width - total_width
+        # adjust columns widths if some space is remaining
+        if remaining_width > 0:
+            col_to_expand = None
+            auto_count = 0
+            for j in range(len(self._columns)):
+                if self._columns[j] == 'auto':
+                    auto_count += 1
+                elif self._columns[j] == 'expand':
+                    col_to_expand = j
+                    break
+            if col_to_expand:
+                columns_widths[j] += remaining_width
+            elif auto_count > 0:
+                width_per_column = int(remaining_width / auto_count)
+                for j in range(len(self._columns)):
+                    if not isinstance(self._columns[j], int):
+                        columns_widths[j] += width_per_column
+        
         # find rows heights
         total_height = 0
         for i in range(len(self._rows)):
+            if total_height != 0:
+                total_height += self._spacing.y
             if isinstance(self._rows[i], int):
                 rows_heights[i] = self._rows[i]
             else:
@@ -235,28 +259,24 @@ class Table(clutter.Actor, clutter.Container):
                 for j in range(len(self._columns)):
                     actor = self._matrix[i][j]
                     if actor is not None:
-                        row_height = max(row_height, actor.get_preferred_height(for_width=-1)[1])
+                        row_height = max(row_height, actor.get_preferred_height(for_width=columns_widths[j])[1])
                 rows_heights[i] = row_height
+            if inner_height - total_height - rows_heights[i] < 0:
+                rows_heights[i] = inner_height - total_height
             total_height += rows_heights[i]
-        remaining_height = inner_height - total_height - ((len(self._rows) - 1) * self._spacing.y)
-        
-        # adjust columns widths if some space is remaining
-        if remaining_width > 0:
-            auto_count = 0
-            for j in range(len(self._columns)):
-                if not isinstance(self._columns[j], int):
-                    auto_count += 1
-            if auto_count > 0:
-                width_per_column = int(remaining_width / auto_count)
-                for j in range(len(self._columns)):
-                    if not isinstance(self._columns[j], int):
-                        columns_widths[j] += width_per_column
+        remaining_height = inner_height - total_height
         # adjust rows heights if some space is remaining
         if remaining_height > 0:
+            row_to_expand = None
             auto_count = 0
             for j in range(len(self._rows)):
-                if not isinstance(self._rows[j], int):
+                if self._rows[i] == 'auto':
                     auto_count += 1
+                elif self._rows[i] == 'expand':
+                    row_to_expand = j
+                    break
+            if row_to_expand:
+                rows_heights[i] += remaining_height
             if auto_count > 0:
                 height_per_row = int(remaining_height / auto_count)
                 for j in range(len(self._rows)):
