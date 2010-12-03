@@ -44,8 +44,10 @@ class Table(clutter.Actor, clutter.Container):
             raise TypeError('Columns type must be int or list')
         self._size = len(self._columns) * len(self._rows)
         self._matrix = [[None for i in range(len(self._columns))] for i in range(len(self._rows))]
+        self._children = list()
+        self._draw_last_count = 0
     
-    def add(self, actor, row=-1, column=-1, align='center', expand=False, keep_ratio=False):
+    def add(self, actor, row=-1, column=-1, align='center', expand=False, keep_ratio=False, draw_last=False):
         if actor.get_parent() != self:
             place = (None, None)
             if row == -1 and column == -1:
@@ -95,11 +97,16 @@ class Table(clutter.Actor, clutter.Container):
                 if not expand or keep_ratio:
                     aligner = TableCellAligner(expand=expand, keep_ratio=keep_ratio, align=align)
                     aligner.set_element(actor)
-                    aligner.set_parent(self)
-                    self._matrix[place[0]][place[1]] = aligner
+                    cell_actor = aligner
                 else:
-                    actor.set_parent(self)
-                    self._matrix[place[0]][place[1]] = actor
+                    cell_actor = actor
+                cell_actor.set_parent(self)
+                self._matrix[place[0]][place[1]] = cell_actor
+                if draw_last:
+                    self._draw_last_count += 1
+                    self._children.insert(-self._draw_last_count, cell_actor)
+                else:
+                    self._children.insert(0, cell_actor)
         self.queue_relayout()
         
         #for i in range(len(self._rows)):
@@ -133,12 +140,17 @@ class Table(clutter.Actor, clutter.Container):
             for c in range(len(self._columns)):
                 if self._matrix[r][c] == actor:
                     actor.unparent()
+                    if actor in self._children:
+                        self._children.remove(actor)
                     self._matrix[r][c] = None
                     removed = True
                     break
                 elif isinstance(self._matrix[r][c], TableCellAligner) and self._matrix[r][c].get_element() == actor:
-                    self._matrix[r][c].remove_element()
-                    self._matrix[r][c].destroy()
+                    aligner = self._matrix[r][c]
+                    aligner.remove_element()
+                    if aligner in self._children:
+                        self._children.remove(aligner)
+                    aligner.destroy()
                     self._matrix[r][c] = None
                     removed = True
                     break
@@ -307,11 +319,8 @@ class Table(clutter.Actor, clutter.Container):
                     func(actor, data)
         
     def do_paint(self):
-        for i in range(len(self._rows)):
-            for j in range(len(self._columns)):
-                actor = self._matrix[i][j]
-                if actor is not None:
-                    actor.paint()
+        for child in self._children:
+            child.paint()
     
     def do_pick(self, color):
         if self.pick_enabled:
@@ -321,6 +330,8 @@ class Table(clutter.Actor, clutter.Container):
     
     def do_destroy(self):
         self.unparent()
+        self._children = list()
+        self._draw_last_count = 0
         if hasattr(self, '_matrix'):
             for i in range(len(self._rows)):
                 for j in range(len(self._columns)):
