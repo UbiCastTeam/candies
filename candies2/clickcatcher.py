@@ -8,17 +8,17 @@ from circle import Circle
 class ClickCatcher(BaseContainer):
     __gtype_name__ = 'ClickCatcher'
     
-    def __init__(self, actor=None, circle_radius=60):
+    def __init__(self, actor=None, circles_radius=60, circles_color='#ff8888aa'):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._actor = None
         if actor:
             self.set_actor(actor)
         
-        self._circle_radius = circle_radius
+        self._circle_radius = circles_radius
         self._circle_center = 0, 0
         self._circle = Circle()
         self._circle.set_opacity(0)
-        self._circle.set_color('#8888ffaa')
+        self._circle.set_color(circles_color)
         self._circle.set_stroke_width(10)
         self._circle.move_anchor_point_from_gravity(clutter.GRAVITY_CENTER)
         self._add(self._circle)
@@ -26,7 +26,7 @@ class ClickCatcher(BaseContainer):
         self._inner_circle_radius = self._circle_radius / 2.0
         self._inner_circle = Circle()
         self._inner_circle.set_opacity(0)
-        self._inner_circle.set_color('#8888ffcc')
+        self._inner_circle.set_color(circles_color)
         self._inner_circle.set_stroke_width(7)
         self._inner_circle.move_anchor_point_from_gravity(clutter.GRAVITY_CENTER)
         self._add(self._inner_circle)
