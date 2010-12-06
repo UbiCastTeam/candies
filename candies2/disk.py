@@ -3,33 +3,30 @@
 
 import gobject
 import clutter
+
 from clutter import cogl
 
-class Circle(clutter.Actor):
+class Disk(clutter.Actor):
     """
-    Circle (clutter.Actor)
+    Disk (clutter.Actor)
 
-    A simple actor drawing a circle using the clutter.cogl primitives
+    A simple actor drawing a disk using the clutter.cogl primitives
     """
-    __gtype_name__ = 'Circle'
+    __gtype_name__ = 'Disk'
     __gproperties__ = {
         'color' : (str, 'color', 'Color', None, gobject.PARAM_READWRITE),
     }
 
-    def __init__(self, color='Black', stroke_width=50):
+    def __init__(self):
         clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string(color)
-        self._stroke_width = stroke_width
+        self._color = clutter.color_from_string('Black')
 
     def set_color(self, color):
         self._color = clutter.color_from_string(color)
-    
-    def set_stroke_width(self, width):
-        self._stroke_width = width
-    
+
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
-            self._color = self.set_color(value)
+            self._color = clutter.color_from_string(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -40,9 +37,7 @@ class Circle(clutter.Actor):
             raise TypeError('Unknown property ' + pspec.name)
 
     def __paint_circle(self, width, height, color):
-        cogl.path_arc(width / 2, height / 2, width / 2, height / 2, 0, 360)
-        cogl.path_close()
-        cogl.path_arc(width / 2, height / 2, (width / 2) - self._stroke_width, (height / 2) - self._stroke_width, 0, 360)
+        cogl.path_ellipse(width / 2, height / 2, width / 2, height / 2)
         cogl.path_close()
 
         cogl.set_source_color(color)
@@ -55,7 +50,7 @@ class Circle(clutter.Actor):
 
         real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
         paint_color.alpha = real_alpha
-        
+
         self.__paint_circle(x2 - x1, y2 - y1, paint_color)
 
     def do_pick(self, pick_color):
@@ -65,19 +60,20 @@ class Circle(clutter.Actor):
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__paint_circle(x2 - x1, y2 - y1, pick_color)
 
-gobject.type_register(Circle)
+gobject.type_register(Disk)
 
 if __name__ == '__main__':
     stage = clutter.Stage()
+    stage.set_title('Nihon!')
     stage.set_size(640, 480)
     stage.connect('destroy', clutter.main_quit)
 
-    circle = Circle()
-    circle.set_color('Red')
-    circle.set_size(200, 200)
-    circle.set_anchor_point(100, 100)
-    circle.set_position(320, 240)
-    stage.add(circle)
+    disk = Disk()
+    disk.set_color('Red')
+    disk.set_size(200, 200)
+    disk.set_anchor_point(100, 100)
+    disk.set_position(320, 240)
+    stage.add(disk)
 
     stage.show()
     clutter.main()

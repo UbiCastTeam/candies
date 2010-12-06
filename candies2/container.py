@@ -24,7 +24,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
                 self._children.append(child)
                 self.queue_relayout()
         else:
-            raise NotImplementedError('do_add')
+            raise Exception('adding actor to %s is not authorized' % self)
     
     def do_remove(self, *children):
         if self.__allow_remove:
@@ -36,7 +36,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
                 else:
                     raise Exception('Actor %s is not a child of %s' % (child, self))
         else:
-            raise NotImplementedError('do_remove')
+            raise Exception('removing actor to %s is not authorized' % self)
     
     def _add(self, child):
         if child not in self._children:

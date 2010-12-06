@@ -14,6 +14,7 @@ from autoscroll import AutoScrollPanel
 from tooltip import ToolTipManager
 # actors
 from circle import Circle
+from disk import Disk
 from roundrect import RoundRectangle
 from clock import Clock
 
@@ -24,6 +25,7 @@ from dropdown import OptionLine, Select
 from text import StretchText, TextContainer
 from buttons import ClassicButton, ImageButton
 from clicking import SimpleClick, LongClick
+from clickcatcher import ClickCatcher
 
 from checkbox import CheckButton, CheckBox
 from radiobutton import RadioButton
