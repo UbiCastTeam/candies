@@ -3,22 +3,15 @@
 
 import gobject
 import clutter
-from text import TextContainer, CryptedTextContainer
+from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
 
 
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
     
-    def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True):
-        TextContainer.__init__(self, label, margin=margin, padding=padding, texture=texture, rounded=rounded)
-        self.set_reactive(True)
-
-class CryptedButton(CryptedTextContainer):
-    __gtype_name__ = 'CryptedButton'
-    
-    def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True, symbol=None):
-        CryptedTextContainer.__init__(self, label, margin=margin, padding=padding, texture=texture, rounded=rounded, symbol=symbol)
+    def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True, crypted=False):
+        TextContainer.__init__(self, label, margin=margin, padding=padding, texture=texture, rounded=rounded, crypted=crypted)
         self.set_reactive(True)
 
 class ImageButton(ClassicButton):

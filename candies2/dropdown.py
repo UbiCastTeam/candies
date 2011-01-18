@@ -15,7 +15,7 @@ class OptionLine(BaseContainer):
     A option line for select input. Can be used alone to have a text with icon.
     """
     
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True, crypted=False):
         BaseContainer.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -53,7 +53,7 @@ class OptionLine(BaseContainer):
             self.icon.hide()
         self._add(self.icon)
         # label
-        self.label = TextContainer(text, padding=0, rounded=False)
+        self.label = TextContainer(text, padding=0, rounded=False, crypted=crypted)
         self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')

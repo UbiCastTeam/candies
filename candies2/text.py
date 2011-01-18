@@ -116,13 +116,15 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True):
+    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True, crypted=False):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         self._line_wrap = False
         self._multiline = False
         self._alignment = 'center'
+        self._symbol = '•'
+        self._crypted = crypted
         
         self.label = clutter.Text()
         self.label.set_parent(self)
@@ -149,12 +151,27 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def set_text(self, text):
         self._text = text
-        self.label.set_text(self._text)
-        self.sizer.set_text(self._text)
+        if not self._crypted:
+            self._display_text = text
+        else:
+            self._display_text = self._symbol * len(text)
+        self.sizer.set_text(self._display_text)
+        self.label.set_text(self._display_text)
     
     def get_text(self):
         return self._text
-        
+    
+    def set_crypted(self, boolean):
+        if self._crypted and not boolean:
+            self._crypted = False
+            self.set_text(self._text)
+        elif not self._crypted and boolean:
+            self._crypted = True
+            self.set_text(self._text)
+    
+    def is_crypted(self):
+        return self._crypted
+    
     def set_texture(self, texture):
         if self._rounded:
             self.rect.set_texture(texture)
@@ -170,8 +187,8 @@ class TextContainer(clutter.Actor, clutter.Container):
         return self.label.get_font_name()
     
     def set_font_name(self, font_name):
-        self.label.set_font_name(font_name)
         self.sizer.set_font_name(font_name)
+        self.label.set_font_name(font_name)
     
     def set_inner_color(self, color):
         if self.rect is not None:
@@ -190,34 +207,34 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_line_wrap(self, boolean):
         if boolean:
             self._line_wrap = True
-            self.label.set_line_wrap(True)
             self.sizer.set_line_wrap(True)
+            self.label.set_line_wrap(True)
         else:
             self._line_wrap = False
-            self.label.set_line_wrap(False)
             self.sizer.set_line_wrap(False)
+            self.label.set_line_wrap(False)
             
     def set_line_alignment(self, alignment):
         if alignment == 'center':
             self._alignment = 'center'
-            self.label.set_line_alignment(1)
             self.sizer.set_line_alignment(1)
+            self.label.set_line_alignment(1)
         elif alignment == 'right':
             self._alignment = 'right'
-            self.label.set_line_alignment(2)
             self.sizer.set_line_alignment(2)
+            self.label.set_line_alignment(2)
         elif alignment == 'left':
             self._alignment = 'left'
-            self.label.set_line_alignment(3)
             self.sizer.set_line_alignment(3)
+            self.label.set_line_alignment(3)
     
     def set_justify(self, boolean):
         if boolean:
-            self.label.set_justify(True)
             self.sizer.set_justify(True)
+            self.label.set_justify(True)
         else:
-            self.label.set_justify(False)
             self.sizer.set_justify(False)
+            self.label.set_justify(False)
     
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
@@ -262,9 +279,9 @@ class TextContainer(clutter.Actor, clutter.Container):
     def _wrap_singleline_label(self, min, max, max_width):
         mid = (min + max) / 2
         if mid-6 < 0:
-            self.label.set_text(self._text)
+            self.label.set_text(self._display_text)
             return
-        self.label.set_text('%s…%s' %(self._text[:mid-6], self._text[len(self._text)-6:]))
+        self.label.set_text('%s…%s' %(self._display_text[:mid-6], self._display_text[len(self._display_text)-6:]))
         if mid == min or self.label.get_preferred_size()[2] == max_width:
             return
         if self.label.get_preferred_size()[2] > max_width:
@@ -275,9 +292,9 @@ class TextContainer(clutter.Actor, clutter.Container):
     def _wrap_multilines_label(self, min, max, max_width, max_height):
         mid = (min + max) / 2
         if mid-6 < 0:
-            self.label.set_text(self._text)
+            self.label.set_text(self._display_text)
             return
-        self.label.set_text('%s…%s' %(self._text[:mid-6], self._text[len(self._text)-6:]))
+        self.label.set_text('%s…%s' %(self._display_text[:mid-6], self._display_text[len(self._display_text)-6:]))
         if mid == min or self.label.get_preferred_height(for_width = max_width)[1] == max_height:
             return
         if self.label.get_preferred_height(for_width = max_width)[1] > max_height:
@@ -289,7 +306,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         inner_width = width - 2*self._padding.x - 2*self._margin.x
         inner_height = height - 2*self._padding.y - 2*self._margin.y
         
-        self.label.set_text(self._text)
+        self.label.set_text(self._display_text)
         self._multiline = False
         if self._line_wrap:
             if self.label.get_preferred_height(for_width = inner_width)[1] > self.label.get_preferred_size()[3]:
@@ -299,11 +316,11 @@ class TextContainer(clutter.Actor, clutter.Container):
         x2_padding = 0
         if self._multiline:
             if self.label.get_preferred_height(for_width = inner_width)[1] > inner_height:
-                self._wrap_multilines_label(0, len(self._text), inner_width, inner_height)
+                self._wrap_multilines_label(0, len(self._display_text), inner_width, inner_height)
             lbl_height = self.label.get_preferred_height(for_width = inner_width)[1]
         else:
             if self.label.get_preferred_size()[2] > inner_width:
-                self._wrap_singleline_label(0, len(self._text), inner_width)
+                self._wrap_singleline_label(0, len(self._display_text), inner_width)
                 lbl_width = self.label.get_preferred_size()[2]
                 lbl_height = self.label.get_preferred_size()[3]
                 x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
@@ -374,26 +391,6 @@ class TextContainer(clutter.Actor, clutter.Container):
                 self.sizer.unparent()
                 self.sizer.destroy()
                 self.sizer = None
-
-class CryptedTextContainer(TextContainer):
-    __gtype_name__ = 'CryptedTextContainer'
-    
-    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True, symbol=None):
-        if symbol:
-            self._symbol = symbol
-        else:
-            self._symbol = '•'
-        TextContainer.__init__(self, text=text, margin=margin, padding=padding, texture=texture, rounded=rounded)
-    
-    def set_text(self, text):
-        self._decrypted_text = text
-        self._text = self._symbol * len(text)
-        self.label.set_text(self._text)
-        self.sizer.set_text(self._text)
-    
-    def get_text(self):
-        return self._decrypted_text
-
 
 
 if __name__ == '__main__':
