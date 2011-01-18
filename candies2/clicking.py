@@ -71,6 +71,9 @@ class LongClick(SimpleClick):
     def on_release(self, source, event):
         if self._is_pressed == True:
             self._is_pressed = False
+            if self._timeout_id:
+                gobject.source_remove(self._timeout_id)
+                self._timeout_id = None
             clutter.ungrab_pointer()
             if self._is_long:
                 self.actor.emit('long-click-event')
