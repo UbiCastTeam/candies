@@ -120,21 +120,20 @@ class TextContainer(clutter.Actor, clutter.Container):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
-        self._text = text
         self._line_wrap = False
         self._multiline = False
         self._alignment = 'center'
         
         self.label = clutter.Text()
         self.label.set_parent(self)
-        self.label.set_text(self._text)
         self.label.set_line_wrap(False)
         self.label.set_line_alignment(1)
         
         self.sizer = clutter.Text()
-        self.sizer.set_text(self._text)
         self.sizer.set_line_wrap(False)
         self.sizer.set_line_alignment(1)
+        
+        self.set_text(text)
         
         if rounded:
             self._rounded = True
@@ -152,7 +151,6 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._text = text
         self.label.set_text(self._text)
         self.sizer.set_text(self._text)
-        self.queue_relayout()
     
     def get_text(self):
         return self._text
@@ -376,6 +374,26 @@ class TextContainer(clutter.Actor, clutter.Container):
                 self.sizer.unparent()
                 self.sizer.destroy()
                 self.sizer = None
+
+class CryptedTextContainer(TextContainer):
+    __gtype_name__ = 'CryptedTextContainer'
+    
+    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True, symbol=None):
+        if symbol:
+            self._symbol = symbol
+        else:
+            self._symbol = '•'
+        TextContainer.__init__(self, text=text, margin=margin, padding=padding, texture=texture, rounded=rounded)
+    
+    def set_text(self, text):
+        self._decrypted_text = text
+        self._text = self._symbol * len(text)
+        self.label.set_text(self._text)
+        self.sizer.set_text(self._text)
+    
+    def get_text(self):
+        return self._decrypted_text
+
 
 
 if __name__ == '__main__':
