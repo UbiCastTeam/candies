@@ -78,11 +78,10 @@ class VideoPlayer(VideoTexture):
         elif message.type == gst.MESSAGE_EOS:
             logger.info("Media playback end")
             logger.debug("EOS")
+            self.stop()
             if self.end_callback is not None:
                 logger.debug("Calling end callback")
                 self.end_callback()
-            else:
-                self.stop()
 
     def on_duration(self, source, duration):
         duration = source.get_duration()
