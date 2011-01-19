@@ -14,6 +14,17 @@ class MultiLayerContainer(BaseContainer):
         BaseContainer.__init__(self, allow_add=True, allow_remove=True)
         self._margin = common.Margin(margin)
     
+    def add_actor_after(self, actor, after):
+        if actor in self._children:
+            raise Exception('Actor %s is already a children of %s' % (actor, self))
+        try:
+            index = self._children.index(after)
+        except ValueError:
+            raise ValueError('Actor %s is not a children of %s' %(after, self))
+        actor.set_parent(self)
+        self._children.insert(index, child)
+        self.queue_relayout()
+    
     def remove_all(self):
         for child in self._children:
             child.unparent()

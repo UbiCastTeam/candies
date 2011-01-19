@@ -12,7 +12,7 @@ import gobject
 import gst
 
 import logging
-logger = logging.getLogger("videoplayer")
+logger = logging.getLogger("candies2.videoplayer")
 
 class VideoPlayer(VideoTexture):
     """
@@ -83,7 +83,6 @@ class VideoPlayer(VideoTexture):
                 self.end_callback()
             else:
                 self.stop()
-                self.rewind()
 
     def on_duration(self, source, duration):
         duration = source.get_duration()
@@ -93,7 +92,6 @@ class VideoPlayer(VideoTexture):
     def set_filename(self, path=None):
         if self.get_playing():
             self.stop()
-            self.rewind()
         self._last_progress = None
         self._next_seek_value = None
         if path is not None:
@@ -141,27 +139,31 @@ class VideoPlayer(VideoTexture):
             else:
                 self.set_progress(0)
 
-    def play(self):
-        logger.info("Playing file %s", self.uri)
-        self.set_playing(True)
-
     def on_progress(self, source, progress):
         if self.get_progress() > 0:
             self.emit_position_update(self.get_progress())
 
+    def play(self):
+        logger.info("Playing file %s", self.uri)
+        self.set_playing(True)
+
+    def pause(self):
+        logger.info("Pausing playback for file %s", self.uri)
+        self.set_playing(False)
+
     def stop(self):
         logger.info("Stopping playback for file %s", self.uri)
         self.set_playing(False)
-
+        self.rewind()
+    
     def toggle_playing(self):
         if self.get_playing():
-            self.stop()
+            self.pause()
         else:
             self.play()
 
     def rewind(self):
         logger.debug("Rewinding")
-        self.set_playing(False)
         self.set_progress(0)
         self.emit_position_update(0)
 
