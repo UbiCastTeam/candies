@@ -9,11 +9,12 @@ class BaseContainer(clutter.Actor, clutter.Container):
     '''
     __gtype_name__ = 'BaseContainer'
     
-    def __init__(self, allow_add=False, allow_remove=False):
+    def __init__(self, allow_add=False, allow_remove=False, pick_enabled=True):
         clutter.Actor.__init__(self)
         self._children = list()
         self.__allow_add = allow_add
         self.__allow_remove = allow_remove
+        self.__pick_enabled = pick_enabled
     
     def do_add(self, *children):
         if self.__allow_add:
@@ -57,8 +58,11 @@ class BaseContainer(clutter.Actor, clutter.Container):
             actor.paint()
     
     def do_pick(self, color):
-        for actor in self._children:
-            actor.paint()
+        if self.__pick_enabled:
+            for actor in self._children:
+                actor.paint()
+        else:
+            clutter.Actor.do_pick(self, color)
     
     def do_destroy(self):
         self.unparent()

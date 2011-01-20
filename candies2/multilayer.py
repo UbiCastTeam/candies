@@ -10,8 +10,8 @@ class MultiLayerContainer(BaseContainer):
     '''
     A container in wich all childs have the same space allocated
     '''
-    def __init__(self, margin=0):
-        BaseContainer.__init__(self, allow_add=True, allow_remove=True)
+    def __init__(self, margin=0, pick_enabled=True):
+        BaseContainer.__init__(self, allow_add=True, allow_remove=True, pick_enabled=pick_enabled)
         self._margin = common.Margin(margin)
     
     def add_actor_after(self, actor, after):
