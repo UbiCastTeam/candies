@@ -203,29 +203,37 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         return self.content_actor
     
     def do_get_preferred_width(self, for_height):
+        if for_height != -1:
+            h = for_height - 2*self._margin.y - 2*self._padding.y
+        else:
+            h = for_height
         if self.title_actor:
-            max_width = self.title_actor.get_preferred_width(for_height)[1]
+            max_width = self.title_actor.get_preferred_width(h)[1]
         elif self._has_title:
-            max_width = self.default_title_actor.get_preferred_width(for_height)[1]
+            max_width = self.default_title_actor.get_preferred_width(h)[1]
         else:
             max_width = 0
         if self.content_actor:
-            max_width = max(max_width, self.content_actor.get_preferred_width(for_height)[1])
+            max_width = max(max_width, self.content_actor.get_preferred_width(h)[1])
         preferred_width = 2*self._margin.x + 2*self._padding.x + max_width
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
+        if for_width != -1:
+            w = for_width - 2*self._margin.x - 2*self._padding.x
+        else:
+            w = for_width
         preferred_height = 2*self._margin.y + 2*self._padding.y
         if self.title_actor:
-            preferred_height += self.title_actor.get_preferred_height(for_width)[1]
+            preferred_height += self.title_actor.get_preferred_height(w)[1]
             if self.content_actor:
                 preferred_height += self._spacing.y
         elif self._has_title:
-            preferred_height += self.default_title_actor.get_preferred_height(for_width)[1]
+            preferred_height += self.default_title_actor.get_preferred_height(w)[1]
             if self.content_actor:
                 preferred_height += self._spacing.y
         if self.content_actor:
-            preferred_height += self.content_actor.get_preferred_height(for_width)[1]
+            preferred_height += self.content_actor.get_preferred_height(w)[1]
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
