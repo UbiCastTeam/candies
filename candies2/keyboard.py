@@ -23,75 +23,75 @@ class Key:
 # keyboard dictionnary
 
 KEYBOARD_MAPS = {
-    'fr_maj' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
-        (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
+    'fr_maj': (
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
+        (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
-        (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('.'), Key('←',nb=2,evt='suppr')), 
+        (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key(','), Key('.'), Key('⇧',nb=3,evt='fr_min')), 
         (Key('#+-,',nb=2,evt='caract_fr'), Key(' ',nb=8))
-            ),
+    ),
     
-    'en_maj' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
-        (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P')),
-        (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L')), 
-        (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'),Key('.'), Key('←',nb=2,evt='suppr')),
+    'en_maj': (
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
+        (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'')),
+        (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key(',')), 
+        (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'), Key('.'), Key('⇧',nb=3,evt='fr_min')),
         (Key('#+-,',nb=2,evt='caract_en'), Key(' ',nb=8))
-            ),
+    ),
     
-    'fr_min' : (
-         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
-         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
+    'fr_min': (
+         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
+         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'')),
          (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
-         (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'),Key('.'), Key('←',nb=2,evt='suppr')),
+         (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key(','), Key('.'), Key('⇧',nb=3,evt='fr_min')),
          (Key('#+-,',nb=2,evt='caract_fr'), Key(' ',nb=8))
-             ),
+     ),
     
-    'en_min' : (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0')),
-        (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p')),
-        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l')), 
-        (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'),Key('.'), Key('←',nb=2,evt='suppr')),
+    'en_min': (
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
+        (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'')),
+        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key(',')), 
+        (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'), Key('.'), Key('⇧',nb=3,evt='fr_min')),
         (Key('#+-,',nb=2,evt='caract_en'), Key(' ',nb=8))
-            ),
+    ),
     
-    'caract_fr' :  (
+    'caract_fr': (
         (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'),),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
         (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=8))
-            ),
+    ),
     
-    'caract_en' :  (
+    'caract_en': (
         (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'), ),
         (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
         (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
         (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
         (Key('abc',nb=2,evt='en_min'), Key(' ',nb=8))
-            ),
+    ),
             
-    'int' : (
+    'int': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('0'), Key('←',evt='suppr'))
-            ), 
+    ), 
 
-    'float' : (
+    'float': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('.'), Key('0'), Key('←',evt='suppr'))
-            ) ,
+    ),
 
-    'ip' : (
+    'ip': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('.'), Key('0'), Key('←',evt='suppr'))
-            ) 
-    }
+    ) 
+}
 
 '''
 Keyboard Class
