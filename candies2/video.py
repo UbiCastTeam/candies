@@ -104,6 +104,7 @@ class VideoPlayer(VideoTexture):
 
     def seek_at_percent(self, percent):
         self._next_seek_value = percent
+        self.emit_position_update(percent)
         if self._seeking_timeout_id is None:
             self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
     
@@ -113,34 +114,17 @@ class VideoPlayer(VideoTexture):
         self._next_seek_value = None
         self.set_progress(percent)
         self.emit_position_update(percent)
-        if self._next_seek_value is not None:
-            self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
-        else:
-            self._seeking_timeout_id = None
-
+        self._seeking_timeout_id = None
+    
     def emit_position_update(self, progress):
         if progress != self._last_progress:
             self._last_progress = progress
             self.emit('position_update', progress * self.get_duration(), progress, self.get_duration())
-
-    def on_seek_relative(self, arg):
-        new_position = self.get_progress() * self.get_duration()
-        if arg > 0:
-            if new_position + arg < self.get_duration():
-                new_position = new_position + arg
-                self.set_progress(new_position / self.get_duration())
-            else:
-                self.set_progress(1)
-        else:
-            if new_position + arg > 0:
-                new_position = new_position + arg
-                self.set_progress(new_position / self.get_duration())
-            else:
-                self.set_progress(0)
-
+    
     def on_progress(self, source, progress):
-        if self.get_progress() > 0:
-            self.emit_position_update(self.get_progress())
+        if self._seeking_timeout_id is None:
+            if self.get_progress() > 0:
+                self.emit_position_update(self.get_progress())
 
     def play(self):
         logger.info("Playing file %s", self.uri)
