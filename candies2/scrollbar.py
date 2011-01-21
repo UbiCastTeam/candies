@@ -1,16 +1,10 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
 
-''' 
-Scrollbar and Clipper class
-author : flavie
-date : dec 3 2009
-version : 0
-'''
-
 import os
 import gobject
 import clutter
+from container import BaseContainer
 
 class Scrollbar(clutter.Actor, clutter.Container):
     '''
@@ -328,7 +322,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
                         child.destroy()
                         child = None
 
-class Clipper (clutter.Actor, clutter.Container):
+class Clipper(clutter.Actor, clutter.Container):
     '''
     OldClipper class
         need clutter.Actor and gsignals
@@ -421,53 +415,33 @@ class Clipper (clutter.Actor, clutter.Container):
                 self.actor = None
 
 
-class CoglClipper (clutter.Group):
-    '''
-    Clipper class
-        need clutter.Actor and gsignals
-        variables :
-            .actor : clutter.Actor object to move
-            .clipper_position = float position of the clipper
-        functions :
-            .callback_position : need float which indicate how to move clipper
-            .do_allocate : move clipper
-            .do_foreach
-            .do_paint
-            .do_pick 
-    '''
+class CoglClipper(BaseContainer):
     __gtype_name__ = 'CoglClipper'
     
     def __init__(self, actor=None, expand=False):
-        clutter.Group.__init__(self)
+        BaseContainer.__init__(self)
         self._width = 0
         self._height = 0
-        self.actor = actor
-        if self.actor is not None:
-            self.add(self.actor)
         self.clipper_position = 0
         self.expand = expand
+        self.actor = actor
+        if self.actor is not None:
+            self.set_actor(actor)
     
     def set_actor(self, actor):
         if self.actor is not None:
             self.remove_actor()
         self.actor = actor
-        self.add(self.actor)
-        if self.expand:
-            self.actor.set_width(self._width)
+        self._add(actor)
     
     def remove_actor(self):
         if self.actor is not None:
-            self.remove(self.actor)
+            self._remove(self.actor)
         self.actor = None
         
     def callback_position(self, source, position):
         self.clipper_position = position
-        if self.actor is not None:
-            if self.expand:
-                position = 0 - int(self.clipper_position * (self.actor.get_preferred_size()[3] - self._height))
-            else:
-                position = 0 - int(self.clipper_position * (self.actor.get_preferred_size()[3] - self._height))
-            self.actor.set_position(0, position)
+        self.queue_relayout()
     
     def do_get_preferred_width(self, for_height):
         if self.actor is not None:
@@ -484,14 +458,18 @@ class CoglClipper (clutter.Group):
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
-        new_width = box.x2 - box.x1
-        new_height = box.y2 - box.y1
-        if new_width != self._width or new_height != self._height:
-            self._width = box.x2 - box.x1
-            self._height = box.y2 - box.y1
+        self._width = box.x2 - box.x1
+        self._height = box.y2 - box.y1
+        if self.actor:
+            actor_width, actor_height = self.actor.get_preferred_size()[2:]
+            position = 0 - int(self.clipper_position * (actor_height - self._height))
+            print position
             if self.expand:
-                self.actor.set_width(self._width)
-        clutter.Group.do_allocate(self, box, flags)
+                objbox = clutter.ActorBox(0, position, self._width, position + actor_height)
+            else:
+                objbox = clutter.ActorBox(0, position, actor_width, position + actor_height)
+            self.actor.allocate(objbox, flags)
+        clutter.Actor.do_allocate(self, box, flags)
     
     def do_paint(self):
         # Draw a rectangle to cut animation
@@ -499,8 +477,9 @@ class CoglClipper (clutter.Group):
         clutter.cogl.path_close()
         # Start the clip
         clutter.cogl.clip_push_from_path()
-
-        clutter.Group.do_paint(self)
+        
+        if self.actor:
+            self.actor.paint()
 
         # Finish the clip
         clutter.cogl.clip_pop()
