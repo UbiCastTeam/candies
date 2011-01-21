@@ -59,7 +59,19 @@ class LightList(BaseContainer):
             child.allocate(child_box, flags)
             y += self.element_height + self._spacing.y
         clutter.Actor.do_allocate(self, box, flags)
-        
+    
+    def set_clip(self, x_offset, y_offset, width, height):
+        displayed_y1 = y_offset
+        displayed_y2 = y_offset + height
+        y = self._padding.y
+        for child in self._children:
+            y1 = y
+            y2 = y + self.element_height
+            if y1 < displayed_y2 and y2 > displayed_y1:
+                child.show()
+            else:
+                child.hide()
+            y = y2 + self._spacing.y
 
 
 if __name__ == '__main__':
