@@ -9,7 +9,7 @@ from block import TexturedBlock
 from aligner import Aligner
 from multilayer import MultiLayerContainer
 from table import Table
-from list import ButtonList, FileList
+from list import LightList
 from autoscroll import AutoScrollPanel
 from tooltip import ToolTipManager
 # actors

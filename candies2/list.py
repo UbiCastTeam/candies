@@ -1,212 +1,88 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import os
-import re
 import gobject
 import clutter
-from buttons import ClassicButton
+import common
+from container import BaseContainer
 
-class ButtonList(clutter.Actor, clutter.Container):
-    __gtype_name__ = 'ButtonList'
-    __gproperties__ = {
-        'font_name' : ( \
-            str, 'font', 'Font name', None, gobject.PARAM_READWRITE \
-        ),
-    }
-    __gsignals__ = {
-        'select-event' : ( \
-            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, () \
-        ),
-    }
-    button_class = ClassicButton
-    selected_color = 'LightYellow'
-    selected_border_color = 'Yellow'
+
+class LightList(BaseContainer):
+    '''
+    LightList is a light weight list to optimize long list with scrollbars
+    All elements in this list will have the same height
+    '''
+    __gtype_name__ = 'LightList'
     
-    def __init__(self, spacing=0.0, button_height=None, font_name=None, multiselect=False):
-        clutter.Actor.__init__(self)
-        self._buttons = list()
-        self.spacing = spacing
-        self.button_height = button_height
-        self._font_name = font_name
-        self.multiselect = multiselect
-        self.selection = list()
-        self.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
+    def __init__(self, element_height=50, padding=0, spacing=0):
+        BaseContainer.__init__(self, allow_add=True, allow_remove=True)
+        self.element_height = element_height
+        self._padding = common.Padding(padding)
+        self._spacing = common.Spacing(spacing)
     
-    def do_set_property (self, pspec, value):
-        if pspec.name == 'font_name':
-            self._font_name = value
-            for btn in self._buttons:
-                btn.label.set_font_name(value)
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
+    def get_children(self):
+        return self._children
     
-    def do_get_property (self, pspec):
-        if pspec.name == 'font_name':
-            return self._font_name
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
-    
-    def add(self, *labels):
-        for label in labels:
-            button = self.button_class(label)
-            if self._font_name is not None:
-                button.label.set_font_name(self._font_name)
-            button.set_parent(self)
-            button.set_reactive(True)
-            button.connect('button-press-event', self.on_button_press)
-            self._buttons.append(button)
-    
-    def do_remove(self, *children):
-        for child in children:
-            if child in self._buttons:
-                self._buttons.remove(child)
-                child.unparent()
-    
-    def clear(self):
-        for btn in self._buttons:
-            btn.destroy()
-        self._buttons = list()
-        self.selection = list()
-    
-    def on_button_press(self, button, event):
-        if self.multiselect:
-            if button in self.selection:
-                button.rect.set_color(button.default_color)
-                button.rect.set_border_color(button.default_border_color)
-                self.selection.remove(button)
-            else:
-                button.rect.set_color(self.selected_color)
-                button.rect.set_border_color(self.selected_border_color)
-                self.selection.append(button)
-        else:
-            for btn in self.selection:
-                btn.rect.set_color(btn.default_color)
-                btn.rect.set_border_color(btn.default_border_color)
-            button.rect.set_color(self.selected_color)
-            button.rect.set_border_color(self.selected_border_color)
-            self.selection = [button,]
-        self.emit('select-event')
-        return True
-    
-    def _compute_preferred_size(self):
-        min_w = min_h = nat_w = nat_h = 0.0
-        for btn in self._buttons:
-            s = btn.get_preferred_size()
-            min_w = max(min_w, s[0])
-            min_h += s[1]
-            nat_w = max(nat_w, s[2])
-            nat_h += s[3]
-        nb_buttons = len(self._buttons)
-        if self.button_height is not None:
-            nat_h = self.button_height * nb_buttons 
-            min_h = nat_h
-        if nb_buttons > 1:
-            total_spacing = (nb_buttons - 1) * self.spacing
-            min_h += total_spacing
-            nat_h += total_spacing
-        return min_w, min_h, nat_w, nat_h
+    def insert(self, index, actor):
+        if actor in self._children:
+            raise Exception('Actor %s is already a children of %s' % (child, self))
+        actor.set_parent(self)
+        self._children.insert(index, actor)
+        self.queue_relayout()
     
     def do_get_preferred_width(self, for_height):
-        preferred = self._compute_preferred_size()
-        return preferred[0], preferred[2]
+        preferred_width = 2*self._padding.x
+        if self._children:
+            if for_height == -1:
+                h = for_height - 2*self._padding.y
+            else:
+                h = for_height
+            preferred_width += self._children[0].get_preferred_width(for_height=h)[1]
+        return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        preferred = self._compute_preferred_size()
-        return preferred[1], preferred[3]
+        preferred_height = 2*self._padding.y
+        if self._children:
+            preferred_height += len(self._children) * (self.element_height + self._spacing.y) - self._spacing.y
+        return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
-        list_width = box.x2 - box.x1
-        
-        y = 0.0
-        for button in self._buttons:
-            button.set_width(list_width)
-            btnbox = clutter.ActorBox()
-            btnbox.x1 = 0.0
-            btnbox.y1 = y
-            btnbox.x2 = list_width
-            if self.button_height is None:
-                y += button.get_preferred_height(list_width)[1]
-            else:
-                button.set_height(self.button_height)
-                y += self.button_height
-            btnbox.y2 = y
-            button.allocate(btnbox, flags)
-            y += self.spacing
-        
+        width = box.x2 - box.x1
+        height = box.y2 - box.y1
+        y = self._padding.y
+        for child in self._children:
+            child_box = clutter.ActorBox()
+            child_box.x1 = self._padding.x
+            child_box.y1 = y
+            child_box.x2 = width - self._padding.x
+            child_box.y2 = y + self.element_height
+            child.allocate(child_box, flags)
+            y += self.element_height + self._spacing.y
         clutter.Actor.do_allocate(self, box, flags)
-    
-    def do_foreach(self, func, data=None):
-        for btn in self._buttons:
-            func(btn, data)
-    
-    def do_paint(self):
-        for btn in self._buttons:
-            btn.paint()
-    
-    def do_pick(self, color):
-        for btn in self._buttons:
-            btn.paint()
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, '_buttons'):
-            for btn in self._buttons:
-                btn.unparent()
-                btn.destroy()
-            self._buttons = list()
-
-class FileList(ButtonList):
-    __gtype_name__ = 'FileList'
-    __gproperties__ = {
-        'directory' : ( \
-            str, 'directory', 'Path to directory', '.', gobject.PARAM_READWRITE \
-        ),
-    }
-    file_pattern = re.compile('.*')
-    
-    def __init__(self, directory, file_pattern=None):
-        ButtonList.__init__(self)
-        self._directory = directory
-        if file_pattern is not None:
-            if isinstance(file_pattern, (str, unicode)):
-                file_pattern = re.compile(file_pattern)
-            self.file_pattern = file_pattern
-        self.populate()
-
-    def do_get_property(self, pspec):
-        if pspec.name == 'directory':
-            return self._directory
-    
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'directory':
-            self._directory = os.path.abspath(os.path.expanduser(value))
-            self.refresh()
-    
-    def populate(self):
-        files = os.listdir(self._directory)
-        for filename in files:
-            if self.file_pattern.match(filename):
-                self.add(filename)
-    
-    def refresh(self):
-        self.clear()
-        self.populate()
+        
 
 
 if __name__ == '__main__':
     stage = clutter.Stage()
     stage.connect('destroy', clutter.main_quit)
+    stage.set_color('#000000ff')
     
-    lst = ButtonList(spacing=16, font_name="Sans 18", button_height=48)#, multiselect=True)
-    lst.button_height = 64
-    lst.set_position(160, 96)
-    lst.set_size(320, 240)
-    lst.add('Hello World!')
-    lst.add('Happy New Year!', 'Merry Christmas!')
-    lst.add('Goodbye cruel world!')
+    color = 0
+    elements = list()
+    for i in range(5):
+        r = clutter.Rectangle()
+        color += 30
+        r.set_color((color, color, color))
+        elements.apppend(r)
+    
+    lst = LightList()
+    lst.add(*elements)
+    lst.set_position(50, 50)
+    lst.set_width(600)
 
     stage.add(lst)
     stage.show()
 
     clutter.main()
+
+

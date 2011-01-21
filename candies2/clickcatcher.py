@@ -105,10 +105,6 @@ class ClickCatcher(BaseContainer):
             self._actor.allocate(abox, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
-    
-    def do_pick(self, color):
-        if self._actor:
-            self._actor.paint()
 
 
 if __name__ == '__main__':
