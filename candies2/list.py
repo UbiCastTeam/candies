@@ -72,7 +72,10 @@ class LightList(BaseContainer):
             else:
                 child.hide()
             y = y2 + self._spacing.y
-
+    
+    def remove_clip(self):
+        for child in self._children:
+            child.show()
 
 if __name__ == '__main__':
     stage = clutter.Stage()
