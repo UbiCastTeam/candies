@@ -54,21 +54,25 @@ class ImageButton(ClassicButton):
             label_height = 0
             remaining_height = inner_height
         image_preferred_size = self.image.get_preferred_size()
-        image_ratio = float(image_preferred_size[2]) / float(image_preferred_size[3])
-        if self._expand:
-            image_height = remaining_height
-            image_width = round(float(image_height) * float(image_ratio))
-            if image_width > inner_width:
-                image_width = inner_width
-                image_height = round(float(image_width) / float(image_ratio))
-        else:
-            image_height = image_preferred_size[3]
-            if remaining_height < image_height:
+        if image_preferred_size[3] > 0:
+            image_ratio = float(image_preferred_size[2]) / float(image_preferred_size[3])
+            if self._expand:
                 image_height = remaining_height
-            image_width = round(float(image_height) * float(image_ratio))
-            if image_width > inner_width:
-                image_width = inner_width
-                image_height = round(float(image_width) / float(image_ratio))
+                image_width = round(float(image_height) * float(image_ratio))
+                if image_width > inner_width:
+                    image_width = inner_width
+                    image_height = round(float(image_width) / float(image_ratio))
+            else:
+                image_height = image_preferred_size[3]
+                if remaining_height < image_height:
+                    image_height = remaining_height
+                image_width = round(float(image_height) * float(image_ratio))
+                if image_width > inner_width:
+                    image_width = inner_width
+                    image_height = round(float(image_width) / float(image_ratio))
+        else:
+            image_width = 0
+            image_height = 0
         x_padding = round((inner_width - image_width) / 2.0)
         y_padding = round((remaining_height - image_height) / 2.0)
         

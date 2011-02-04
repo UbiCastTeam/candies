@@ -12,6 +12,7 @@ from table import Table
 from list import LightList
 from autoscroll import AutoScrollPanel
 from tooltip import ToolTipManager
+from slider import Slider
 # actors
 from circle import Circle
 from disk import Disk
