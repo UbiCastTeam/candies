@@ -116,7 +116,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_color = 'LightGray'
     default_border_color = 'Gray'
     
-    def __init__(self, text=' ', margin=0, padding=6, texture=None, rounded=True, crypted=False):
+    def __init__(self, text=' ', margin=0, padding=10, texture=None, rounded=True, crypted=False):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
@@ -126,14 +126,14 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._symbol = '•'
         self._crypted = crypted
         
+        self._width = 0
+        self._height = 0
+        
         self.label = clutter.Text()
         self.label.set_parent(self)
-        self.label.set_line_wrap(False)
+        self.label.set_line_wrap(True)
+        self.label.set_ellipsize(2) # let 2 words after "..."
         self.label.set_line_alignment(1)
-        
-        self.sizer = clutter.Text()
-        self.sizer.set_line_wrap(False)
-        self.sizer.set_line_alignment(1)
         
         self.set_text(text)
         
@@ -155,7 +155,6 @@ class TextContainer(clutter.Actor, clutter.Container):
             self._display_text = text
         else:
             self._display_text = self._symbol * len(text)
-        self.sizer.set_text(self._display_text)
         self.label.set_text(self._display_text)
     
     def get_text(self):
@@ -187,7 +186,6 @@ class TextContainer(clutter.Actor, clutter.Container):
         return self.label.get_font_name()
     
     def set_font_name(self, font_name):
-        self.sizer.set_font_name(font_name)
         self.label.set_font_name(font_name)
     
     def set_inner_color(self, color):
@@ -207,33 +205,26 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_line_wrap(self, boolean):
         if boolean:
             self._line_wrap = True
-            self.sizer.set_line_wrap(True)
             self.label.set_line_wrap(True)
         else:
             self._line_wrap = False
-            self.sizer.set_line_wrap(False)
             self.label.set_line_wrap(False)
             
     def set_line_alignment(self, alignment):
         if alignment == 'center':
             self._alignment = 'center'
-            self.sizer.set_line_alignment(1)
             self.label.set_line_alignment(1)
         elif alignment == 'right':
             self._alignment = 'right'
-            self.sizer.set_line_alignment(2)
             self.label.set_line_alignment(2)
         elif alignment == 'left':
             self._alignment = 'left'
-            self.sizer.set_line_alignment(3)
             self.label.set_line_alignment(3)
     
     def set_justify(self, boolean):
         if boolean:
-            self.sizer.set_justify(True)
             self.label.set_justify(True)
         else:
-            self.sizer.set_justify(False)
             self.label.set_justify(False)
     
     def do_set_property(self, pspec, value):
@@ -266,103 +257,51 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
-            for_height -= 2*self._margin.y + 2*self._padding.y
-        min, nat = self.sizer.get_preferred_width(for_height)
+            h = for_height - 2*self._margin.y + 2*self._padding.y
+        else:
+            h = for_height
+        min, nat = self.label.get_preferred_width(h)
         return min + 2*self._margin.x + 2*self._padding.x, nat + 2*self._margin.x + 2*self._padding.x
     
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
-            for_width -= 2*self._margin.x + 2*self._padding.x
-        min, nat = self.sizer.get_preferred_height(for_width)
+            w = for_width - 2*self._margin.x + 2*self._padding.x
+        else:
+            w = for_width
+        min, nat = self.label.get_preferred_height(w)
         return min + 2*self._margin.y + 2*self._padding.y, nat + 2*self._margin.y + 2*self._padding.y
     
-    def _wrap_singleline_label(self, min, max, max_width):
-        mid = (min + max) / 2
-        if mid-6 < 0:
-            self.label.set_text(self._display_text)
-            return
-        self.label.set_text('%s…%s' %(self._display_text[:mid-6], self._display_text[len(self._display_text)-6:]))
-        if mid == min or self.label.get_preferred_size()[2] == max_width:
-            return
-        if self.label.get_preferred_size()[2] > max_width:
-            self._wrap_singleline_label(min, mid, max_width)
-        else:
-            self._wrap_singleline_label(mid, max, max_width)
-    
-    def _wrap_multilines_label(self, min, max, max_width, max_height):
-        mid = (min + max) / 2
-        if mid-6 < 0:
-            self.label.set_text(self._display_text)
-            return
-        self.label.set_text('%s…%s' %(self._display_text[:mid-6], self._display_text[len(self._display_text)-6:]))
-        if mid == min or self.label.get_preferred_height(for_width = max_width)[1] == max_height:
-            return
-        if self.label.get_preferred_height(for_width = max_width)[1] > max_height:
-            self._wrap_multilines_label(min, mid, max_width, max_height)
-        else:
-            self._wrap_multilines_label(mid, max, max_width, max_height)
-    
     def _allocate_label(self, base_x, base_y, width, height, flags):
-        inner_width = width - 2*self._padding.x - 2*self._margin.x
-        inner_height = height - 2*self._padding.y - 2*self._margin.y
+        lbl_height = self.label.get_preferred_height(width)[1]
         
-        self.label.set_text(self._display_text)
-        self._multiline = False
-        if self._line_wrap:
-            if self.label.get_preferred_height(for_width = inner_width)[1] > self.label.get_preferred_size()[3]:
-                if inner_height > self.label.get_preferred_size()[3]:
-                    self._multiline = True
-        x1_padding = 0
-        x2_padding = 0
-        if self._multiline:
-            if self.label.get_preferred_height(for_width = inner_width)[1] > inner_height:
-                self._wrap_multilines_label(0, len(self._display_text), inner_width, inner_height)
-            lbl_height = self.label.get_preferred_height(for_width = inner_width)[1]
-        else:
-            if self.label.get_preferred_size()[2] > inner_width:
-                self._wrap_singleline_label(0, len(self._display_text), inner_width)
-                lbl_width = self.label.get_preferred_size()[2]
-                lbl_height = self.label.get_preferred_size()[3]
-                x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
-            else:
-                lbl_width = self.label.get_preferred_size()[2]
-                lbl_height = self.label.get_preferred_size()[3]
-                if self._alignment == 'right':
-                    # minimum of 5 px for label width
-                    x1_padding = inner_width - lbl_width
-                    if x1_padding > inner_width - 5:
-                        x1_padding -= 5
-                    x2_padding = 0
-                elif self._alignment == 'left':
-                    # minimum of 5 px for label width
-                    x1_padding = 0
-                    x2_padding = inner_width - lbl_width
-                    if x2_padding > inner_width - 5:
-                        x2_padding -= 5
-                else:
-                    x1_padding = x2_padding = int((inner_width - lbl_width) / 2.0)
         lbl_box = clutter.ActorBox()
-        lbl_box.x1 = base_x + self._margin.x + self._padding.x + x1_padding
-        lbl_box.y1 = base_y + self._margin.y + self._padding.y + int((inner_height - lbl_height) / 2.0)
-        lbl_box.x2 = base_x + width - self._margin.x - self._padding.x - x2_padding
-        lbl_box.y2 = base_y + lbl_box.y1 + lbl_height
+        lbl_box.x1 = base_x
+        lbl_box.x2 = lbl_box.x1 + width
+        if lbl_height < height:
+            lbl_box.y1 = base_y + int((height - lbl_height) / 2.0)
+            lbl_box.y2 = lbl_box.y1 + lbl_height
+        else:
+            lbl_box.y1 = base_y
+            lbl_box.y2 = lbl_box.y1 + height
         self.label.allocate(lbl_box, flags)
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
         rect_box = clutter.ActorBox()
-        rect_box.x1 = base_x + self._margin.x
-        rect_box.y1 = base_y + self._margin.y
-        rect_box.x2 = base_x + width - self._margin.x
-        rect_box.y2 = base_y + height - self._margin.y
+        rect_box.x1 = base_x
+        rect_box.y1 = base_y
+        rect_box.x2 = base_x + width
+        rect_box.y2 = base_y + height
         self.rect.allocate(rect_box, flags)
     
     def do_allocate(self, box, flags):
-        btn_width = box.x2 - box.x1
-        btn_height = box.y2 - box.y1
+        width = box.x2 - box.x1
+        height = box.y2 - box.y1
         
-        self._allocate_rect(0, 0, btn_width, btn_height, flags)
+        self._allocate_rect(self._margin.x, self._margin.y, width - 2*self._margin.x, height - 2*self._margin.y, flags)
         
-        self._allocate_label(0, 0, btn_width, btn_height, flags)
+        inner_width = width - 2*self._padding.x - 2*self._margin.x
+        inner_height = height - 2*self._padding.y - 2*self._margin.y
+        self._allocate_label(self._margin.x + self._padding.x, self._margin.y + self._padding.y, inner_width, inner_height, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     
@@ -386,11 +325,6 @@ class TextContainer(clutter.Actor, clutter.Container):
                 self.label.unparent()
                 self.label.destroy()
                 self.label = None
-        if hasattr(self, 'sizer'):
-            if self.sizer:
-                self.sizer.unparent()
-                self.sizer.destroy()
-                self.sizer = None
 
 
 if __name__ == '__main__':
@@ -410,8 +344,8 @@ if __name__ == '__main__':
     t.set_position(400, 250)
     stage.add(t)
     
-    t = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 0))
-    t.set_size(300, 500)
+    t = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 10))
+    t.set_size(400, 500)
     t.set_position(50, 50)
     t.set_line_wrap(True)
     #t.set_line_alignment('center')
