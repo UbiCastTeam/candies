@@ -107,6 +107,13 @@ class RoundRectangle(clutter.Actor):
         self._border_width = 0.0
         self._texture = texture
     
+    def get_clutter_color(self, color):
+        if isinstance(color, tuple):
+            c = clutter.Color(*color)
+        else:
+            c = clutter.color_from_string(color)
+        return c
+    
     def set_texture(self, texture):
         self._texture = texture
         self.queue_redraw()
@@ -116,14 +123,14 @@ class RoundRectangle(clutter.Actor):
         self.queue_redraw()
     
     def set_inner_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = self.get_clutter_color(color)
         self.queue_redraw()
     
     def set_color(self, color):
         self.set_inner_color(color)
     
     def set_border_color(self, color):
-        self._border_color = clutter.color_from_string(color)
+        self._border_color = self.get_clutter_color(color)
         self.queue_redraw()
     
     def set_border_width(self, width):
