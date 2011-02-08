@@ -228,7 +228,7 @@ class Slider(BaseContainer):
                     ratio = elements_height / elements_size[1]
                     elements_width = elements_size[0] * ratio
                     padding_x = int(float(inner_width - displayable_elements * (elements_width + self._spacing.x)) / 2)
-                elif displayable_elements > self._elements_count:
+                if displayable_elements > self._elements_count:
                     padding_x = int(float(inner_width - self._elements_count * (elements_width + self._spacing.x)) / 2)
                 padding_y = int(float(self._height - elements_height) / 2)
             else:
@@ -243,7 +243,7 @@ class Slider(BaseContainer):
                     ratio = elements_width / elements_size[0]
                     elements_height = elements_size[1] * ratio
                     padding_y = int(float(inner_height - displayable_elements * (elements_height + self._spacing.y)) / 2)
-                elif displayable_elements > self._elements_count:
+                if displayable_elements > self._elements_count:
                     padding_y = int(float(inner_height - self._elements_count * (elements_height + self._spacing.y)) / 2)
                 padding_x = int(float(self._width - elements_width) / 2)
             elements_size = (int(math.ceil(elements_width)), int(math.ceil(elements_height)))
@@ -396,6 +396,7 @@ if __name__ == '__main__':
     
     test_slider = Slider(expand=True, horizontal=True, margin=20, spacing=10)
     test_slider.set_elements_preferred_size(150, 150)
+    test_slider.set_buttons_width(64)
     test_slider.set_width(700)
     test_slider.set_height(300)
     test_slider.set_position(50, 50)
