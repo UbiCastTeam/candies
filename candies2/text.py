@@ -157,6 +157,17 @@ class TextContainer(clutter.Actor, clutter.Container):
             self._display_text = self._symbol * len(text)
         self.label.set_text(self._display_text)
     
+    def insert_text(self, text, position):
+        if position == -1:
+            self._text = '%s%s' %(self._text, text)
+        else:
+            self._text = '%s%s%s' %(self._text[:position], text, self._text[position:])
+        if not self._crypted:
+            self.label.insert_text(text, position)
+        else:
+            crypted_text = self._symbol * len(text)
+            self.label.insert_text(crypted_text, position)
+    
     def get_text(self):
         return self._text
     
