@@ -113,6 +113,11 @@ class Slider(BaseContainer):
         self._current_position = self._list.get_position()
         if self._move_to != self._current_position:
             self._execute_move()
+        else:
+            if self._horizontal:
+                self._list.set_clip(-self._current_position[0], -self._current_position[1], self._inner_width, self._inner_height)
+            else:
+                self._list.set_clip(-self._current_position[0], -self._current_position[1], self._inner_width, self._inner_height)
     
     def _execute_move(self):
         self._timeline_completed = False
@@ -122,19 +127,17 @@ class Slider(BaseContainer):
         
         # clip the list to get more fps
         if self._horizontal:
-            inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x - 2 * self._buttons_width
-            inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y
-            if start[0] < end[0]:
-                self._list.set_clip(-end[0], -end[1], -start[0] + inner_width, inner_height)
+            diff = end[0] - start[0]
+            if diff > 0:
+                self._list.set_clip(-end[0], -end[1], diff + self._inner_width, self._inner_height)
             else:
-                self._list.set_clip(-start[0], -start[1], -end[0] + inner_width, inner_height)
+                self._list.set_clip(-start[0], -start[1], -diff + self._inner_width, self._inner_height)
         else:
-            inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x
-            inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y - 2 * self._buttons_width
-            if start[1] < end[1]:
-                self._list.set_clip(-end[0], -end[1], inner_width, -start[1] + inner_height)
+            diff = end[1] - start[1]
+            if diff > 0:
+                self._list.set_clip(-end[0], -end[1], self._inner_width, diff + self._inner_height)
             else:
-                self._list.set_clip(-start[0], -start[1], inner_width, -end[1] + inner_height)
+                self._list.set_clip(-start[0], -start[1], self._inner_width, -diff + self._inner_height)
         
         self._path = clutter.Path('M %s %s L %s %s' %(start[0], start[1], end[0], end[1]))
         self._behaviour = clutter.BehaviourPath(self._alpha, self._path)
@@ -307,6 +310,10 @@ class Slider(BaseContainer):
             self._previous.set_opacity(127)
             if self._max_index >= self._elements_count:
                 self._next.set_opacity(127)
+            if self._horizontal:
+                self._list.set_clip(-self._current_position[0], -self._current_position[1], self._inner_width, self._inner_height)
+            else:
+                self._list.set_clip(-self._current_position[0], -self._current_position[1], self._inner_width, self._inner_height)
     
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
@@ -315,6 +322,12 @@ class Slider(BaseContainer):
         if width != self._width or height != self._height:
             self._width = width
             self._height = height
+            if self._horizontal:
+                self._inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x - 2 * self._buttons_width
+                self._inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y
+            else:
+                self._inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x
+                self._inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y - 2 * self._buttons_width
             self._refresh_allocation_params()
         
         # allocate buttons
@@ -392,7 +405,7 @@ class Slider(BaseContainer):
 if __name__ == '__main__':
     # stage
     stage = clutter.Stage()
-    stage_width = 800
+    stage_width = 1000
     stage_height = 600
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
@@ -401,13 +414,13 @@ if __name__ == '__main__':
     bg = clutter.Rectangle()
     bg.set_color('#444444ff')
     bg.set_size(700, 500)
-    bg.set_position(50, 50)
+    bg.set_position(150, 50)
     stage.add(bg)
     
     bg = clutter.Rectangle()
     bg.set_color('#666666ff')
     bg.set_size(660, 460)
-    bg.set_position(70, 70)
+    bg.set_position(170, 70)
     stage.add(bg)
     
     test_slider = Slider(expand=True, horizontal=True, margin=20, spacing=10)
@@ -415,7 +428,7 @@ if __name__ == '__main__':
     test_slider.set_buttons_width(64)
     test_slider.set_width(700)
     test_slider.set_height(300)
-    test_slider.set_position(50, 50)
+    test_slider.set_position(150, 50)
     stage.add(test_slider)
     
     from text import TextContainer
@@ -434,6 +447,10 @@ if __name__ == '__main__':
         rect.set_radius(10)
         rect.set_border_width(5)
         rect.set_reactive(True)
+        rect.name = 'rect %s' %i
+        def on_press(source, event):
+            print 'press', source.name
+        rect.connect('button-press-event', on_press)
         test_slider.add(rect)
     
     stage.show()
