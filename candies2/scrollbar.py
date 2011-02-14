@@ -324,11 +324,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
 class Clipper(clutter.Actor, clutter.Container):
     '''
-    OldClipper class
-        need clutter.Actor and gsignals
+    Clipper class
+        need clutter.Actor
         variables :
             .actor : clutter.Actor object to move
-            .clipper_position = float position of the clipper
         functions :
             .callback_position : need float which indicate how to move clipper
             .do_allocate : move clipper
@@ -416,6 +415,11 @@ class Clipper(clutter.Actor, clutter.Container):
 
 
 class CoglClipper(BaseContainer):
+    '''
+    CoglClipper class
+        This class is a test. It has the same behaviour than clipper class.
+        This class will not be used because cogl is to slow for this case.
+    '''
     __gtype_name__ = 'CoglClipper'
     
     def __init__(self, actor=None, expand=False):
