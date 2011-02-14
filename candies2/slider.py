@@ -120,6 +120,22 @@ class Slider(BaseContainer):
         start = self._list.get_position()
         end = self._move_to
         
+        # clip the list to get more fps
+        if self._horizontal:
+            inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x - 2 * self._buttons_width
+            inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y
+            if start[0] < end[0]:
+                self._list.set_clip(-end[0], -end[1], -start[0] + inner_width, inner_height)
+            else:
+                self._list.set_clip(-start[0], -start[1], -end[0] + inner_width, inner_height)
+        else:
+            inner_width = self._width - 2 * self._margin.x - 2 * self._padding.x
+            inner_height = self._height - 2 * self._margin.y - 2 * self._padding.y - 2 * self._buttons_width
+            if start[1] < end[1]:
+                self._list.set_clip(-end[0], -end[1], inner_width, -start[1] + inner_height)
+            else:
+                self._list.set_clip(-start[0], -start[1], inner_width, -end[1] + inner_height)
+        
         self._path = clutter.Path('M %s %s L %s %s' %(start[0], start[1], end[0], end[1]))
         self._behaviour = clutter.BehaviourPath(self._alpha, self._path)
         self._behaviour.apply(self._list)
