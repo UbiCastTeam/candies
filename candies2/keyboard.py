@@ -122,12 +122,12 @@ class Keyboard(clutter.Actor, clutter.Container):
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
     #keyboard init
-    def __init__(self, map_name, font_name=None, spacing=15):
+    def __init__(self, map_name='', spacing=15):
         clutter.Actor.__init__(self)
         self._spacing = common.Spacing(spacing)
         
         self.default_btn_size = 64
-        self.font_name = font_name
+        self.font_name = 'Sans 18'
         self.font_color = '#000000ff'
         self.inner_color = '#ffffff44'
         self.border_color = '#ffffff44'
@@ -138,17 +138,21 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._height = 0
         self._button_size = 0
         self._padding_y = 0
+        self._colums_count = 0
         
         self._lines = list()
-        self._map_name = None
+        self._map_name = ''
         self._keyboard_map = None
-        self.load_profile(map_name)
+        if map_name:
+            self.load_profile(map_name)
     
     def get_map_name(self):
         return self._map_name
     
     #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
+        if map_name == self._map_name:
+            return
         if self._keyboard_map:
             self.clear_keyboard()
         self._map_name = map_name
@@ -221,43 +225,26 @@ class Keyboard(clutter.Actor, clutter.Container):
             #self.emit('keyboard','del')
     
     def do_get_preferred_width(self, for_height):
-        if for_height == -1:
-            row_count = len(self._keyboard_map)
-            col_count = self._colums_count
-            margin = int(self.default_btn_size / 8.0)
-            preferred_width = col_count * self.default_btn_size + margin
-        else:
-            row_count = len(self._keyboard_map)
-            col_count = self._colums_count
-            btn_size = float(for_height / row_count)
-            margin = int(btn_size / 8.0)
-            preferred_width = col_count * btn_size + margin
+        #TODO
+        preferred_width = 0
         return preferred_width, preferred_width
 
     def do_get_preferred_height(self, for_width):
-        if for_width == -1:
-            row_count = len(self._keyboard_map)
-            col_count = self._colums_count
-            margin = int(self.default_btn_size / 8.0)
-            preferred_height = row_count * self.default_btn_size + margin
-        else:
-            row_count = len(self._keyboard_map)
-            col_count = self._colums_count
-            btn_size = float(for_width / col_count)
-            margin = int(btn_size / 8.0)
-            preferred_height = row_count * btn_size + margin
+        #TODO
+        preferred_height = 0
         return preferred_height, preferred_height
     
     def _refresh_allocation_params(self):
-        button_width = int(float(self._width - self._colums_count * self._spacing.x + self._spacing.x) / self._colums_count)
-        button_height = int(float(self._height - len(self._lines) * self._spacing.y + self._spacing.y) / len(self._lines))
-        self._button_size = min(button_width, button_height)
-        
-        self._padding_y = int(float(self._height - len(self._lines) * (self._button_size + self._spacing.y) + self._spacing.y) / 2.0)
-        
-        for line in self._lines:
-            line.padding_x = int(float(self._width - line.width * (self._button_size + self._spacing.x) + self._spacing.x) / 2.0)
-            line.padding_y = self._padding_y + self._lines.index(line) * (self._button_size + self._spacing.y)
+        if self._colums_count > 0:
+            button_width = int(float(self._width - self._colums_count * self._spacing.x + self._spacing.x) / self._colums_count)
+            button_height = int(float(self._height - len(self._lines) * self._spacing.y + self._spacing.y) / len(self._lines))
+            self._button_size = min(button_width, button_height)
+            
+            self._padding_y = int(float(self._height - len(self._lines) * (self._button_size + self._spacing.y) + self._spacing.y) / 2.0)
+            
+            for line in self._lines:
+                line.padding_x = int(float(self._width - line.width * (self._button_size + self._spacing.x) + self._spacing.x) / 2.0)
+                line.padding_y = self._padding_y + self._lines.index(line) * (self._button_size + self._spacing.y)
     
     # button mapping : calcul each buttons width and place them
     def do_allocate(self, box, flags):
