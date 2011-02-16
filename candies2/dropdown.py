@@ -58,6 +58,7 @@ class OptionLine(BaseContainer):
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')
         self.label.set_border_color('#00000000')
+        self.label.set_line_wrap(False) # to center text vertically
         self._add(self.label)
     
     def get_text(self):
