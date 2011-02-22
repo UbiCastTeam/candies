@@ -134,6 +134,8 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_line_wrap(True)
         self.label.set_ellipsize(2) # let 2 words after "..."
         self.label.set_line_alignment(1)
+        if crypted:
+            self.label.set_password_char(u'•')
         
         self.set_text(text)
         
@@ -151,22 +153,14 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def set_text(self, text):
         self._text = text
-        if not self._crypted:
-            self._display_text = text
-        else:
-            self._display_text = self._symbol * len(text)
-        self.label.set_text(self._display_text)
+        self.label.set_text(text)
     
     def insert_text(self, text, position):
         if position == -1:
             self._text = '%s%s' %(self._text, text)
         else:
             self._text = '%s%s%s' %(self._text[:position], text, self._text[position:])
-        if not self._crypted:
-            self.label.insert_text(text, position)
-        else:
-            crypted_text = self._symbol * len(text)
-            self.label.insert_text(crypted_text, position)
+        self.label.insert_text(text, position)
     
     def get_text(self):
         return self._text
@@ -174,10 +168,10 @@ class TextContainer(clutter.Actor, clutter.Container):
     def set_crypted(self, boolean):
         if self._crypted and not boolean:
             self._crypted = False
-            self.set_text(self._text)
+            self.label.set_password_char(u'\x00')
         elif not self._crypted and boolean:
             self._crypted = True
-            self.set_text(self._text)
+            self.label.set_password_char(u'•')
     
     def is_crypted(self):
         return self._crypted
