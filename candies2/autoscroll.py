@@ -32,13 +32,18 @@ class AutoScrollPanel(HBox):
         return self._actor
     
     def set_actor(self, element):
-        if self._actor is not None:
-            self.remove_all_elements()
-            self._actor.set_anchor_point(0, 0)
-            self._actor.remove_clip()
-            self._scrollbar.go_to_top()
+        self.remove_actor()
         self._actor = element
         self.add_element(self._actor, 'actor', expand=True, resizable=1.0)
+    
+    def remove_actor(self):
+        if self._actor is not None:
+            self.remove_all_elements()
+            self._clipper.remove_actor()
+            self._actor.set_anchor_point(0, 0)
+            self._actor.remove_clip()
+            self._actor = None
+            self._scrollbar.go_to_top()
     
     def set_bar_image_path(self, path):
         self._scrollbar.set_bar_image_path(path)
