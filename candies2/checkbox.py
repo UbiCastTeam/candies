@@ -52,14 +52,15 @@ class CheckBox(BaseContainer):
     A check button with a label
     """
     
-    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, user_data=None):
-        BaseContainer.__init__(self)
+    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, image_placement='left', user_data=None):
+        BaseContainer.__init__(self, pick_enabled=False)
         self._children = list()
         self.checked = checked
         self.callback = callback
         self.user_data = user_data
         self.spacing = 16
         self._image_size = size
+        self._image_placement = image_placement
         self._checked_image_path = None
         self._not_checked_image_path = None
         
@@ -68,14 +69,11 @@ class CheckBox(BaseContainer):
         
         self._image = clutter.Texture()
         
-        self._catcher = clutter.Rectangle()
-        self._catcher.set_color('#00000000')
-        self._catcher.connect('button-release-event',self._on_press)
-        self._catcher.set_reactive(True)
+        self.set_reactive(True)
+        self.connect('button-release-event',self._on_press)
         
         self._add(self._image)
         self._add(self._label)
-        self._add(self._catcher)
     
     def set_text(self, text):
         self._label.set_text(text)
@@ -100,10 +98,10 @@ class CheckBox(BaseContainer):
 
     def set_lock(self, status):
         if status:
-            self._catcher.set_reactive(False)
+            self.set_reactive(False)
             self.set_opacity(128)
         else:
-            self._catcher.set_reactive(True)
+            self.set_reactive(True)
             self.set_opacity(255)
 
     def set_checked(self, boolean):
@@ -141,26 +139,34 @@ class CheckBox(BaseContainer):
         height = box.y2 - box.y1
         
         checkbox_size = height
-        base_y = 0
+        
         if self._image_size < height:
             checkbox_size = self._image_size
-            base_y = int((height - checkbox_size) / 2.0)
+            image_base_y = int((height - checkbox_size) / 2.0)
+        else:
+            image_base_y = 0
+        
         checkbox_box = clutter.ActorBox()
-        checkbox_box.x1 = 0
-        checkbox_box.y1 = base_y
-        checkbox_box.x2 = checkbox_size
-        checkbox_box.y2 = base_y + checkbox_size
-        self._image.allocate(checkbox_box, flags)
+        checkbox_box.y1 = image_base_y
+        checkbox_box.y2 = image_base_y + checkbox_size
         
         label_box = clutter.ActorBox()
-        label_box.x1 = checkbox_box.x2 + self.spacing
         label_box.y1 = 0
-        label_box.x2 = width
         label_box.y2 = height
-        self._label.allocate(label_box, flags)
         
-        catcher_box = clutter.ActorBox(0, 0, width, height)
-        self._catcher.allocate(catcher_box, flags)
+        if self._image_placement == 'left':
+            checkbox_box.x1 = 0
+            checkbox_box.x2 = checkbox_size
+            label_box.x1 = checkbox_box.x2 + self.spacing
+            label_box.x2 = width
+        else:
+            checkbox_box.x1 = width - checkbox_size
+            checkbox_box.x2 = width
+            label_box.x1 = 0
+            label_box.x2 = checkbox_box.x1 - self.spacing
+        
+        self._image.allocate(checkbox_box, flags)
+        self._label.allocate(label_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
 
