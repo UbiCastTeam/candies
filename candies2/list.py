@@ -124,6 +124,7 @@ class LightList(BaseContainer):
                 else:
                     child.hide()
                 y = y2 + self._spacing.y
+        clutter.Actor.set_clip(self, x_offset, y_offset, width, height)
     
     def remove_clip(self):
         for child in self._children:
