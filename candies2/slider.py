@@ -62,15 +62,17 @@ class Slider(BaseContainer):
     def set_elements_preferred_size(self, width, height):
         self._elements_preferred_size = (width, height)
     
-    def previous(self):
+    def previous(self, nb=1):
         #print '_on_previous_press'
+        if nb > self._min_index:
+            nb = self._min_index
         if self._min_index > 0:
-            self._min_index -= 1
-            self._max_index -= 1
+            self._min_index -= nb
+            self._max_index -= nb
             if self._horizontal:
-                self._move_to = (self._move_to[0] + self._elements_size[0] + self._spacing.x, 0)
+                self._move_to = (self._move_to[0] + nb * (self._elements_size[0] + self._spacing.x), 0)
             else:
-                self._move_to = (0, self._move_to[1] + self._elements_size[1] + self._spacing.y)
+                self._move_to = (0, self._move_to[1] + nb * (self._elements_size[1] + self._spacing.y))
             self._request_move()
             if self._buttons_flash_fct:
                 self._buttons_flash_fct(self._previous)
@@ -81,15 +83,17 @@ class Slider(BaseContainer):
             else:
                 self._previous.set_opacity(255)
     
-    def next(self):
+    def next(self, nb=1):
         #print '_on_next_press'
+        if nb > self._elements_count - self._max_index:
+            nb = self._elements_count - self._max_index
         if self._max_index < self._elements_count:
-            self._min_index += 1
-            self._max_index += 1
+            self._min_index += nb
+            self._max_index += nb
             if self._horizontal:
-                self._move_to = (self._move_to[0] - self._elements_size[0] - self._spacing.x, 0)
+                self._move_to = (self._move_to[0] - nb * (self._elements_size[0] + self._spacing.x), 0)
             else:
-                self._move_to = (0, self._move_to[1] - self._elements_size[1] - self._spacing.y)
+                self._move_to = (0, self._move_to[1] - nb * (self._elements_size[1] + self._spacing.y))
             self._request_move()
             if self._buttons_flash_fct:
                 self._buttons_flash_fct(self._next)
@@ -99,6 +103,43 @@ class Slider(BaseContainer):
                 self._next.set_opacity(127)
             else:
                 self._next.set_opacity(255)
+    
+    def go_to_previous_page(self):
+        if self._min_index - self._displayed_elements <= 0:
+            self.go_to_beginning()
+        else:
+            self.previous(self._displayed_elements)
+    
+    def go_to_next_page(self):
+        if self._max_index + self._displayed_elements >= self._elements_count:
+            self.go_to_end()
+        else:
+            self.next(self._displayed_elements)
+    
+    def go_to_beginning(self):
+        self._min_index = 0
+        self._max_index = self._displayed_elements
+        self._move_to = (0, 0)
+        self._request_move()
+        if self._buttons_flash_fct:
+            self._buttons_flash_fct(self._previous)
+        
+        self._previous.set_opacity(127)
+        self._next.set_opacity(255)
+    
+    def go_to_end(self):
+        self._min_index = self._elements_count - self._displayed_elements
+        self._max_index = self._elements_count
+        if self._horizontal:
+            self._move_to = ((self._displayed_elements - self._elements_count) * (self._elements_size[0] + self._spacing.x), 0)
+        else:
+            self._move_to = (0, (self._displayed_elements - self._elements_count) * (self._elements_size[1] + self._spacing.y))
+        self._request_move()
+        if self._buttons_flash_fct:
+            self._buttons_flash_fct(self._next)
+        
+        self._previous.set_opacity(255)
+        self._next.set_opacity(127)
     
     def _on_previous_press(self, source, event):
         self.previous()
