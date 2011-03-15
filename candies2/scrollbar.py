@@ -166,6 +166,9 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def go_to_top(self):
         self.set_scroller_progress_percent(0)
 
+    def go_to_bottom(self):
+        self.set_scroller_progress_percent(1)
+
     def do_get_preferred_height(self, for_width):
         if self.h:
             return 80, 80

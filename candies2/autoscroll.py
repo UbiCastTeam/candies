@@ -54,6 +54,9 @@ class AutoScrollPanel(HBox):
     def go_to_top(self):
         self._scrollbar.go_to_top()
     
+    def go_to_bottom(self):
+        self._scrollbar.go_to_bottom()
+    
     # Function to check and add a scrollbar if needed
     def check_scrollbar(self, relayout=True):
         #print '---------------------------', self._max_height
