@@ -91,7 +91,14 @@ KEYBOARD_MAPS = {
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
         (Key('.'), Key('0'), Key('←',evt='suppr'))
-    ) 
+    ),
+    
+    'hexa': (
+        (Key('1'), Key('2'), Key('3'), Key('A'), Key('B')), 
+        (Key('4'), Key('5'), Key('6'), Key('C'), Key('D')), 
+        (Key('7'), Key('8'), Key('9'), Key('E'), Key('F')),
+        (Key('-'), None, Key('0'), None, Key('←',evt='suppr'))
+    )
 }
 
 
@@ -163,6 +170,14 @@ class Keyboard(clutter.Actor, clutter.Container):
         for keys_line in self._keyboard_map:
             line = ButtonLine()
             for key in keys_line:
+                if key is None:
+                    # create spacer
+                    spacer = ClassicButton('')
+                    spacer.set_parent(self)
+                    spacer.kb_width = 1
+                    spacer.hide()
+                    line.add(spacer, 1)
+                    continue
                 # create button
                 button = ClassicButton(key.text, texture=self.button_texture)
                 if self.font_name:
