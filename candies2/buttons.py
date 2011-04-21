@@ -13,6 +13,10 @@ class ClassicButton(TextContainer):
     def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True, crypted=False):
         TextContainer.__init__(self, label, margin=margin, padding=padding, texture=texture, rounded=rounded, crypted=crypted)
         self.set_reactive(True)
+    
+    def set_lock(self, lock):
+        self.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
 
 class ImageButton(ClassicButton):
     __gtype_name__ = 'ImageButton'

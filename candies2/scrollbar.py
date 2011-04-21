@@ -324,6 +324,11 @@ class Scrollbar(clutter.Actor, clutter.Container):
                         child.unparent()
                         child.destroy()
                         child = None
+    
+    def set_lock(self, lock):
+        self.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
+
 
 class Clipper(clutter.Actor, clutter.Container):
     '''
