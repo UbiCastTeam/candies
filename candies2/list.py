@@ -129,6 +129,7 @@ class LightList(BaseContainer):
     def remove_clip(self):
         for child in self._children:
             child.show()
+        clutter.Actor.remove_clip(self)
 
 if __name__ == '__main__':
     stage = clutter.Stage()
