@@ -22,7 +22,7 @@ class MultiLayerContainer(BaseContainer):
         except ValueError:
             raise ValueError('Actor %s is not a children of %s' %(after, self))
         actor.set_parent(self)
-        self._children.insert(index, child)
+        self._children.insert(index, actor)
         self.queue_relayout()
     
     def remove_all(self):
