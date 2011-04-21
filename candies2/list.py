@@ -32,12 +32,12 @@ class LightList(BaseContainer):
         except ValueError:
             raise ValueError('Actor %s is not a children of %s' %(after, self))
         actor.set_parent(self)
-        self._children.insert(index, child)
+        self._children.insert(index, actor)
         self.queue_relayout()
     
     def insert(self, index, actor):
         if actor in self._children:
-            raise Exception('Actor %s is already a children of %s' % (child, self))
+            raise Exception('Actor %s is already a children of %s' % (actor, self))
         actor.set_parent(self)
         self._children.insert(index, actor)
         self.queue_relayout()
