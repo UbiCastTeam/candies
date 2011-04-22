@@ -353,6 +353,9 @@ class Clipper(clutter.Actor, clutter.Container):
         self.clipper_position = 0
         self.expand = expand
     
+    def get_actor(self):
+        return self.actor
+    
     def set_actor(self, actor):
         self.remove_actor()
         self.actor = actor
@@ -475,7 +478,6 @@ class CoglClipper(BaseContainer):
         if self.actor:
             actor_width, actor_height = self.actor.get_preferred_size()[2:]
             position = 0 - int(self.clipper_position * (actor_height - self._height))
-            print position
             if self.expand:
                 objbox = clutter.ActorBox(0, position, self._width, position + actor_height)
             else:
