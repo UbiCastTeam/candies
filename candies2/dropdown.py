@@ -149,7 +149,11 @@ class OptionLine(BaseContainer):
         return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        preferred_height = self.icon_height + 2*self._padding.y
+        preferred_height = 0
+        if for_width != -1:
+            w = for_width - self.icon_height - 2*self._padding.x - self._spacing.x
+            preferred_height = self.label.get_preferred_height(w)[1]
+        preferred_height = max(preferred_height, self.icon_height) + 2*self._padding.y
         return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
