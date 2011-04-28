@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*
 
 class Margin():
+    ATTR_NAME = 'margin'
+    
     def __init__(self, value, xy_only=False):
-        self._attr_name = 'margin'
         if isinstance(value, int):
             self.left = value
             self.right = value
@@ -16,16 +17,16 @@ class Margin():
                 self.top = value[1]
                 self.bottom = value[1]
             elif xy_only:
-                raise ValueError('Invalid value for %s, %s must be a tuple with 2 values' %(self._attr_name, self._attr_name, len(value)))
+                raise ValueError('Invalid value for %s, %s must be a tuple with 2 values' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
             elif len(value) == 4:
                 self.top = value[0]
                 self.right = value[1]
                 self.bottom = value[2]
                 self.left = value[3]
             else:
-                raise ValueError('Invalid value for %s, %s must be a tuple with 2 or 4 values' %(self._attr_name, self._attr_name, len(value)))
+                raise ValueError('Invalid value for %s, %s must be a tuple with 2 or 4 values' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
         else:
-            raise ValueError('Invalid value for %s, %s must be a int or a tuple' %(self._attr_name, self._attr_name, len(value)))
+            raise ValueError('Invalid value for %s, %s must be a int or a tuple' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
         
         if self.left == self.right:
             self.x = self.left
@@ -38,13 +39,15 @@ class Margin():
             self.y = int((self.top + self.bottom) / 2)
 
 class Padding(Margin):
+    ATTR_NAME = 'padding'
+    
     def __init__(self, value, xy_only=False):
         Margin.__init__(self, value, xy_only=xy_only)
-        self._attr_name = 'padding'
 
 class Spacing(Margin):
+    ATTR_NAME = 'spacing'
+    
     def __init__(self, value, xy_only=True):
         Margin.__init__(self, value, xy_only=xy_only)
-        self._attr_name = 'spacing'
 
 

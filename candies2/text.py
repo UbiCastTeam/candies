@@ -133,7 +133,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_parent(self)
         self.label.set_line_wrap(True)
         self.label.set_ellipsize(2) # let 2 words after "..."
-        self.label.set_line_alignment(1)
+        self.label.set_line_alignment(1) # center text
         if crypted:
             self.label.set_password_char(u'•')
         
@@ -262,7 +262,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
-            h = for_height - 2*self._margin.y + 2*self._padding.y
+            h = for_height - 2*self._margin.y - 2*self._padding.y
         else:
             h = for_height
         min, nat = self.label.get_preferred_width(h)
@@ -270,7 +270,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
-            w = for_width - 2*self._margin.x + 2*self._padding.x
+            w = for_width - 2*self._margin.x - 2*self._padding.x
         else:
             w = for_width
         min, nat = self.label.get_preferred_height(w)

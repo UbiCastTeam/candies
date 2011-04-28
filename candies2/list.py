@@ -42,6 +42,13 @@ class LightList(BaseContainer):
         self._children.insert(index, actor)
         self.queue_relayout()
     
+    def clear(self):
+        for child in self._children:
+            child.unparent()
+            child.destroy()
+        self._children = list()
+        self.queue_relayout()
+    
     def remove_all(self):
         for child in self._children:
             child.unparent()
