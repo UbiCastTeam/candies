@@ -11,6 +11,7 @@ from autoscroll import AutoScrollPanel
 from list import LightList
 from aligner import Aligner
 from slider import Slider
+from dropdown import OptionLine
 
 
 class FileEntry(BaseContainer):
@@ -169,73 +170,126 @@ class FileChooser(BaseContainer):
     '''
     __gtype_name__ = 'FileChooser'
     
-    def __init__(self, base_dir='/', callback=None, padding=0, spacing=10):
+    def __init__(self, base_dir='/', callback=None, padding=0, spacing=0, skin=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self._base_dir = base_dir
         self.callback = callback
         
-        self.colors = dict(
-            file_bg = '#333333ff',
-            file_bg2 = '#222222ff',
-            selected_bg = '#228822ff',
-            selected_bg2 = '#228822ff',
-        )
-        self.icons = dict(
-            default = '/data/sdiemer/storage/images/iconset musthave/New.png',
-            folder = '/data/sdiemer/storage/images/iconset musthave/Folder.png',
-            bmp = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-            tiff = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-            gif = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-            jpg = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-            png = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-        )
+        if not skin:
+            self.skin = dict(
+                file_bg = '#333333ff',
+                file_bg2 = '#444444ff',
+                selected_bg = '#228822ff',
+                selected_bg2 = '#228822ff',
+                bg_color = '#222222ff',
+                button_font_name = '14',
+                button_font_color = '#ffffffff',
+                button_inner_color = '#444444ff',
+                button_border_color = '#333333ff',
+            )
+        else:
+            self.skin = skin
+        if not icons:
+            self.icons = dict(
+                default = '/data/sdiemer/storage/images/iconset musthave/New.png',
+                folder = '/data/sdiemer/storage/images/iconset musthave/Folder.png',
+                bmp = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+                tiff = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+                gif = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+                jpg = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+                png = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+                cancel_btn = '/data/sdiemer/storage/images/iconset musthave/Previous.png',
+                validate_btn = '/data/sdiemer/storage/images/iconset musthave/Next.png',
+            )
+        else:
+            self.icons = icons
         
         self._selected = None
         self._current_dir = None
-        self.preview_width = 300
+        self.preview_width = 500
         self.top_bar_height = 64
+        self.bottom_bar_height = 64
+        self.components_padding = 10
         self.paths = list() # list of tuples with path and current selection index
         
         # actors
         self._bg = clutter.Rectangle()
-        self._bg.set_color('#444444ff')
+        self._bg.set_color(self.skin['bg_color'])
         self._add(self._bg)
         
         self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=10, h_align='left')
+        button = self._slider.get_next_button()
+        button.set_font_name(self.skin['button_font_name'])
+        button.set_font_color(self.skin['button_font_color'])
+        button.set_inner_color(self.skin['button_inner_color'])
+        button.set_border_color(self.skin['button_border_color'])
+        button = self._slider.get_previous_button()
+        button.set_font_name(self.skin['button_font_name'])
+        button.set_font_color(self.skin['button_font_color'])
+        button.set_inner_color(self.skin['button_inner_color'])
+        button.set_border_color(self.skin['button_border_color'])
         self._add(self._slider)
         
         self._files_list = LightList()
         self._files_pannel = AutoScrollPanel(self._files_list)
         self._add(self._files_pannel)
         
-        self._preview = PreviewDisplayer(padding=10)
+        self._preview = PreviewDisplayer(padding=self.components_padding)
         self._preview.hide()
         self._add(self._preview)
+        
+        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons['cancel_btn'], padding=(10, 0))
+        self._cancel.connect('button-release-event', self._on_validate)
+        self._cancel.set_font_name(self.skin['button_font_name'])
+        self._cancel.set_font_color(self.skin['button_font_color'])
+        self._cancel.set_inner_color(self.skin['button_inner_color'])
+        self._cancel.set_border_color(self.skin['button_border_color'])
+        self._add(self._cancel)
+        
+        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons['validate_btn'], padding=(10, 0))
+        self._validate.connect('button-release-event', self._on_cancel)
+        self._validate.set_font_name(self.skin['button_font_name'])
+        self._validate.set_font_color(self.skin['button_font_color'])
+        self._validate.set_inner_color(self.skin['button_inner_color'])
+        self._validate.set_border_color(self.skin['button_border_color'])
+        self._add(self._validate)
         
         self.open_dir(base_dir)
         
         # key bindings
-        self.pool = clutter.binding_pool_get_for_class(FileChooser)
+        self.pool = clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
         self.pool.install_action('move-down', clutter.keysyms.Down, None, self.select_next)
         self.pool.install_action('move-up', clutter.keysyms.Up, None, self.select_previous)
         self.pool.install_action('parent', clutter.keysyms.BackSpace, None, self.parent_dir)
-        self.pool.install_action('select', clutter.keysyms.Return, None, self._on_enter)
-        self.pool.install_action('select', clutter.keysyms.KP_Enter, None, self._on_enter)
-        self.pool.install_action('escape', clutter.keysyms.Escape, None, self._on_escape)
+        self.pool.install_action('select', clutter.keysyms.Return, None, self._on_validate)
+        self.pool.install_action('select', clutter.keysyms.KP_Enter, None, self._on_validate)
+        self.pool.install_action('escape', clutter.keysyms.Escape, None, self._on_cancel)
         self.connect('key-press-event', self._on_key_press_event)
     
     def _on_key_press_event(self, source, event):
         self.pool.activate(event.keyval, event.modifier_state, source)
     
-    def _on_enter(self, *args):
+    def _on_validate(self, *args):
         if self._selected is not None:
-            self.on_file_click(self._selected)
+            self.select_entry(self._selected)
     
-    def _on_escape(self, *args):
+    def _on_cancel(self, *args):
         if self.callback:
             self.callback(None)
+    
+    def get_actor(self, name):
+        if name == 'background':
+            return self._bg
+        elif name == 'next_btn':
+            return self._slider.get_next_button()
+        elif name == 'previous_btn':
+            return self._slider.get_previous_button()
+        elif name == 'cancel_btn':
+            return self._cancel
+        elif name == 'validate_btn':
+            return self._validate
     
     def select_next(self, *args):
         files_entries = self._files_list.get_children()
@@ -243,7 +297,7 @@ class FileChooser(BaseContainer):
             return
         
         if self._selected is None:
-            self.on_file_click(files_entries[0])
+            self.select_entry(files_entries[0])
         else:
             index = files_entries.index(self._selected) + 1
             try:
@@ -251,7 +305,7 @@ class FileChooser(BaseContainer):
             except IndexError:
                 pass
             else:
-                self.on_file_click(file_entry)
+                self.select_entry(file_entry)
     
     def select_previous(self, *args):
         files_entries = self._files_list.get_children()
@@ -259,7 +313,7 @@ class FileChooser(BaseContainer):
             return
         
         if self._selected is None:
-            self.on_file_click(files_entries[len(files_entries) - 1])
+            self.select_entry(files_entries[len(files_entries) - 1])
         else:
             index = files_entries.index(self._selected) - 1
             if index == -1:
@@ -269,9 +323,9 @@ class FileChooser(BaseContainer):
             except IndexError:
                 pass
             else:
-                self.on_file_click(file_entry)
+                self.select_entry(file_entry)
     
-    def on_file_click(self, source, event=None):
+    def select_entry(self, source, event=None):
         path = source.name
         is_dir = os.path.isdir(path)
         if not source.selected:
@@ -286,12 +340,14 @@ class FileChooser(BaseContainer):
                 self._preview.show()
             else:
                 self._preview.hide()
-        else:
+        elif event is None:
             if is_dir:
                 self.open_dir(path)
             else:
                 if self.callback:
                     self.callback(path)
+        if event is not None and is_dir:
+            self.open_dir(path)
     
     def change_dir(self, dir_path, index=0):
         self._selected = None
@@ -313,15 +369,15 @@ class FileChooser(BaseContainer):
                 icon_src = self.icons.get('folder', self.icons['default'])
             file_entry = FileEntry(name=file_path, icon_src=icon_src, text=name, extension=extension, is_dir=is_dir)
             file_entry.set_reactive(True)
-            file_entry.connect('button-release-event', self.on_file_click)
+            file_entry.connect('button-release-event', self.select_entry)
             if cycle != 'even':
                 cycle = 'even'
-                file_entry.set_bg_color(self.colors['file_bg'])
-                file_entry.set_selected_bg_color(self.colors['selected_bg'])
+                file_entry.set_bg_color(self.skin['file_bg'])
+                file_entry.set_selected_bg_color(self.skin['selected_bg'])
             else:
                 cycle = 'odd'
-                file_entry.set_bg_color(self.colors['file_bg2'])
-                file_entry.set_selected_bg_color(self.colors['selected_bg2'])
+                file_entry.set_bg_color(self.skin['file_bg2'])
+                file_entry.set_selected_bg_color(self.skin['selected_bg2'])
             self._files_list.add(file_entry)
         self._files_pannel.check_scrollbar()
         
@@ -331,7 +387,7 @@ class FileChooser(BaseContainer):
         except IndexError:
             pass
         else:
-            self.on_file_click(to_select)
+            self.select_entry(to_select)
     
     def _return_to_index(self, index):
         current_index = len(self.paths)
@@ -357,6 +413,10 @@ class FileChooser(BaseContainer):
         button = ClassicButton(os.path.basename(path))
         button.index = len(self.paths) + 1
         button.connect('button-release-event', self._on_button_click)
+        button.set_font_name(self.skin['button_font_name'])
+        button.set_font_color(self.skin['button_font_color'])
+        button.set_inner_color(self.skin['button_inner_color'])
+        button.set_border_color(self.skin['button_border_color'])
         self.paths.append([path, 0, button])
         self.change_dir(path, 0)
         self._slider.add(button)
@@ -393,19 +453,35 @@ class FileChooser(BaseContainer):
         pannel_box = clutter.ActorBox()
         pannel_box.x1 = self._padding.x
         pannel_box.y1 = self._padding.y + self.top_bar_height
-        pannel_box.x2 = self._padding.x + inner_width - self.preview_width - self._spacing.x
-        pannel_box.y2 = self._padding.y + inner_height
+        pannel_box.x2 = width - self._padding.x - self.preview_width - self._spacing.x
+        pannel_box.y2 = height - self._padding.y - self.bottom_bar_height
         
         preview_box = clutter.ActorBox()
         preview_box.x1 = pannel_box.x2 + self._spacing.x
-        preview_box.y1 = self._padding.y + self.top_bar_height
-        preview_box.x2 = self._padding.x + inner_width
-        preview_box.y2 = self._padding.y + inner_height
+        preview_box.y1 = pannel_box.y1
+        preview_box.x2 = width - self._padding.x
+        preview_box.y2 = pannel_box.y2
+        
+        validate_box = clutter.ActorBox()
+        validate_box.y1 = pannel_box.y2 + self.components_padding
+        validate_box.y2 = height - self._padding.y - self.components_padding
+        validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
+        validate_box.x1 = width - self._spacing.x - self.components_padding - validate_width
+        validate_box.x2 = validate_box.x1 + validate_width
+        
+        cancel_box = clutter.ActorBox()
+        cancel_box.y1 = validate_box.y1
+        cancel_box.y2 = validate_box.y2
+        cancel_width = self._cancel.get_preferred_width(for_height=cancel_box.y2 - cancel_box.y1)[1]
+        cancel_box.x1 = self._spacing.x + self.components_padding
+        cancel_box.x2 = cancel_box.x1 + cancel_width
         
         self._bg.allocate(bg_box, flags)
         self._slider.allocate(slider_box, flags)
         self._files_pannel.allocate(pannel_box, flags)
         self._preview.allocate(preview_box, flags)
+        self._validate.allocate(validate_box, flags)
+        self._cancel.allocate(cancel_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
 
@@ -413,8 +489,8 @@ class FileChooser(BaseContainer):
 if __name__ == '__main__':
     # stage
     stage = clutter.Stage()
-    stage_width = 1000
-    stage_height = 600
+    stage_width = 1200
+    stage_height = 700
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
     stage.connect('destroy', clutter.main_quit)
@@ -422,8 +498,8 @@ if __name__ == '__main__':
     def cb(result):
         print result
     
-    fc = FileChooser(callback=cb)
-    fc.set_size(900, 500)
+    fc = FileChooser(base_dir='/data', callback=cb)
+    fc.set_size(1100, 600)
     fc.set_position(50, 50)
     stage.add(fc)
     fc.set_focused(True)

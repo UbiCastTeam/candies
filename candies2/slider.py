@@ -63,7 +63,7 @@ class Slider(BaseContainer):
         self._behaviour = clutter.BehaviourPath(self._alpha, self._path)
         
         # key bindings
-        self.pool = clutter.BindingPool('Slider_%s' %id(self))
+        self.pool = clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
         self.pool.install_action('move-left', clutter.keysyms.Left, None, self._keyboard_previous)
         self.pool.install_action('move-up', clutter.keysyms.Up, None, self._keyboard_previous)
         self.pool.install_action('move-right', clutter.keysyms.Right, None, self._keyboard_next)

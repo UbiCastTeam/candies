@@ -31,6 +31,7 @@ from clickcatcher import ClickCatcher
 from checkbox import CheckButton, CheckBox
 from radiobutton import RadioButton
 from keyboard import Keyboard
+from filechooser import FileChooser
 from adjusters import NumberAdjuster
 # player
 from seekbar import SeekBar
