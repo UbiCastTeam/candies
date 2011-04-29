@@ -334,7 +334,19 @@ class FileChooser(BaseContainer):
             self.on_file_click(to_select)
     
     def _return_to_index(self, index):
-        print 'return to index', index
+        current_index = len(self.paths)
+        diff = current_index - index
+        if diff > 0:
+            for i in range(diff):
+                button = self.paths.pop()[2]
+                self._slider.remove(button)
+            self._slider.complete_relayout()
+            if len(self.paths) > 4:
+                self._slider.go_to_end()
+            else:
+                self._slider.go_to_beginning()
+            path, index, button = self.paths[-1]
+            self.change_dir(path, index)
     
     def _on_button_click(self, source, event):
         self._return_to_index(source.index)
@@ -343,7 +355,7 @@ class FileChooser(BaseContainer):
         if self._current_dir == path:
             return
         button = ClassicButton(os.path.basename(path))
-        button.index = len(self.paths)
+        button.index = len(self.paths) + 1
         button.connect('button-release-event', self._on_button_click)
         self.paths.append([path, 0, button])
         self.change_dir(path, 0)
