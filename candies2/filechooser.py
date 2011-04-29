@@ -27,7 +27,7 @@ class FileEntry(BaseContainer):
         self.name = name
         self.selected = False
         self._icon_src = icon_src
-        self._text = text
+        self.text = text
         self.extension = extension
         self._is_dir = is_dir
         self.icon_size = 32
@@ -282,7 +282,7 @@ class FileChooser(BaseContainer):
         if self.callback:
             self.callback(None)
     
-    def set_base_dir(self, base_dir):
+    def set_base_dir(self, base_dir, selected=None):
         self._base_dir = base_dir
         
         for path in self.paths:
@@ -293,7 +293,7 @@ class FileChooser(BaseContainer):
         self._current_dir = None
         self.paths = list()
         
-        self.open_dir(base_dir)
+        self.open_dir(base_dir, selected)
     
     def get_actor(self, name):
         if name == 'background':
@@ -356,8 +356,7 @@ class FileChooser(BaseContainer):
             if self._selected is not None:
                 self._selected.set_selected(False)
             self._selected = source
-            index = self._files_list.get_children().index(self._selected)
-            self.paths[-1][1] = index
+            self.paths[-1][1] = source.text
             source.set_selected(True)
             if not is_dir and source.extension in ('bmp', 'png', 'gif', 'tiff', 'jpg'):
                 self._preview.set_from_file(path)
@@ -373,7 +372,7 @@ class FileChooser(BaseContainer):
         if event is not None and is_dir:
             self.open_dir(path)
     
-    def change_dir(self, dir_path, index=0):
+    def change_dir(self, dir_path, selected=None):
         self._selected = None
         self._files_list.clear()
         self._current_dir = dir_path
@@ -381,6 +380,7 @@ class FileChooser(BaseContainer):
         files.sort()
         
         cycle = 'even'
+        index = 0
         for name in files:
             file_path = os.path.join(dir_path, name)
             is_dir = os.path.isdir(file_path)
@@ -403,6 +403,8 @@ class FileChooser(BaseContainer):
                 file_entry.set_bg_color(self.styles['file_bg2'])
                 file_entry.set_selected_bg_color(self.styles['selected_bg2'])
             self._files_list.add(file_entry)
+            if name == selected:
+                index = files.index(name)
         self._files_pannel.check_scrollbar()
         
         # select index
@@ -425,15 +427,15 @@ class FileChooser(BaseContainer):
                 self._slider.go_to_end()
             else:
                 self._slider.go_to_beginning()
-            path, index, button = self.paths[-1]
-            self.change_dir(path, index)
+            path, selected, button = self.paths[-1]
+            self.change_dir(path, selected)
     
     def _on_button_click(self, source, event):
         if self._buttons_flash_fct:
             self._buttons_flash_fct(source)
         self._return_to_index(source.index)
     
-    def open_dir(self, path):
+    def open_dir(self, path, selected=None):
         if self._current_dir == path:
             return
         button = ClassicButton(os.path.basename(path))
@@ -444,11 +446,11 @@ class FileChooser(BaseContainer):
         button.set_inner_color(self.styles['button_inner_color'])
         button.set_border_color(self.styles['button_border_color'])
         button.set_texture(self.styles['button_texture'])
-        self.paths.append([path, 0, button])
+        self.paths.append([path, selected, button])
         self._slider.add(button)
         self._slider.complete_relayout()
         self._slider.go_to_end()
-        self.change_dir(path, 0)
+        self.change_dir(path, selected)
     
     def parent_dir(self, *args):
         if len(self.paths) > 1:
@@ -459,8 +461,8 @@ class FileChooser(BaseContainer):
                 self._slider.go_to_end()
             else:
                 self._slider.go_to_beginning()
-            path, index, button = self.paths[-1]
-            self.change_dir(path, index)
+            path, selected, button = self.paths[-1]
+            self.change_dir(path, selected)
     
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
