@@ -184,6 +184,7 @@ class FileChooser(BaseContainer):
                 selected_bg = '#228822ff',
                 selected_bg2 = '#228822ff',
                 bg_color = '#222222ff',
+                pannel_bg_color = '#00000044',
                 button_font_name = '14',
                 button_font_color = '#ffffffff',
                 button_inner_color = '#444444ff',
@@ -211,6 +212,10 @@ class FileChooser(BaseContainer):
         self._bg = clutter.Rectangle()
         self._bg.set_color(self.styles['bg_color'])
         self._add(self._bg)
+        
+        self._pannel_bg = clutter.Rectangle()
+        self._pannel_bg.set_color(self.styles['pannel_bg_color'])
+        self._add(self._pannel_bg)
         
         self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=10, h_align='left')
         button = self._slider.get_next_button()
@@ -479,20 +484,26 @@ class FileChooser(BaseContainer):
         slider_box.x2 = self._padding.x + inner_width
         slider_box.y2 = self._padding.y + self.styles['top_bar_height']
         
+        pannel_bg_box = clutter.ActorBox()
+        pannel_bg_box.x1 = self._padding.x
+        pannel_bg_box.y1 = slider_box.y2
+        pannel_bg_box.x2 = width - self._padding.x
+        pannel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
+        
         pannel_box = clutter.ActorBox()
-        pannel_box.x1 = self._padding.x
-        pannel_box.y1 = self._padding.y + self.styles['top_bar_height']
+        pannel_box.x1 = pannel_bg_box.x1
+        pannel_box.y1 = pannel_bg_box.y1
         pannel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
-        pannel_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
+        pannel_box.y2 = pannel_bg_box.y2
         
         preview_box = clutter.ActorBox()
         preview_box.x1 = pannel_box.x2 + self._spacing.x
-        preview_box.y1 = pannel_box.y1
-        preview_box.x2 = width - self._padding.x
-        preview_box.y2 = pannel_box.y2
+        preview_box.y1 = pannel_bg_box.y1
+        preview_box.x2 = pannel_bg_box.x2
+        preview_box.y2 = pannel_bg_box.y2
         
         validate_box = clutter.ActorBox()
-        validate_box.y1 = pannel_box.y2 + self.components_padding
+        validate_box.y1 = pannel_bg_box.y2 + self.components_padding
         validate_box.y2 = height - self._padding.y - self.components_padding
         validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
         validate_box.x1 = width - self._spacing.x - self.components_padding - validate_width
@@ -507,6 +518,7 @@ class FileChooser(BaseContainer):
         
         self._bg.allocate(bg_box, flags)
         self._slider.allocate(slider_box, flags)
+        self._pannel_bg.allocate(pannel_bg_box, flags)
         self._files_pannel.allocate(pannel_box, flags)
         self._preview.allocate(preview_box, flags)
         self._validate.allocate(validate_box, flags)
