@@ -192,17 +192,7 @@ class FileChooser(BaseContainer):
         else:
             self.skin = skin
         if not icons:
-            self.icons = dict(
-                default = '/data/sdiemer/storage/images/iconset musthave/New.png',
-                folder = '/data/sdiemer/storage/images/iconset musthave/Folder.png',
-                bmp = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-                tiff = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-                gif = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-                jpg = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-                png = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
-                cancel_btn = '/data/sdiemer/storage/images/iconset musthave/Previous.png',
-                validate_btn = '/data/sdiemer/storage/images/iconset musthave/Next.png',
-            )
+            self.icons = dict()
         else:
             self.icons = icons
         
@@ -240,7 +230,7 @@ class FileChooser(BaseContainer):
         self._preview.hide()
         self._add(self._preview)
         
-        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons['cancel_btn'], padding=(10, 0))
+        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), padding=(10, 0))
         self._cancel.connect('button-release-event', self._on_validate)
         self._cancel.set_font_name(self.skin['button_font_name'])
         self._cancel.set_font_color(self.skin['button_font_color'])
@@ -248,7 +238,7 @@ class FileChooser(BaseContainer):
         self._cancel.set_border_color(self.skin['button_border_color'])
         self._add(self._cancel)
         
-        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons['validate_btn'], padding=(10, 0))
+        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons.get('validate_btn'), padding=(10, 0))
         self._validate.connect('button-release-event', self._on_cancel)
         self._validate.set_font_name(self.skin['button_font_name'])
         self._validate.set_font_color(self.skin['button_font_color'])
@@ -498,7 +488,18 @@ if __name__ == '__main__':
     def cb(result):
         print result
     
-    fc = FileChooser(base_dir='/data', callback=cb)
+    icons = dict(
+        default = '/data/sdiemer/storage/images/iconset musthave/New.png',
+        folder = '/data/sdiemer/storage/images/iconset musthave/Folder.png',
+        bmp = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+        tiff = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+        gif = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+        jpg = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+        png = '/data/sdiemer/storage/images/iconset musthave/Picture.png',
+        cancel_btn = '/data/sdiemer/storage/images/iconset musthave/Previous.png',
+        validate_btn = '/data/sdiemer/storage/images/iconset musthave/Next.png',
+    )
+    fc = FileChooser(base_dir='/data', callback=cb, icons=icons)
     fc.set_size(1100, 600)
     fc.set_position(50, 50)
     stage.add(fc)
