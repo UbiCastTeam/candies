@@ -282,6 +282,19 @@ class FileChooser(BaseContainer):
         if self.callback:
             self.callback(None)
     
+    def set_base_dir(self, base_dir):
+        self._base_dir = base_dir
+        
+        for path in self.paths:
+            self._slider.remove(path[2])
+        
+        self._selected = None
+        self._files_list.clear()
+        self._current_dir = None
+        self.paths = list()
+        
+        self.open_dir(base_dir)
+    
     def get_actor(self, name):
         if name == 'background':
             return self._bg
