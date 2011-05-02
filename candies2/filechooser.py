@@ -11,7 +11,7 @@ from autoscroll import AutoScrollPanel
 from list import LightList
 from aligner import Aligner
 from slider import Slider
-from dropdown import OptionLine
+from dropdown import OptionLine, Select
 
 
 class FileEntry(BaseContainer):
@@ -191,11 +191,11 @@ class TypeFilter(object):
 
 class FileChooser(BaseContainer):
     '''
-    A pannel to select file
+    A panel to select file
     '''
     __gtype_name__ = 'FileChooser'
     
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, callback=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -214,6 +214,14 @@ class FileChooser(BaseContainer):
         self._directories_first = directories_first
         self._case_sensitive_sort = case_sensitive_sort
         
+        if type_filters:
+            self._type_filters = type_filters
+        else:
+            self._type_filters = [TypeFilter("all", None, "All")]
+        self._type_filters_dict = dict()
+        for type_filter in self._type_filters:
+            self._type_filters_dict[type_filter.name] = type_filter
+        
         self.callback = callback
         
         if not styles:
@@ -223,7 +231,7 @@ class FileChooser(BaseContainer):
                 selected_bg = '#228822ff',
                 selected_bg2 = '#228822ff',
                 bg_color = '#222222ff',
-                pannel_bg_color = '#00000044',
+                panel_bg_color = '#00000044',
                 button_font_name = '14',
                 button_font_color = '#ffffffff',
                 button_inner_color = '#444444ff',
@@ -252,9 +260,9 @@ class FileChooser(BaseContainer):
         self._bg.set_color(self.styles['bg_color'])
         self._add(self._bg)
         
-        self._pannel_bg = clutter.Rectangle()
-        self._pannel_bg.set_color(self.styles['pannel_bg_color'])
-        self._add(self._pannel_bg)
+        self._panel_bg = clutter.Rectangle()
+        self._panel_bg.set_color(self.styles['panel_bg_color'])
+        self._add(self._panel_bg)
         
         self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=10, h_align='left')
         button = self._slider.get_next_button()
@@ -272,8 +280,8 @@ class FileChooser(BaseContainer):
         self._add(self._slider)
         
         self._files_list = LightList(element_size=self.styles['element_size'])
-        self._files_pannel = AutoScrollPanel(self._files_list)
-        self._add(self._files_pannel)
+        self._files_panel = AutoScrollPanel(self._files_list)
+        self._add(self._files_panel)
         
         self._preview = PreviewDisplayer(padding=self.components_padding)
         self._preview.hide()
@@ -298,6 +306,11 @@ class FileChooser(BaseContainer):
         self._validate.set_border_color(self.styles['button_border_color'])
         self._validate.set_texture(self.styles['button_texture'])
         self._add(self._validate)
+        
+        self._type_filter_select = Select(padding=(10, 0), on_change_callback=self._on_change_type_filter, user_data=None)
+        for type_filter in self._type_filters:
+            self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+        self._add(self._type_filter_select)
         
         directory = self._base_dir
         while directory != self._start_dir:
@@ -353,6 +366,9 @@ class FileChooser(BaseContainer):
     def _on_refresh(self, group, action_name, keyval, modifiers):
         self.refresh()
     
+    def _on_change_type_filter(self, type_filter):
+        self.refresh()
+    
     def set_base_dir(self, base_dir, selected=None):
         self._base_dir = base_dir
         
@@ -369,8 +385,8 @@ class FileChooser(BaseContainer):
     def get_actor(self, name):
         if name == 'background':
             return self._bg
-        if name == 'pannel':
-            return self._files_pannel
+        if name == 'panel':
+            return self._files_panel
         if name == 'slider':
             return self._slider
         elif name == 'next_btn':
@@ -463,10 +479,21 @@ class FileChooser(BaseContainer):
         self._files_list.clear()
         self._current_dir = dir_path
         files = os.listdir(dir_path)
-        files.sort(cmp=self._files_comparator)
         
+        # filter by type
+        current_type_filter = self._type_filters_dict[self._type_filter_select.get_selected().name]
+        tmp = list()
+        for file_ in files:
+            file_path = os.path.join(dir_path, file_)
+            if os.path.isdir(file_path) or current_type_filter.file_matchs(file_):
+                tmp.append(file_)
+        files = tmp
+        
+        # hide dot files if required
         if not self._display_hidden_files:
             files = [f for f in files if not f.startswith('.')]
+        
+        files.sort(cmp=self._files_comparator)
         
         cycle = 'even'
         index = 0
@@ -493,7 +520,7 @@ class FileChooser(BaseContainer):
             self._files_list.add(file_entry)
             if name == selected:
                 index = files.index(name)
-        self._files_pannel.check_scrollbar()
+        self._files_panel.check_scrollbar()
         
         # select index
         try:
@@ -572,44 +599,54 @@ class FileChooser(BaseContainer):
         slider_box.x2 = self._padding.x + inner_width
         slider_box.y2 = self._padding.y + self.styles['top_bar_height']
         
-        pannel_bg_box = clutter.ActorBox()
-        pannel_bg_box.x1 = self._padding.x
-        pannel_bg_box.y1 = slider_box.y2
-        pannel_bg_box.x2 = width - self._padding.x
-        pannel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
+        panel_bg_box = clutter.ActorBox()
+        panel_bg_box.x1 = self._padding.x
+        panel_bg_box.y1 = slider_box.y2
+        panel_bg_box.x2 = width - self._padding.x
+        panel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
         
-        pannel_box = clutter.ActorBox()
-        pannel_box.x1 = pannel_bg_box.x1
-        pannel_box.y1 = pannel_bg_box.y1
-        pannel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
-        pannel_box.y2 = pannel_bg_box.y2
+        panel_box = clutter.ActorBox()
+        panel_box.x1 = panel_bg_box.x1
+        panel_box.y1 = panel_bg_box.y1
+        panel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
+        panel_box.y2 = panel_bg_box.y2
         
         preview_box = clutter.ActorBox()
-        preview_box.x1 = pannel_box.x2 + self._spacing.x
-        preview_box.y1 = pannel_bg_box.y1
-        preview_box.x2 = pannel_bg_box.x2
-        preview_box.y2 = pannel_bg_box.y2
+        preview_box.x1 = panel_box.x2 + self._spacing.x
+        preview_box.y1 = panel_bg_box.y1
+        preview_box.x2 = panel_bg_box.x2
+        preview_box.y2 = panel_bg_box.y2
         
-        validate_box = clutter.ActorBox()
-        validate_box.y1 = pannel_bg_box.y2 + self.components_padding
-        validate_box.y2 = height - self._padding.y - self.components_padding
-        validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
-        validate_box.x1 = width - self._spacing.x - self.components_padding - validate_width
-        validate_box.x2 = validate_box.x1 + validate_width
+        type_filter_box = clutter.ActorBox()
+        type_filter_box.y1 = panel_bg_box.y2 + self.components_padding
+        type_filter_box.y2 = height - self._padding.y - self.components_padding
+        type_filter_width = self._type_filter_select.get_preferred_width(for_height=type_filter_box.y2 - type_filter_box.y1)[1]
+        type_filter_box.x1 = width - self._spacing.x - self.components_padding - type_filter_width
+        type_filter_box.x2 = type_filter_box.x1 + type_filter_width
         
         cancel_box = clutter.ActorBox()
-        cancel_box.y1 = validate_box.y1
-        cancel_box.y2 = validate_box.y2
+        cancel_box.y1 = type_filter_box.y1
+        cancel_box.y2 = type_filter_box.y2
         cancel_width = self._cancel.get_preferred_width(for_height=cancel_box.y2 - cancel_box.y1)[1]
         cancel_box.x1 = self._spacing.x + self.components_padding
         cancel_box.x2 = cancel_box.x1 + cancel_width
         
+        validate_box = clutter.ActorBox()
+        validate_box.y1 = type_filter_box.y1
+        validate_box.y2 = type_filter_box.y2
+        validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
+        #validate_box.x1 = width - self._spacing.x - self.components_padding - validate_width
+        #validate_box.x1 = (width - validate_width) / 2
+        validate_box.x1 = (type_filter_box.x1 + cancel_box.x2 - validate_width) / 2
+        validate_box.x2 = validate_box.x1 + validate_width
+        
         self._bg.allocate(bg_box, flags)
         self._slider.allocate(slider_box, flags)
-        self._pannel_bg.allocate(pannel_bg_box, flags)
-        self._files_pannel.allocate(pannel_box, flags)
+        self._panel_bg.allocate(panel_bg_box, flags)
+        self._files_panel.allocate(panel_box, flags)
         self._preview.allocate(preview_box, flags)
         self._validate.allocate(validate_box, flags)
+        self._type_filter_select.allocate(type_filter_box, flags)
         self._cancel.allocate(cancel_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
@@ -653,18 +690,18 @@ if __name__ == '__main__':
         validate_btn = '/home/sde-melo/bzr/easycast/images/buttons/right.png'
     )
     """
-    fc = FileChooser(base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, callback=cb, icons=icons)
-    #fc = FileChooser(base_dir='/home/sde-melo', start_dir='/home/sde-melo/Images', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, callback=cb, icons=icons)
+    
+    type_filters = (
+        TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images"),
+        TypeFilter("all", None, "All")
+    )
+    
+    fc = FileChooser(base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
+    #fc = FileChooser(base_dir='/home/sde-melo', start_dir='/home/sde-melo/Images', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
     fc.set_size(1100, 600)
     fc.set_position(50, 50)
     stage.add(fc)
     fc.set_focused(True)
-    
-    type_filter = TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images")
-    print type_filter.full_label()
-    
-    type_filter = TypeFilter("all", None, "All")
-    print type_filter.full_label()
     
     stage.show()
     clutter.main()
