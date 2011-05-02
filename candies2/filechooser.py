@@ -5,6 +5,7 @@ import os
 import gobject
 import clutter
 import common
+import unicodedata
 from container import BaseContainer
 from buttons import ClassicButton
 from autoscroll import AutoScrollPanel
@@ -471,7 +472,29 @@ class FileChooser(BaseContainer):
                 return 1
         if not self._case_sensitive_sort:
             file1 = file1.lower()
+            try:
+                file1 = unicode(file1.encode("latin1", "ignore"), "utf8")
+            except Exception:
+                try:
+                    file1 = unicode(file1, "utf8")
+                except Exception:
+                    pass
+            try:
+                file1 = unicodedata.normalize("NFKD", file1).encode("utf8", "ignore")
+            except Exception:
+                pass
             file2 = file2.lower()
+            try:
+                file2 = unicode(file2.encode("latin1", "ignore"), "utf8")
+            except Exception:
+                try:
+                    file2 = unicode(file2, "utf8")
+                except Exception:
+                    pass
+            try:
+                file2 = unicodedata.normalize("NFKD", file2).encode("utf8", "ignore")
+            except Exception:
+                pass
         return cmp(file1, file2)
     
     def change_dir(self, dir_path, selected=None):
@@ -693,6 +716,7 @@ if __name__ == '__main__':
     
     type_filters = (
         TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images"),
+        TypeFilter("text", ("txt",), "Text files"),
         TypeFilter("all", None, "All")
     )
     
