@@ -16,7 +16,7 @@ from dropdown import OptionLine
 
 class FileEntry(BaseContainer):
     '''
-    An actor to represet a file
+    An actor to represent a file
     '''
     __gtype_name__ = 'FileEntry'
 
@@ -164,17 +164,56 @@ class PreviewDisplayer(BaseContainer):
         clutter.Actor.do_allocate(self, box, flags)
 
 
+class TypeFilter(object):
+    
+    def __init__(self, name, extensions, label=None):
+        object.__init__(self)
+        self.name = name
+        self.extensions = extensions
+        if label:
+            self.label = label
+        else:
+            self.label = name
+    
+    def full_label(self):
+        if self.extensions:
+            extension_list = ", ".join(["*.%s" % ext for ext in self.extensions])
+        else:
+            extension_list = "*.*"
+        return "%s (%s)" % (self.label, extension_list)
+    
+    def file_matchs(self, filename):
+        if not self.extensions:
+            return True
+        extension = os.path.splitext(filename)[1][1:]
+        return extension in self.extensions
+
+
 class FileChooser(BaseContainer):
     '''
     A pannel to select file
     '''
     __gtype_name__ = 'FileChooser'
     
-    def __init__(self, base_dir='/', callback=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, callback=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self._base_dir = base_dir
+        # start_dir must be a subdirectory of base_dir
+        # startswith is not enough because /home/toto1 is not a subdir of /home/toto
+        if start_dir and os.path.dirname(start_dir).startswith(base_dir):
+            self._start_dir = start_dir
+        else:
+            self._start_dir = self._base_dir
+        
+        self._allow_hidden_files = allow_hidden_files
+        self._display_hidden_files = display_hidden_files_at_start
+        if not self._allow_hidden_files:
+            self._display_hidden_files = False
+        self._directories_first = directories_first
+        self._case_sensitive_sort = case_sensitive_sort
+        
         self.callback = callback
         
         if not styles:
@@ -260,7 +299,24 @@ class FileChooser(BaseContainer):
         self._validate.set_texture(self.styles['button_texture'])
         self._add(self._validate)
         
-        self.open_dir(base_dir)
+        directory = self._base_dir
+        while directory != self._start_dir:
+            if directory == os.sep:
+                button = ClassicButton(directory)
+            else:
+                button = ClassicButton(os.path.basename(directory))
+            button.index = len(self.paths) + 1
+            button.connect('button-release-event', self._on_button_click)
+            button.set_font_name(self.styles['button_font_name'])
+            button.set_font_color(self.styles['button_font_color'])
+            button.set_inner_color(self.styles['button_inner_color'])
+            button.set_border_color(self.styles['button_border_color'])
+            button.set_texture(self.styles['button_texture'])
+            self.paths.append([directory, None, button])
+            self._slider.add(button)
+            rest = self._start_dir[len(directory):].strip(os.sep)
+            directory = os.path.join(directory, rest.split(os.sep)[0])
+        self.open_dir(self._start_dir)
         
         # key bindings
         self.pool = clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
@@ -270,6 +326,8 @@ class FileChooser(BaseContainer):
         self.pool.install_action('select', clutter.keysyms.Return, None, self._on_validate)
         self.pool.install_action('select', clutter.keysyms.KP_Enter, None, self._on_validate)
         self.pool.install_action('escape', clutter.keysyms.Escape, None, self._on_cancel)
+        self.pool.install_action('display_hidden_files', clutter.keysyms.h, clutter.CONTROL_MASK, self._on_display_hidden_files)
+        self.pool.install_action('refresh', clutter.keysyms.F5, None, self._on_refresh)
         self.connect('key-press-event', self._on_key_press_event)
     
     def _on_key_press_event(self, source, event):
@@ -286,6 +344,14 @@ class FileChooser(BaseContainer):
             self._buttons_flash_fct(self._cancel)
         if self.callback:
             self.callback(None)
+    
+    def _on_display_hidden_files(self, group, action_name, keyval, modifiers):
+        if self._allow_hidden_files:
+            self._display_hidden_files = not self._display_hidden_files
+            self.refresh()
+    
+    def _on_refresh(self, group, action_name, keyval, modifiers):
+        self.refresh()
     
     def set_base_dir(self, base_dir, selected=None):
         self._base_dir = base_dir
@@ -377,12 +443,30 @@ class FileChooser(BaseContainer):
         if event is not None and is_dir:
             self.open_dir(path)
     
+    def _files_comparator(self, file1, file2):
+        abs_path1 = os.path.join(self._current_dir, file1)
+        abs_path2 = os.path.join(self._current_dir, file2)
+        is_dir1 = os.path.isdir(abs_path1)
+        is_dir2 = os.path.isdir(abs_path2)
+        if self._directories_first:
+            if is_dir1 and not is_dir2:
+                return -1
+            if is_dir2 and not is_dir1:
+                return 1
+        if not self._case_sensitive_sort:
+            file1 = file1.lower()
+            file2 = file2.lower()
+        return cmp(file1, file2)
+    
     def change_dir(self, dir_path, selected=None):
         self._selected = None
         self._files_list.clear()
         self._current_dir = dir_path
         files = os.listdir(dir_path)
-        files.sort()
+        files.sort(cmp=self._files_comparator)
+        
+        if not self._display_hidden_files:
+            files = [f for f in files if not f.startswith('.')]
         
         cycle = 'even'
         index = 0
@@ -390,23 +474,22 @@ class FileChooser(BaseContainer):
             file_path = os.path.join(dir_path, name)
             is_dir = os.path.isdir(file_path)
             extension = ''
-            if not is_dir:
-                splitted = name.split('.')
-                extension = splitted[len(splitted) - 1]
-                icon_src = self.icons.get(extension, self.icons['default'])
-            else:
+            if is_dir:
                 icon_src = self.icons.get('folder', self.icons['default'])
+            else:
+                extension = os.path.splitext(name)[1][1:]
+                icon_src = self.icons.get(extension, self.icons['default'])
             file_entry = FileEntry(name=file_path, icon_src=icon_src, text=name, extension=extension, is_dir=is_dir)
             file_entry.set_reactive(True)
             file_entry.connect('button-release-event', self.select_entry)
-            if cycle != 'even':
-                cycle = 'even'
-                file_entry.set_bg_color(self.styles['file_bg'])
-                file_entry.set_selected_bg_color(self.styles['selected_bg'])
-            else:
+            if cycle == 'even':
                 cycle = 'odd'
                 file_entry.set_bg_color(self.styles['file_bg2'])
                 file_entry.set_selected_bg_color(self.styles['selected_bg2'])
+            else:
+                cycle = 'even'
+                file_entry.set_bg_color(self.styles['file_bg'])
+                file_entry.set_selected_bg_color(self.styles['selected_bg'])
             self._files_list.add(file_entry)
             if name == selected:
                 index = files.index(name)
@@ -441,20 +524,19 @@ class FileChooser(BaseContainer):
         self._return_to_index(source.index)
     
     def open_dir(self, path, selected=None):
-        if self._current_dir == path:
-            return
-        button = ClassicButton(os.path.basename(path))
-        button.index = len(self.paths) + 1
-        button.connect('button-release-event', self._on_button_click)
-        button.set_font_name(self.styles['button_font_name'])
-        button.set_font_color(self.styles['button_font_color'])
-        button.set_inner_color(self.styles['button_inner_color'])
-        button.set_border_color(self.styles['button_border_color'])
-        button.set_texture(self.styles['button_texture'])
-        self.paths.append([path, selected, button])
-        self._slider.add(button)
-        self._slider.complete_relayout()
-        self._slider.go_to_end()
+        if self._current_dir != path:
+            button = ClassicButton(os.path.basename(path))
+            button.index = len(self.paths) + 1
+            button.connect('button-release-event', self._on_button_click)
+            button.set_font_name(self.styles['button_font_name'])
+            button.set_font_color(self.styles['button_font_color'])
+            button.set_inner_color(self.styles['button_inner_color'])
+            button.set_border_color(self.styles['button_border_color'])
+            button.set_texture(self.styles['button_texture'])
+            self.paths.append([path, selected, button])
+            self._slider.add(button)
+            self._slider.complete_relayout()
+            self._slider.go_to_end()
         self.change_dir(path, selected)
     
     def parent_dir(self, *args):
@@ -468,6 +550,12 @@ class FileChooser(BaseContainer):
                 self._slider.go_to_beginning()
             path, selected, button = self.paths[-1]
             self.change_dir(path, selected)
+    
+    def refresh(self):
+        selected = None
+        if self.paths:
+            selected = self.paths[-1][1]
+        self.open_dir(self._current_dir, selected)
     
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
@@ -538,6 +626,7 @@ if __name__ == '__main__':
     
     def cb(result):
         print result
+        #clutter.main_quit()
     
     icons = dict(
         default = '/data/sdiemer/storage/images/iconset musthave/New.png',
@@ -550,11 +639,32 @@ if __name__ == '__main__':
         cancel_btn = '/data/sdiemer/storage/images/iconset musthave/Previous.png',
         validate_btn = '/data/sdiemer/storage/images/iconset musthave/Next.png',
     )
-    fc = FileChooser(base_dir='/data', callback=cb, icons=icons)
+    
+    """
+    icons = dict(
+        default = '/home/sde-melo/bzr/easycast/images/files_icons/default.png',
+        folder = '/home/sde-melo/bzr/easycast/images/files_icons/folder.png',
+        bmp = '/home/sde-melo/bzr/easycast/images/files_icons/img.png',
+        tiff = '/home/sde-melo/bzr/easycast/images/files_icons/img.png',
+        gif = '/home/sde-melo/bzr/easycast/images/files_icons/img.png',
+        jpg = '/home/sde-melo/bzr/easycast/images/files_icons/img.png',
+        png = '/home/sde-melo/bzr/easycast/images/files_icons/img.png',
+        cancel_btn = '/home/sde-melo/bzr/easycast/images/buttons/cancel.png',
+        validate_btn = '/home/sde-melo/bzr/easycast/images/buttons/right.png'
+    )
+    """
+    fc = FileChooser(base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, callback=cb, icons=icons)
+    #fc = FileChooser(base_dir='/home/sde-melo', start_dir='/home/sde-melo/Images', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, callback=cb, icons=icons)
     fc.set_size(1100, 600)
     fc.set_position(50, 50)
     stage.add(fc)
     fc.set_focused(True)
+    
+    type_filter = TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images")
+    print type_filter.full_label()
+    
+    type_filter = TypeFilter("all", None, "All")
+    print type_filter.full_label()
     
     stage.show()
     clutter.main()
