@@ -196,6 +196,11 @@ class FileChooser(BaseContainer):
     '''
     __gtype_name__ = 'FileChooser'
     
+    BASE_TYPE_FILTERS = {
+        "images": TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images"),
+        "all": TypeFilter("all", None, "All")
+    }
+    
     def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
@@ -216,9 +221,14 @@ class FileChooser(BaseContainer):
         self._case_sensitive_sort = case_sensitive_sort
         
         if type_filters:
-            self._type_filters = type_filters
+            self._type_filters = list()
+            for type_filter in type_filters:
+                if type_filter in self.BASE_TYPE_FILTERS:
+                    self._type_filters.append(self.BASE_TYPE_FILTERS[type_filter])
+                else:
+                    self._type_filters.append(type_filter)
         else:
-            self._type_filters = [TypeFilter("all", None, "All")]
+            self._type_filters = [self.BASE_TYPE_FILTERS["all"]]
         self._type_filters_dict = dict()
         for type_filter in self._type_filters:
             self._type_filters_dict[type_filter.name] = type_filter
@@ -383,6 +393,84 @@ class FileChooser(BaseContainer):
         
         self.open_dir(base_dir, selected)
     
+    def set_start_dir(self, start_dir, selected=None):
+        # start_dir must be a subdirectory of base_dir
+        # startswith is not enough because /home/toto1 is not a subdir of /home/toto
+        if start_dir and os.path.dirname(start_dir).startswith(self._base_dir):
+            self._start_dir = start_dir
+        else:
+            self._start_dir = self._base_dir
+        
+        for path in self.paths:
+            self._slider.remove(path[2])
+        
+        self._selected = None
+        self._files_list.clear()
+        self._current_dir = None
+        self.paths = list()
+        
+        directory = self._base_dir
+        while directory != self._start_dir:
+            if directory == os.sep:
+                button = ClassicButton(directory)
+            else:
+                button = ClassicButton(os.path.basename(directory))
+            button.index = len(self.paths) + 1
+            button.connect('button-release-event', self._on_button_click)
+            button.set_font_name(self.styles['button_font_name'])
+            button.set_font_color(self.styles['button_font_color'])
+            button.set_inner_color(self.styles['button_inner_color'])
+            button.set_border_color(self.styles['button_border_color'])
+            button.set_texture(self.styles['button_texture'])
+            self.paths.append([directory, None, button])
+            self._slider.add(button)
+            rest = self._start_dir[len(directory):].strip(os.sep)
+            directory = os.path.join(directory, rest.split(os.sep)[0])
+        self.open_dir(self._start_dir)
+    
+    def set_allow_hidden_files(self, allow_hidden_files):
+        self._allow_hidden_files = allow_hidden_files
+        self._display_hidden_files = display_hidden_files_at_start
+        if not self._allow_hidden_files:
+            self._display_hidden_files = False
+        self.refresh()
+    
+    def set_display_hidden_files(self, display_hidden_files):
+        if self._allow_hidden_files and self._display_hidden_files != display_hidden_files:
+            self.display_hidden_files = display_hidden_files
+            self.refresh()
+    
+    def set_directories_first(self, directories_first):
+        self._directories_first = directories_first
+        self.refresh()
+    
+    def set_case_sensitive_sort(self, case_sensitive_sort):
+        self._case_sensitive_sort = case_sensitive_sort
+        self.refresh()
+    
+    def set_type_filters(self, type_filters):
+        if type_filters:
+            self._type_filters = list()
+            for type_filter in type_filters:
+                if type_filter in self.BASE_TYPE_FILTERS:
+                    self._type_filters.append(self.BASE_TYPE_FILTERS[type_filter])
+                else:
+                    self._type_filters.append(type_filter)
+        else:
+            self._type_filters = [self.BASE_TYPE_FILTERS["all"]]
+        self._type_filters_dict = dict()
+        for type_filter in self._type_filters:
+            self._type_filters_dict[type_filter.name] = type_filter
+        
+        selected = self._type_filter_select.get_selected().name
+        self._type_filter_select.remove_all_options()
+        for type_filter in self._type_filters:
+            self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+        if selected in self._type_filters_dict:
+            self._type_filter_select.select_option(selected)
+        
+        self.refresh()
+    
     def get_actor(self, name):
         if name == 'background':
             return self._bg
@@ -398,6 +486,8 @@ class FileChooser(BaseContainer):
             return self._cancel
         elif name == 'validate_btn':
             return self._validate
+        elif name == 'type_filter':
+            return self._type_filter_select
     
     def set_buttons_flash_fct(self, fct):
         self._buttons_flash_fct = fct
@@ -659,7 +749,6 @@ class FileChooser(BaseContainer):
         validate_box.y2 = type_filter_box.y2
         validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
         #validate_box.x1 = width - self._spacing.x - self.components_padding - validate_width
-        #validate_box.x1 = (width - validate_width) / 2
         validate_box.x1 = (type_filter_box.x1 + cancel_box.x2 - validate_width) / 2
         validate_box.x2 = validate_box.x1 + validate_width
         
@@ -715,9 +804,9 @@ if __name__ == '__main__':
     """
     
     type_filters = (
-        TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images"),
+        "images",
         TypeFilter("text", ("txt",), "Text files"),
-        TypeFilter("all", None, "All")
+        "all"
     )
     
     fc = FileChooser(base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
