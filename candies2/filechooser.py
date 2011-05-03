@@ -430,7 +430,6 @@ class FileChooser(BaseContainer):
     
     def set_allow_hidden_files(self, allow_hidden_files):
         self._allow_hidden_files = allow_hidden_files
-        self._display_hidden_files = display_hidden_files_at_start
         if not self._allow_hidden_files:
             self._display_hidden_files = False
         self.refresh()
