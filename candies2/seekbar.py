@@ -14,7 +14,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         - bar :          clutter.Rectangle       bar seekbar
         - cursor :              clutter.Rectangle       cursor
         - cursor_width :        float                   width size of cursor
-        - duration :            float                   total time of video
         - current_time :        float                   real time of video
 
     * Functions :
@@ -63,7 +62,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._last_event_x = None
         self.cursor_width = 0.0
         self.seek_function = seek_function
-        self._duration = 0.0
         # Time markers
         self._markers = list()
         self._markers_position = list()
@@ -155,8 +153,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def emit_seek_request(self):
         if self.seek_function is not None:
             self.seek_function(self._progress)
-        #if self.callback is not None:
-        #    self.callback(self, self._progress * self._duration, self._progress, self._duration)
     
     def set_edit_points(self, edit_points):
         self._clear_edit_points()
@@ -211,15 +207,11 @@ class SeekBar(clutter.Actor, clutter.Container):
     
     def update_position(self, source, current_time, position, duration):
         if self._last_event_x is None:
-            self.set_duration(duration)
             self.set_progress(position)
 
     def seek_at_progression(self, new_progression):
         self.set_progress(new_progression)
         self.emit_seek_request()
-    
-    def set_duration(self, duration):
-        self._duration = duration
     
     def set_cursor_color(self, color):
         self.cursor.props.color = clutter.color_from_string(color)
@@ -299,15 +291,14 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.bar.allocate(bar_box, flags)
         
         # sequences
-        if self._duration != 0:
-            for sequence_index in range(len(self._sequence_blocks)):
-                sequence = self._sequence_blocks[sequence_index]
-                sequence_box = clutter.ActorBox()
-                sequence_box.x1 = int(bar_box.x1 + int(self.edit_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
-                sequence_box.y1 = bar_box.y1
-                sequence_box.x2 = int(bar_box.x1 + int(self.edit_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
-                sequence_box.y2 = bar_box.y2
-                sequence.allocate(sequence_box, flags)
+        for sequence_index in range(len(self._sequence_blocks)):
+            sequence = self._sequence_blocks[sequence_index]
+            sequence_box = clutter.ActorBox()
+            sequence_box.x1 = int(bar_box.x1 + int(self.edit_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.y1 = bar_box.y1
+            sequence_box.x2 = int(bar_box.x1 + int(self.edit_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.y2 = bar_box.y2
+            sequence.allocate(sequence_box, flags)
         
         # markers
         bar_width = bar_box.x2 - bar_box.x1
