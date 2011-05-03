@@ -81,7 +81,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
                 stage.set_key_focus(self)
         elif not boolean and self.__focused:
             stage = self.get_stage()
-            if stage:
+            if stage and hasattr(self, '_old_key_focus'):
                 stage.set_key_focus(self._old_key_focus)
         self.__focused = boolean
     

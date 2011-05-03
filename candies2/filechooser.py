@@ -245,13 +245,16 @@ class FileChooser(BaseContainer):
                 panel_bg_color = '#00000044',
                 button_font_name = '14',
                 button_font_color = '#ffffffff',
+                button_font_color_selected = '#ffffffff',
                 button_inner_color = '#444444ff',
+                button_inner_color_selected = '#444444ff',
                 button_border_color = '#333333ff',
                 element_size = 50,
                 preview_width = 500,
                 top_bar_height = 64,
                 bottom_bar_height = 64,
                 button_texture = None,
+                icon_height = 32,
             )
         else:
             self.styles = styles
@@ -264,7 +267,7 @@ class FileChooser(BaseContainer):
         self._selected = None
         self._current_dir = None
         self.components_padding = 10
-        self.paths = list() # list of tuples with path and current selection index
+        self.paths = list() # list of tuples with path and current selection name
         
         # actors
         self._bg = clutter.Rectangle()
@@ -298,7 +301,7 @@ class FileChooser(BaseContainer):
         self._preview.hide()
         self._add(self._preview)
         
-        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), padding=(10, 0))
+        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
         self._cancel.set_reactive(True)
         self._cancel.connect('button-release-event', self._on_cancel)
         self._cancel.set_font_name(self.styles['button_font_name'])
@@ -308,7 +311,7 @@ class FileChooser(BaseContainer):
         self._cancel.set_texture(self.styles['button_texture'])
         self._add(self._cancel)
         
-        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons.get('validate_btn'), padding=(10, 0))
+        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons.get('validate_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
         self._validate.set_reactive(True)
         self._validate.connect('button-release-event', self._on_validate)
         self._validate.set_font_name(self.styles['button_font_name'])
@@ -318,7 +321,21 @@ class FileChooser(BaseContainer):
         self._validate.set_texture(self.styles['button_texture'])
         self._add(self._validate)
         
-        self._type_filter_select = Select(padding=(10, 0), on_change_callback=self._on_change_type_filter, user_data=None)
+        self._type_filter_select = Select(
+            padding = (10, 0),
+            on_change_callback = self._on_change_type_filter,
+            icon_height = self.styles['icon_height'],
+            open_icon_path = self.icons.get('file_type_icon'),
+            font = self.styles['button_font_name'],
+            font_color = self.styles['button_font_color'],
+            selected_font_color = self.styles['button_font_color_selected'],
+            color = self.styles['button_inner_color'],
+            border_color = self.styles['button_border_color'],
+            option_color = self.styles['button_inner_color_selected'],
+            texture = self.styles['button_texture'],
+            user_data = None
+        )
+        
         for type_filter in self._type_filters:
             self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
         self._add(self._type_filter_select)

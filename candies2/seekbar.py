@@ -41,13 +41,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         - do_foreach
         - do_paint
         - do_pick
-
-    * Signal :
-        - seek_request_realtime : progression   gfloat  during on_move in drag and drop.
-        - seek_request_lazy : progression   gfloat  after drag and drop in on_release.
     '''
-    __gsignals__ = {'seek_request_realtime' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]), \
-                        'seek_request_lazy' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
     __gtype_name__ = 'SeekBar'
     __gproperties__ = {
         'cursor_color': (
@@ -161,8 +155,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def emit_seek_request(self):
         if self.seek_function is not None:
             self.seek_function(self._progress)
-        #self.emit('seek_request_realtime', self._progress)
-        #self.emit('seek_request_lazy', self._progress)
         #if self.callback is not None:
         #    self.callback(self, self._progress * self._duration, self._progress, self._duration)
     
