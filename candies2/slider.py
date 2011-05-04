@@ -11,7 +11,7 @@ import math
 class Slider(BaseContainer):
     __gtype_name__ = 'Slider'
     
-    def __init__(self, elements_per_page=3, margin=0, spacing=10, horizontal=True, keep_ratio=False, h_align='center', v_align='center', pick_enabled=True):
+    def __init__(self, elements_per_page=3, margin=0, spacing=10, horizontal=True, keep_ratio=False, h_align='center', v_align='middle', pick_enabled=True):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False, pick_enabled=pick_enabled)
         self._margin = common.Margin(margin)
         self._spacing = common.Spacing(spacing)
@@ -29,6 +29,8 @@ class Slider(BaseContainer):
         
         self._width = 0
         self._height = 0
+        self._list_width = 0
+        self._list_height = 0
         self._list_box = clutter.ActorBox()
         
         self._previous = ImageButton(has_text=False)
@@ -383,9 +385,9 @@ class Slider(BaseContainer):
         else:
             self._padding.left = self._width - 2 * self._margin.x - content_width
             self._padding.right = 0
-        if self._v_align == 'center':
+        if self._v_align == 'middle':
             self._padding.top = self._padding.bottom = int(float(self._height - 2 * self._margin.y - content_height) / 2.0)
-        elif self._v_align == 'left':
+        elif self._v_align == 'top':
             self._padding.top = 0
             self._padding.bottom = self._height - 2 * self._margin.y - content_height
         else:
@@ -452,7 +454,7 @@ class Slider(BaseContainer):
             next_box.x1 = previous_box.x1
             next_box.y1 = height - self._margin.y - self._padding.bottom - self._buttons_width
             next_box.x2 = previous_box.x2
-            next_box.y2 = hnext_box.y1 + self._buttons_width
+            next_box.y2 = next_box.y1 + self._buttons_width
         self._previous.allocate(previous_box, flags)
         self._next.allocate(next_box, flags)
         
@@ -509,6 +511,8 @@ if __name__ == '__main__':
     bg.set_position(170, 70)
     stage.add(bg)
     
+    # horizontal
+    """
     test_slider = Slider(elements_per_page=3, keep_ratio=False, horizontal=True, margin=40, spacing=10)
     test_slider.set_elements_preferred_size(150, 150)
     test_slider.set_buttons_width(64)
@@ -517,8 +521,33 @@ if __name__ == '__main__':
     test_slider.set_position(150, 50)
     stage.add(test_slider)
     test_slider.set_focused(True)
+    """
+    
+    # vertical
+    test_slider = Slider(elements_per_page=3, keep_ratio=False, horizontal=False, margin=40, spacing=10)
+    test_slider.set_elements_preferred_size(150, 150)
+    test_slider.set_buttons_width(64)
+    test_slider.set_width(700)
+    test_slider.set_height(500)
+    test_slider.set_position(150, 50)
+    stage.add(test_slider)
+    test_slider.set_focused(True)
     
     from text import TextContainer
+    def add_element(source, event):
+        print 'adding a new element to slider'
+        rect = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
+        rect.set_border_color('#558844ff')
+        rect.set_inner_color("#ffffffff")
+        rect.set_radius(10)
+        rect.set_border_width(5)
+        test_slider.add(rect)
+        test_slider.complete_relayout()
+    
+    btn = TextContainer('add element')
+    btn.set_reactive(True)
+    btn.connect('button-press-event', add_element)
+    stage.add(btn)
     
     for i in range(20):
         rect = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.')
