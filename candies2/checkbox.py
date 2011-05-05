@@ -12,7 +12,7 @@ class CheckButton(clutter.Texture):
     A check button
     """
     
-    def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False):
+    def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False, callback=None, user_data=None):
         clutter.Texture.__init__(self)
         self.name = name
         self.not_checked_image_path = not_checked_image_path
@@ -25,25 +25,34 @@ class CheckButton(clutter.Texture):
             self.checked = False
             if self.not_checked_image_path:
                 self.set_from_file(self.not_checked_image_path)
+        self.callback = callback
+        self.user_data = user_data
         self.set_reactive(True)
+        self.connect('button-release-event',self._on_press)
+    
+    def _on_press(self, source, event):
+        self.toggle_check()
     
     def toggle_check(self):
-        if self.checked == True:
+        if self.checked:
             self.checked = False
             self.set_from_file(self.not_checked_image_path)
         else:
             self.checked = True
             self.set_from_file(self.checked_image_path)
+        if self.callback is not None:
+            if self.user_data is not None:
+                self.callback(self.checked, self.user_data)
+            else:
+                self.callback(self.checked)
     
     def set_checked(self, boolean):
-        if boolean and not self.checked:
-            self.checked = True
-            if self.checked_image_path:
-                self.set_from_file(self.checked_image_path)
-        elif not boolean and self.checked:
-            self.checked = False
-            if self.not_checked_image_path:
-                self.set_from_file(self.not_checked_image_path)
+        if boolean != self.checked:
+            self.toggle_check()
+    
+    def set_lock(self, lock):
+        self.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
 
 
 class CheckBox(BaseContainer):
@@ -52,13 +61,13 @@ class CheckBox(BaseContainer):
     A check button with a label
     """
     
-    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=20, size=64, image_placement='left', user_data=None):
+    def __init__(self, label='Checkbox', checked=False, callback=None, spacing=16, size=64, image_placement='left', user_data=None):
         BaseContainer.__init__(self, pick_enabled=False)
         self._children = list()
         self.checked = checked
         self.callback = callback
         self.user_data = user_data
-        self.spacing = 16
+        self.spacing = spacing
         self._image_size = size
         self._image_placement = image_placement
         self._checked_image_path = None
