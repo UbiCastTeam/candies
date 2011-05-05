@@ -65,54 +65,52 @@ class Aligner(clutter.Actor, clutter.Container):
             self.background = None
     
     def do_get_preferred_width(self, for_height):
-        prefered_width = 2*self._margin.x - 2*self._padding.x
+        prefered_width = 2*self._margin.x + 2*self._padding.x
         
         if self.element:
-            element_width, element_height = self.element.get_preferred_size()[2:]
-            if self.expand and self.keep_ratio and element_height != 0 and for_height != -1:
-                inner_height = for_height - 2*self._margin.y - 2*self._padding.y
-                ratio = float(element_width) / float(element_height)
-                element_height = inner_height
-                element_width = element_height * ratio
+            if for_height != -1:
+                h = for_height - 2*self._margin.y - 2*self._padding.y
             else:
-                if element_height != 0 and for_height != -1:
-                    inner_height = for_height - 2*self._margin.y - 2*self._padding.y
+                h = for_height
+            
+            element_width, element_height = self.element.get_preferred_size()[2:]
+            if self.expand:
+                if self.keep_ratio and element_width != 0 and element_height != 0 and h > 0:
                     ratio = float(element_width) / float(element_height)
-                    if element_height > inner_height:
-                        element_height = inner_height
-                        element_width = element_height * ratio
+                    prefered_width += int(h * ratio)
                 else:
-                    if for_height != -1:
-                        inner_height = for_height - 2*self._margin.y - 2*self._padding.y
-                        if element_height > inner_height:
-                            element_height = inner_height
-            prefered_width += element_width
+                    prefered_width += int(self.element.get_preferred_width(h)[1])
+            else:
+                if element_width != 0 and element_height != 0 and h > 0 and element_height > h:
+                    ratio = float(element_width) / float(element_height)
+                    prefered_width += int(h * ratio)
+                else:
+                    prefered_width += int(self.element.get_preferred_width(h)[1])
         
         return prefered_width, prefered_width
     
     def do_get_preferred_height(self, for_width):
-        prefered_height = 2*self._margin.y - 2*self._padding.y
+        prefered_height = 2*self._margin.y + 2*self._padding.y
         
         if self.element:
-            element_width, element_height = self.element.get_preferred_size()[2:]
-            if self.expand and self.keep_ratio and element_height != 0 and for_width != -1:
-                inner_width = for_width - 2*self._margin.x - 2*self._padding.x
-                ratio = float(element_width) / float(element_height)
-                element_width = inner_width
-                element_height = element_width / ratio
+            if for_width != -1:
+                w = for_width - 2*self._margin.x - 2*self._padding.x
             else:
-                if element_height != 0 and for_width != -1:
-                    inner_width = for_width - 2*self._margin.x - 2*self._padding.x
+                w = for_width
+            
+            element_width, element_height = self.element.get_preferred_size()[2:]
+            if self.expand:
+                if self.keep_ratio and element_width != 0 and element_height != 0 and w > 0:
                     ratio = float(element_width) / float(element_height)
-                    if element_width > inner_width:
-                        element_width = inner_width
-                        element_height = element_width / ratio
+                    prefered_height += int(w / ratio)
                 else:
-                    if for_width != -1:
-                        inner_width = for_width - 2*self._margin.x - 2*self._padding.x
-                        if element_width > inner_width:
-                            element_width = inner_width
-            prefered_height += element_height
+                    prefered_height += int(self.element.get_preferred_height(w)[1])
+            else:
+                if element_width != 0 and element_height != 0 and w > 0 and element_height > w:
+                    ratio = float(element_width) / float(element_height)
+                    prefered_height += int(w / ratio)
+                else:
+                    prefered_height += int(self.element.get_preferred_height(w)[1])
         
         return prefered_height, prefered_height
     
@@ -135,7 +133,7 @@ class Aligner(clutter.Actor, clutter.Container):
             # get element size
             element_width, element_height = self.element.get_preferred_size()[2:]
             if self.expand:
-                if self.keep_ratio and element_height != 0:
+                if self.keep_ratio and element_width != 0 and element_height != 0:
                     ratio = float(element_width) / float(element_height)
                     element_width = inner_width
                     element_height = element_width / ratio
@@ -146,7 +144,7 @@ class Aligner(clutter.Actor, clutter.Container):
                     element_width = inner_width
                     element_height = inner_height
             else:
-                if element_height != 0:
+                if element_width != 0 and element_height != 0:
                     ratio = float(element_width) / float(element_height)
                     if element_width > inner_width:
                         element_width = inner_width
@@ -248,11 +246,11 @@ if __name__ == '__main__':
     ele.set_color('#00ff00ff')
     ele.set_size(50, 100)
     
-    aligner = Aligner(align='right', expand=False, keep_ratio=False, pick_enabled=False)
+    aligner = Aligner(align='center', expand=False, keep_ratio=False, pick_enabled=False, padding=40)
     aligner.set_background(bg)
     aligner.set_element(ele)
     aligner.set_position(100, 100)
-    aligner.set_size(400, 400)
+    #aligner.set_size(400, 400)
     aligner.set_reactive(True)
     aligner.connect('button-press-event', on_click)
     stage.add(aligner)
