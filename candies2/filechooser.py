@@ -443,7 +443,7 @@ class FileChooser(BaseContainer):
             self._slider.add(button)
             rest = self._start_dir[len(directory):].strip(os.sep)
             directory = os.path.join(directory, rest.split(os.sep)[0])
-        self.open_dir(self._start_dir)
+        self.open_dir(self._start_dir, selected)
     
     def set_allow_hidden_files(self, allow_hidden_files):
         self._allow_hidden_files = allow_hidden_files
