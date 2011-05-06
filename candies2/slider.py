@@ -66,10 +66,10 @@ class Slider(BaseContainer):
         
         # key bindings
         self.pool = clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
-        self.pool.install_action('move-left', clutter.keysyms.Left, None, self._keyboard_previous)
-        self.pool.install_action('move-up', clutter.keysyms.Up, None, self._keyboard_previous)
-        self.pool.install_action('move-right', clutter.keysyms.Right, None, self._keyboard_next)
-        self.pool.install_action('move-down', clutter.keysyms.Down, None, self._keyboard_next)
+        self.pool.install_action('move-left', clutter.keysyms.Left, None, self._keyboard_previous_page)
+        self.pool.install_action('move-up', clutter.keysyms.Up, None, self._keyboard_previous_page)
+        self.pool.install_action('move-right', clutter.keysyms.Right, None, self._keyboard_next_page)
+        self.pool.install_action('move-down', clutter.keysyms.Down, None, self._keyboard_next_page)
         
         self.pool.install_action('beginning', clutter.keysyms.Left, clutter.SHIFT_MASK, self._keyboard_beginning)
         self.pool.install_action('beginning', clutter.keysyms.Up, clutter.SHIFT_MASK, self._keyboard_beginning)
@@ -182,10 +182,10 @@ class Slider(BaseContainer):
             self._next.set_opacity(127)
     
     def _on_previous_press(self, source, event):
-        self.previous()
+        self.go_to_previous_page()
     
     def _on_next_press(self, source, event):
-        self.next()
+        self.go_to_next_page()
     
     def _request_move(self):
         if self._timeline_completed:
