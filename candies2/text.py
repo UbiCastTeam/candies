@@ -123,7 +123,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._line_wrap = False
         self._multiline = False
         self._alignment = 'center'
-        self._symbol = '•'
+        self._symbol = u'•'
         self._crypted = crypted
         
         self._width = 0
@@ -135,7 +135,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_ellipsize(2) # let 2 words after "..."
         self.label.set_line_alignment(1) # center text
         if crypted:
-            self.label.set_password_char(u'•')
+            self.label.set_password_char(self._symbol)
         
         self.set_text(text)
         
@@ -171,7 +171,7 @@ class TextContainer(clutter.Actor, clutter.Container):
             self.label.set_password_char(u'\x00')
         elif not self._crypted and boolean:
             self._crypted = True
-            self.label.set_password_char(u'•')
+            self.label.set_password_char(self._symbol)
     
     def is_crypted(self):
         return self._crypted
