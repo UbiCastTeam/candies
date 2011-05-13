@@ -53,6 +53,22 @@ class CheckButton(clutter.Texture):
     def set_lock(self, lock):
         self.set_reactive(not lock)
         self.set_opacity(128 if lock else 255)
+    
+    def set_checked_image_path(self, path):
+        self.checked_image_path = path
+        self.refresh_image()
+    
+    def set_not_checked_image_path(self, path):
+        self.not_checked_image_path = path
+        self.refresh_image()
+    
+    def refresh_image(self):
+        if self.checked:
+            if self.checked_image_path:
+                self.set_from_file(self.checked_image_path)
+        else:
+            if self.not_checked_image_path:
+                self.set_from_file(self.not_checked_image_path)
 
 
 class CheckBox(BaseContainer):
