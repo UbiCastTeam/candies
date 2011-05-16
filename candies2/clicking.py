@@ -6,6 +6,11 @@ import gobject
 
 class SimpleClick(gobject.GObject):
     __gtype_name__ = 'SimpleClick'
+    __gsignals__ = {
+        'simple-click-event' : (
+            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
+        ),
+    }
     
     def __init__(self, actor):
         gobject.GObject.__init__(self)
@@ -31,6 +36,14 @@ class SimpleClick(gobject.GObject):
 
 class LongClick(SimpleClick):
     __gtype_name__ = 'LongClick'
+    __gsignals__ = {
+        'long-press-event' : (
+            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
+        ),
+        'long-click-event' : (
+            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
+        ),
+    }
     default_long_delay = 2000
     
     def __init__(self, actor, long_delay=None, long_msg=None):
