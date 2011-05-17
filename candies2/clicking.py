@@ -6,17 +6,15 @@ import gobject
 
 class SimpleClick(gobject.GObject):
     __gtype_name__ = 'SimpleClick'
-    __gsignals__ = {
-        'simple-click-event' : (
-            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
-        ),
-    }
     
     def __init__(self, actor):
         gobject.GObject.__init__(self)
         self.actor = actor
         if 'simple-click-event' not in gobject.signal_list_names(actor):
-            gobject.signal_new('simple-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            try:
+                gobject.signal_new('simple-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            except:
+                pass
         actor.connect('button-press-event', self.on_press)
         actor.connect('button-release-event', self.on_release)
         actor.connect('leave-event', self.on_leave)
@@ -36,22 +34,20 @@ class SimpleClick(gobject.GObject):
 
 class LongClick(SimpleClick):
     __gtype_name__ = 'LongClick'
-    __gsignals__ = {
-        'long-press-event' : (
-            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
-        ),
-        'long-click-event' : (
-            gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()
-        ),
-    }
     default_long_delay = 2000
     
     def __init__(self, actor, long_delay=None, long_msg=None):
         SimpleClick.__init__(self, actor)
         if 'long-press-event' not in gobject.signal_list_names(actor):
-            gobject.signal_new('long-press-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            try:
+                gobject.signal_new('long-press-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            except:
+                pass
         if 'long-click-event' not in gobject.signal_list_names(actor):
-            gobject.signal_new('long-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            try:
+                gobject.signal_new('long-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+            except:
+                pass
         if long_delay is None:
             long_delay = self.default_long_delay
         self.long_delay = long_delay
