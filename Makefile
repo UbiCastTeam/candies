@@ -18,4 +18,5 @@ doc:
 clean:
 	rm -rvf html/
 	rm -vrf build
+	find . -name '*~' | xargs rm -vf
 	find . -name '*.py[co]' | xargs rm -fv
