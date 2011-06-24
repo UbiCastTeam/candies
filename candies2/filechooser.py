@@ -692,7 +692,10 @@ class FileChooser(BaseContainer):
             self.paths.append([path, selected, button])
             self._slider.add(button)
             self._slider.complete_relayout()
-            self._slider.go_to_end()
+            if len(self.paths) > 4:
+                self._slider.go_to_end()
+            else:
+                self._slider.go_to_beginning()
         self.change_dir(path, selected)
     
     def parent_dir(self, *args):
