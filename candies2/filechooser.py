@@ -338,6 +338,8 @@ class FileChooser(BaseContainer):
         
         for type_filter in self._type_filters:
             self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+        if len(self._type_filters) < 2:
+            self._type_filter_select.set_lock(True)
         self._add(self._type_filter_select)
         
         directory = self._base_dir
@@ -482,6 +484,8 @@ class FileChooser(BaseContainer):
         self._type_filter_select.remove_all_options()
         for type_filter in self._type_filters:
             self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+        if len(self._type_filters) < 2:
+            self._type_filter_select.set_lock(True)
         if selected in self._type_filters_dict:
             self._type_filter_select.select_option(selected)
         
