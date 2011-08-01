@@ -5,6 +5,7 @@ from common import Margin, Padding, Spacing
 # containers
 from container import BaseContainer
 from box import Box, VBox, HBox
+from flowbox import FlowBox
 from block import TexturedBlock
 from aligner import Aligner
 from multilayer import MultiLayerContainer
