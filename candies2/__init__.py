@@ -20,6 +20,7 @@ from percentround import PercentRound
 from disk import Disk
 from roundrect import RoundRectangle
 from clock import Clock
+from stattracer import Tracer
 
 from scrollbar import Scrollbar, Clipper
 from progressbar import ProgressBar
