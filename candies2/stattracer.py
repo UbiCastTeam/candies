@@ -48,6 +48,41 @@ class Tracer(clutter.Actor):
             raise TypeError('Unknown property ' + pspec.name)
 
     def __cogl_path(self, width, height, color):
+        cogl.set_source_color(clutter.color_from_string('#ffffffff'))
+
+        cogl.path_move_to(0,0)
+        cogl.path_line_to(0,height)
+        cogl.path_line_to(width,height)
+        cogl.path_line_to(width,0)
+        cogl.path_close()
+
+        cogl.path_move_to(3,3)
+        cogl.path_line_to(width-3,3)
+        cogl.path_line_to(width-3,height-3)
+        cogl.path_line_to(3,height-3)
+        cogl.path_close()
+        cogl.path_fill()
+
+        cogl.path_move_to(0,height*0.25)
+        cogl.path_line_to(0,height*0.75)
+        cogl.path_line_to(width,height*0.75)
+        cogl.path_line_to(width,height*0.25)
+        cogl.path_close()
+
+        cogl.path_move_to(1,1 + height*0.25)
+        cogl.path_line_to(width-1,1 + height*0.25)
+        cogl.path_line_to(width-1,height*0.75-1)
+        cogl.path_line_to(1,height*0.75-1)
+        cogl.path_close()
+        cogl.path_fill()
+
+        cogl.path_move_to(0,height*0.5)
+        cogl.path_line_to(0,height*0.5+1)
+        cogl.path_line_to(width,height*0.5+1)
+        cogl.path_line_to(width,height*0.5)
+        cogl.path_close()
+        cogl.path_fill()
+
         cogl.set_source_color(color)
         final_x = 0
         for i, value in enumerate(self.percent[:-1]):
@@ -75,42 +110,6 @@ class Tracer(clutter.Actor):
         cogl.path_line_to(0, height)
         cogl.path_close()
         cogl.path_fill()
-
-        cogl.set_source_color(clutter.color_from_string('#ffffffff'))
-
-        cogl.path_move_to(0,0)
-        cogl.path_line_to(0,height)
-        cogl.path_line_to(width,height)
-        cogl.path_line_to(width,0)
-        cogl.path_close()
-
-        cogl.path_move_to(3,3)
-        cogl.path_line_to(3,height-3)
-        cogl.path_line_to(width-3,height-3)
-        cogl.path_line_to(width-3,3)
-        cogl.path_close()
-        cogl.path_fill()
-
-        cogl.path_move_to(0,height*0.25)
-        cogl.path_line_to(0,height*0.75)
-        cogl.path_line_to(width,height*0.75)
-        cogl.path_line_to(width,height*0.25)
-        cogl.path_close()
-
-        cogl.path_move_to(1,1 + height*0.25)
-        cogl.path_line_to(1,height*0.75-1)
-        cogl.path_line_to(width-1,height*0.75-1)
-        cogl.path_line_to(width-1,1 + height*0.25)
-        cogl.path_close()
-        cogl.path_fill()
-
-        cogl.path_move_to(0,height*0.5)
-        cogl.path_line_to(0,height*0.5+1)
-        cogl.path_line_to(width,height*0.5+1)
-        cogl.path_line_to(width,height*0.5)
-        cogl.path_close()
-        cogl.path_fill()
-
 
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
