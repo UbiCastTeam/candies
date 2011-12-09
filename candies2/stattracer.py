@@ -54,12 +54,14 @@ class Tracer(clutter.Actor):
         cogl.path_line_to(0,height)
         cogl.path_line_to(width,height)
         cogl.path_line_to(width,0)
+        cogl.path_move_to(0,0)
         cogl.path_close()
 
         cogl.path_move_to(3,3)
         cogl.path_line_to(width-3,3)
         cogl.path_line_to(width-3,height-3)
         cogl.path_line_to(3,height-3)
+        cogl.path_move_to(3,3)
         cogl.path_close()
         cogl.path_fill()
 
@@ -67,12 +69,14 @@ class Tracer(clutter.Actor):
         cogl.path_line_to(0,height*0.75)
         cogl.path_line_to(width,height*0.75)
         cogl.path_line_to(width,height*0.25)
+        cogl.path_move_to(0,height*0.25)
         cogl.path_close()
 
         cogl.path_move_to(1,1 + height*0.25)
         cogl.path_line_to(width-1,1 + height*0.25)
         cogl.path_line_to(width-1,height*0.75-1)
         cogl.path_line_to(1,height*0.75-1)
+        cogl.path_move_to(1,1 + height*0.25)
         cogl.path_close()
         cogl.path_fill()
 
@@ -80,6 +84,7 @@ class Tracer(clutter.Actor):
         cogl.path_line_to(0,height*0.5+1)
         cogl.path_line_to(width,height*0.5+1)
         cogl.path_line_to(width,height*0.5)
+        cogl.path_move_to(0,height*0.5)
         cogl.path_close()
         cogl.path_fill()
 
@@ -95,6 +100,7 @@ class Tracer(clutter.Actor):
             cogl.path_line_to(final_x, final_y)
         cogl.path_line_to(final_x, height)
         cogl.path_line_to(0, height)
+        cogl.path_move_to(init_x,init_y)
         cogl.path_close()
         final_x = 0
 
@@ -108,6 +114,7 @@ class Tracer(clutter.Actor):
             cogl.path_line_to(final_x, final_y)
         cogl.path_line_to(final_x, height)
         cogl.path_line_to(0, height)
+        cogl.path_move_to(init_x,init_y)
         cogl.path_close()
         cogl.path_fill()
 
