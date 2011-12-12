@@ -15,7 +15,7 @@ class Tracer(clutter.Actor):
         'color' : (str, 'color', 'Color', None, gobject.PARAM_READWRITE),
     }
 
-    def __init__(self, color='Green', n=50, stroke_width=3):
+    def __init__(self, color='Green', n=25, stroke_width=3):
         clutter.Actor.__init__(self)
         self._stroke_width = stroke_width
         self._color = clutter.color_from_string(color)
@@ -87,8 +87,8 @@ class Tracer(clutter.Actor):
                 cogl.path_line_to(x,y)
 
         for i, value in enumerate(reversed(self.percent)):
-            y = height - (value*height)/100 - self._stroke_width
-            x = (len(self.percent)-i)*width/self.n
+            y = abs(height - (value*height)/100 - self._stroke_width)
+            x = (len(self.percent)-i -1)*width/self.n
             cogl.path_line_to(x,y)
         cogl.path_close()
         cogl.path_fill()
