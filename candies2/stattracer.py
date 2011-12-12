@@ -80,6 +80,7 @@ class Tracer(clutter.Actor):
         cogl.set_source_color(color)
         for i, value in enumerate(self.percent):
             y = height - (value*height)/100
+            if y == 0 : y= self._stroke_width
             x = i*width/self.n
             if i == 0:
                 cogl.path_move_to(x,y)
