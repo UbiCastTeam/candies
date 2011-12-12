@@ -50,47 +50,46 @@ class Tracer(clutter.Actor):
     def __cogl_path(self, width, height, color):
         cogl.set_source_color(clutter.color_from_string('#ffffffff'))
 
-        cogl.path_rectangle(0,0, width, height)
-        cogl.path_close()
-        cogl.path_rectangle(3,3, width-3, height-3)
+        #rect
+        cogl.path_move_to(0,0)
+        cogl.path_line_to(0,height)
+        cogl.path_line_to(width,height)
+        cogl.path_line_to(width,0)
+        cogl.path_line_to(0,0)
+        cogl.path_line_to(3,3)
+        cogl.path_line_to(3,height-3)
+        cogl.path_line_to(width-3,height-3)
+        cogl.path_line_to(width-3,3)
+        cogl.path_line_to(3,3)
         cogl.path_close()
         cogl.path_fill()
-
-        cogl.path_rectangle(0,height*0.25,width, height*0.75)
-        cogl.path_close()
-        cogl.path_rectangle(1,height*0.25 + 1, width, height*0.75-1)
-        cogl.path_close()
+        #0.25 stroke
+        cogl.path_rectangle(0,height*0.25,width, height*0.25+1)
         cogl.path_fill()
-
+        cogl.path_close()
+        #0.5 stroke
         cogl.path_rectangle(0,height*0.5,width,height*0.5+1)
         cogl.path_close()
         cogl.path_fill()
-
-        cogl.set_source_color(color)
-        final_x = 0
-        for i, value in enumerate(self.percent[:-1]):
-            if i == 0 :
-                init_y = height - (value*height)/100
-                init_x = i*width/self.n
-                cogl.path_move_to(init_x,init_y)
-            final_y = height - (self.percent[i+1]*height)/100
-            final_x =(i+1)*width/self.n
-            cogl.path_line_to(final_x, final_y)
-        cogl.path_line_to(final_x, height)
-        cogl.path_line_to(0, height)
+        #0.75 stroke
+        cogl.path_rectangle(0,height*0.75, width, height*0.75+1)
         cogl.path_close()
-        final_x = 0
+        cogl.path_fill()
 
-        for i, value in enumerate(self.percent[:-1]):
-            if i == 0 :
-                init_y = height - (value*height)/100 - self._stroke_width
-                init_x = i*width/self.n
-                cogl.path_move_to(init_x,init_y)
-            final_y = height - (self.percent[i+1]*height)/100 - self._stroke_width
-            final_x =(i+1)*width/self.n
-            cogl.path_line_to(final_x, final_y)
-        cogl.path_line_to(final_x, height)
-        cogl.path_line_to(0, height)
+        #stats
+        cogl.set_source_color(color)
+        for i, value in enumerate(self.percent):
+            y = height - (value*height)/100
+            x = i*width/self.n
+            if i == 0:
+                cogl.path_move_to(x,y)
+            else :
+                cogl.path_line_to(x,y)
+
+        for i, value in enumerate(reversed(self.percent)):
+            y = height - (value*height)/100 - self._stroke_width
+            x = (len(self.percent)-i)*width/self.n
+            cogl.path_line_to(x,y)
         cogl.path_close()
         cogl.path_fill()
 
