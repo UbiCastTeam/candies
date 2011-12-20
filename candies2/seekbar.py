@@ -205,7 +205,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.edit_points = list()
         self._sequence_blocks = list()
     
-    def update_position(self, source, current_time, position, duration):
+    def update_position(self, current_time, position, duration):
         if self._last_event_x is None:
             self.set_progress(position)
 
