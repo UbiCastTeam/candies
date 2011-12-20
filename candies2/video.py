@@ -226,8 +226,6 @@ class VideoPlayer(VideoTexture):
 
 
 if __name__ == '__main__':
-    import clutter
-    
     stage = clutter.Stage()
     stage.set_size(1000, 600)
     stage.set_color('#000000ff')
