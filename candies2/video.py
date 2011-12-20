@@ -151,12 +151,14 @@ class VideoPlayer(VideoTexture):
             self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
     
     def _execute_seek_request(self):
-        gobject.source_remove(self._seeking_timeout_id)
-        percent = self._next_seek_percent
-        self._next_seek_percent = None
-        self.set_progress(percent)
-        self.emit_position_update(percent)
-        self._seeking_timeout_id = None
+        if self._seeking_timeout_id is not None:
+            gobject.source_remove(self._seeking_timeout_id)
+            self._seeking_timeout_id = None
+        if self._next_seek_percent is not None:
+            percent = self._next_seek_percent
+            self._next_seek_percent = None
+            self.set_progress(percent)
+            self.emit_position_update(percent)
     
     def emit_position_update(self, progress):
         if progress != self._last_progress:
