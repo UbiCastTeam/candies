@@ -66,6 +66,10 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         
         self._parse_textures_package(textures_package)
     
+    def set_lock(self, lock):
+        self.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
+    
     def set_font_color(self, color):
         self.default_title_actor.set_font_color(color)
     
