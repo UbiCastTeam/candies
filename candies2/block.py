@@ -193,6 +193,14 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     def get_title(self):
         return self.title_text
     
+    def set_title_actor(self, actor=None):
+        if self.title_actor:
+            self.title_actor.unparent()
+            self.title_actor = None
+        if actor:
+            self.title_actor = actor
+            self.title_actor.set_parent(self)
+    
     def get_title_actor(self):
         if self.title_actor:
             return self.title_actor
