@@ -152,18 +152,13 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.rect.set_parent(self)
     
     def set_text(self, text):
-        self._text = text
         self.label.set_text(text)
     
     def insert_text(self, text, position):
-        if position == -1:
-            self._text = '%s%s' %(self._text, text)
-        else:
-            self._text = '%s%s%s' %(self._text[:position], text, self._text[position:])
         self.label.insert_text(text, position)
     
     def get_text(self):
-        return self._text
+        return self.label.get_text()
     
     def set_crypted(self, boolean):
         if self._crypted and not boolean:
@@ -250,7 +245,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         if pspec.name == 'color':
             return self.rect.props.color
         elif pspec.name == 'text':
-            return self._text
+            return self.label.props.text
         elif pspec.name == 'font-color':
             return self.label.props.color
         elif pspec.name == 'border-color':
@@ -347,6 +342,20 @@ if __name__ == '__main__':
     t.set_text('Hello World')
     t.set_size(150, 100)
     t.set_position(400, 250)
+    stage.add(t)
+    
+    t = clutter.Text()
+    t.set_text('Lorem ipsum dolor sit amet.')
+    t.set_position(20, 600)
+    t.set_editable(True)
+    t.set_selectable(True)
+    t.set_reactive(True)
+    t.set_selection_color('#123456ff')
+    #t.set_selection(cursor_pos, cursor_pos)
+    stage.set_key_focus(t)
+    #t.set_line_alignment('center')
+    #t.set_justify(True)
+    t.set_font_name('20')
     stage.add(t)
     
     t = TextContainer('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 10))
