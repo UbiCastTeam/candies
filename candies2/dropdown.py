@@ -64,6 +64,10 @@ class OptionLine(BaseContainer):
     def get_text(self):
         return self.label.get_text()
     
+    def set_lock(self, lock):
+        self.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
+    
     def set_texture(self, texture):
         self.background.set_texture(texture)
     
