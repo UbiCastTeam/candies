@@ -1,13 +1,6 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
 
-''' 
-Keyboard class
-author : flavie
-date : nov 30 2009
-version : 0
-'''
-
 import string
 import gobject
 import clutter
@@ -129,22 +122,15 @@ class ButtonLine():
         self.buttons.append(button)
         self.width += width
 
-'''
-Keyboard Class
-    .map_name = name of dictionnary used
-    .button_map = dictionnary used
-    .width_line = width of each line 
-    
-    .load_profile = change keyboard dictionnary
-    .clear_keyboard = delete keyboard map
-    .on_button_press = function wich describe action on button press
-    .do_allocate = place each buttons in the container
-'''
 class Keyboard(clutter.Actor, clutter.Container):
+    '''
+    Keyboard Class
+        .load_profile = load a keyboard mapping dictionnary
+        .clear_keyboard = delete current keyboard mapping dictionnary
+    '''
     __gtype_name__ = 'Keyboard'
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
-    #keyboard init
     def __init__(self, map_name='', spacing=15):
         clutter.Actor.__init__(self)
         self._spacing = common.Spacing(spacing)
@@ -174,7 +160,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     def get_map_name(self):
         return self._map_name
     
-    #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
+    #keyboard load profile: load a mapping dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
         print 'Load profile:', map_name
         if map_name == self._map_name:
@@ -228,7 +214,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         if self._map_name.endswith('_min'):
             self.load_profile('%s_maj' % (self._map_name[:-4]))
     
-    # clear keyboard : delete buttons
+    # clear keyboard: delete current keyboard mapping dictionnary
     def clear_keyboard(self):
         for line in self._lines:
             for button in line.buttons:
@@ -248,7 +234,6 @@ class Keyboard(clutter.Actor, clutter.Container):
             self._text_actor.emit('key-press-event', event)
         self.emit('keyboard', keyval)
     
-    # on button press emit message
     def _on_button_press(self, source, event):
         # flash button
         source.set_inner_color(self.highlight_color)
@@ -271,8 +256,6 @@ class Keyboard(clutter.Actor, clutter.Container):
             self.load_profile('fr_caract')
         elif source.kb_evt == 'num':
             self.load_profile('int')
-        #elif source.kb_evt == 'del':
-            #self.emit('keyboard','del')
     
     def do_get_preferred_width(self, for_height):
         #TODO
@@ -296,7 +279,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 line.padding_x = int(float(self._width - line.width * (self._button_size + self._spacing.x) + self._spacing.x) / 2.0)
                 line.padding_y = self._padding_y + self._lines.index(line) * (self._button_size + self._spacing.y)
     
-    # button mapping : calcul each buttons width and place them
+    # button mapping: calcul each buttons width and place them
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
         height = box.y2 - box.y1
@@ -346,20 +329,20 @@ class Keyboard(clutter.Actor, clutter.Container):
             self._lines = list()
 
 
-'''
-main to test keyboard functionalities
-contain a text , keyboard, and other entries
-'''
 if __name__ == '__main__':
+    '''
+    main to test keyboard functionalities
+    contains a text, keyboard, and some buttons
+    '''
     from flowbox import FlowBox
 
-    #create window
+    # create window
     stage = clutter.Stage()
     stage.set_size(1000, 600)
     stage.connect('destroy', clutter.main_quit)
     stage.set_color('#000000ff')
     
-    #create text wich will show keyboard entries results
+    # create text wich will show keyboard entries results
     text = clutter.Text()
     stage.set_key_focus(text)
     text.set_color('#ffffffff')
@@ -380,13 +363,13 @@ if __name__ == '__main__':
     kb_bg.set_position(0, 50)
     stage.add(kb_bg)
     
-    #create keyboard in fr
+    # create keyboard in fr
     keyboard = Keyboard('fr_maj', spacing=10)
     keyboard.set_size(1000, 500)
     keyboard.set_position(0, 50)
     stage.add(keyboard)
     
-    #create other entries
+    # create other entries
     box = FlowBox()
     box.set_size(900, 50)
     box.set_position(50, 550)
@@ -409,7 +392,7 @@ if __name__ == '__main__':
     
     stage.show()
    
-    #function lang_callback : action when language is changed 
+    # function lang_callback: action when language is changed 
     def lang_callback(button, event, keyboard):
         map_name = keyboard.get_map_name()
         if map_name =='fr_maj':
@@ -425,18 +408,19 @@ if __name__ == '__main__':
         elif map_name =='en_caract':
             keyboard.load_profile('fr_caract')
 
-    #function keyboard_callback : action keyboard is used
+    # function keyboard_callback: action keyboard is used
     def on_text_change(actor):
         CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         print 'Text changed:', actor.get_text()
         new_text = actor.get_text()
-        if len(new_text) == 0 or new_text.endswith('.'):
+        cursor_pos = actor.get_cursor_position()
+        last_char = new_text[cursor_pos]
+        if len(new_text) == 0 or last_char in ('.', '!', '?'):
             keyboard.to_maj()
         else:
             second_last_char = '_'
-            if len(new_text) > 1:
-                second_last_char = new_text[-2]
-            last_char = new_text[-1]
+            if cursor_pos >= 1 or len(new_text) > 1 and cursor_pos == -1:
+                second_last_char = new_text[cursor_pos - 1]
             if last_char in CAPITAL_LETTERS and second_last_char not in CAPITAL_LETTERS:
                 keyboard.to_min()
     
@@ -449,8 +433,8 @@ if __name__ == '__main__':
             keyboard.load_profile('int')
             
     # function left_callback when left button is used
-    def left_callback(button,event,text):
-        cursor_pos=text.get_cursor_position()
+    def left_callback(button, event, text):
+        cursor_pos = text.get_cursor_position()
         if cursor_pos == -1:
           cursor_pos = len(text.get_text())
         cursor_res = cursor_pos - 1
@@ -462,19 +446,17 @@ if __name__ == '__main__':
         cursor_res = cursor_pos+1
         text.set_selection(cursor_res, cursor_res)
     
-    #connect signals
+    # function to print pressed keys
+    def on_key_press_event(source, event):
+        print 'Key pressed:', event.keyval
+    
+    # connect signals
     left.connect('button-press-event',left_callback,text)
     right.connect('button-press-event',right_callback,text)
     num.connect('button-press-event',num_callback,keyboard)   
     lan.connect('button-press-event',lang_callback,keyboard)
-    
-    
-    def on_key_press_event(source, event):
-        print 'Key pressed:', event.keyval
-    
     text.connect('key-press-event', on_key_press_event)
     text.connect('text-changed', on_text_change)
-    
     keyboard.connect_clutter_text(text)
     
     clutter.main()
