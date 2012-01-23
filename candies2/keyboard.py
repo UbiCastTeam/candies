@@ -8,96 +8,112 @@ date : nov 30 2009
 version : 0
 '''
 
+import string
 import gobject
 import clutter
 import common
 from buttons import ClassicButton
 
 
-# class Key : name , width , event default event = char width = 1
+# Key class: name, width, event default event=char width=1
 class Key:
-    def __init__(self, k, nb=1, evt='car'):
+    def __init__(self, k, nb=1, evt='car', c_evt=None, no_c_evt=False):
         self.text = k
         self.width = nb
         self.event = evt
+        if no_c_evt:
+            self.clutter_event = None
+        elif not c_evt:
+            if k in string.letters:
+                self.clutter_event = getattr(clutter.keysyms, k, None)
+            elif k in string.digits:
+                self.clutter_event = getattr(clutter.keysyms, '_%s' % k, None)
+            else:
+                self.clutter_event = None
+        else:
+            self.clutter_event = getattr(clutter.keysyms, c_evt, None)
+
+class NoClKey(Key):
+    def __init__(self, *args, **kwargs):
+        Key.__init__(self, no_c_evt=True, *args, **kwargs)
+
 
 # keyboard dictionnary
-
 KEYBOARD_MAPS = {
     'fr_maj': (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
-        (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
-        (Key('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key(','), Key('.'), Key('⇧',nb=3,evt='fr_min')), 
-        (Key('#+-,',nb=2,evt='fr_caract'), Key(' ',nb=8))
+        (NoClKey('⇧',nb=2,evt='fr_min'), Key('W'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key(',',c_evt='comma'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='fr_min')),
+        (NoClKey('#+-',nb=2,evt='fr_caract'), Key(' ',nb=8,c_evt='space'))
     ),
     
     'en_maj': (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
-        (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'')),
-        (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key(',')), 
-        (Key('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'), Key('.'), Key('⇧',nb=3,evt='en_min')),
-        (Key('#+-,',nb=2,evt='en_caract'), Key(' ',nb=8))
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
+        (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key(',',c_evt='comma')), 
+        (NoClKey('⇧',nb=2,evt='en_min'), Key('Z'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='en_min')),
+        (NoClKey('#+-',nb=2,evt='en_caract'), Key(' ',nb=8,c_evt='space'))
     ),
     
     'fr_min': (
-         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
-         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'')),
+         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
          (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
-         (Key('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key(','), Key('.'), Key('⇧',nb=3,evt='fr_maj')),
-         (Key('#+-,',nb=2,evt='fr_caract'), Key(' ',nb=8))
+         (NoClKey('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key(',',c_evt='comma'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='fr_maj')),
+         (Key('#+-',nb=2,evt='fr_caract'), Key(' ',nb=8,c_evt='space'))
      ),
     
     'en_min': (
-        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,evt='suppr')),
-        (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'')),
-        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key(',')), 
-        (Key('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'), Key('.'), Key('⇧',nb=3,evt='en_maj')),
-        (Key('#+-,',nb=2,evt='en_caract'), Key(' ',nb=8))
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
+        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key(',',c_evt='comma')), 
+        (NoClKey('⇧',nb=2,evt='en_maj'), Key('z'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='en_maj')),
+        (NoClKey('#+-',nb=2,evt='en_caract'), Key(' ',nb=8,c_evt='space'))
     ),
     
     'fr_caract': (
-        (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'),),
-        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
-        (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
-        (Key('abc',nb=2,evt='fr_min'), Key(' ',nb=8))
+        (Key('\'',c_evt='quoteright'), Key('.',c_evt='period'), Key(',',c_evt='comma'), Key(';',c_evt='semicolon'), Key(':',c_evt='colon'), Key('/',c_evt='slash'), Key('?',c_evt='question'), Key('!',c_evt='exclam'), Key('%',c_evt='percent'),),
+        (Key('*',c_evt='asterisk'), Key('+',c_evt='plus'), Key('-',c_evt='minus'), Key('=',c_evt='equal'), Key('#',c_evt='numbersign'), Key('~',c_evt='asciitilde'), Key('@',c_evt='at'), Key('\\',c_evt='backslash'), Key('_',c_evt='underscore')),
+        (Key('`',c_evt='quoteleft'), Key('|',c_evt='bar'), Key('(',c_evt='parenleft'), Key(')',c_evt='parenright'), Key('"',c_evt='quotedbl'), Key('&',c_evt='ampersand'), Key('[',c_evt='bracketleft'), Key(']',c_evt='bracketright')),
+        (NoClKey('ABC',nb=2,evt='fr_maj'), Key('<',c_evt='less'), Key('$',c_evt='dollar'), Key('>',c_evt='greater'), Key('←',nb=2,c_evt='BackSpace')),
+        (NoClKey('abc',nb=2,evt='fr_min'), Key(' ',nb=8,c_evt='space'))
     ),
     
     'en_caract': (
-        (Key('\''), Key('.'), Key(','), Key(';'), Key(':'), Key('/'), Key('?'), Key('!'), Key('%'), ),
-        (Key('*'), Key('+'), Key('-'), Key('='), Key('#'), Key('~'), Key('@'), Key('\\'), Key('_')),
-        (Key('`'), Key('|'), Key('('), Key(')'), Key('"'), Key('&'), Key('['), Key(']')),
-        (Key('ABC',nb=2,evt='en_maj'), Key('<'), Key('$'), Key('>'), Key('←',nb=2,evt='suppr')),
-        (Key('abc',nb=2,evt='en_min'), Key(' ',nb=8))
+        (Key('\'',c_evt='quoteright'), Key('.',c_evt='period'), Key(',',c_evt='comma'), Key(';',c_evt='semicolon'), Key(':',c_evt='colon'), Key('/',c_evt='slash'), Key('?',c_evt='question'), Key('!',c_evt='exclam'), Key('%',c_evt='percent'), ),
+        (Key('*',c_evt='asterisk'), Key('+',c_evt='plus'), Key('-',c_evt='minus'), Key('=',c_evt='equal'), Key('#',c_evt='numbersign'), Key('~',c_evt='asciitilde'), Key('@',c_evt='at'), Key('\\',c_evt='backslash'), Key('_',c_evt='underscore')),
+        (Key('`',c_evt='quoteleft'), Key('|',c_evt='bar'), Key('(',c_evt='parenleft'), Key(')',c_evt='parenright'), Key('"',c_evt='quotedbl'), Key('&',c_evt='ampersand'), Key('[',c_evt='bracketleft'), Key(']',c_evt='bracketright')),
+        (NoClKey('ABC',nb=2,evt='en_maj'), Key('<',c_evt='less'), Key('$',c_evt='dollar'), Key('>',c_evt='greater'), Key('←',nb=2,c_evt='BackSpace')),
+        (NoClKey('abc',nb=2,evt='en_min'), Key(' ',nb=8,c_evt='space'))
     ),
             
     'int': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
-        (Key('0'), Key('←',evt='suppr'))
+        (Key('0',nb=2), Key('←',c_evt='BackSpace'))
     ), 
 
     'float': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
-        (Key('.'), Key('0'), Key('←',evt='suppr'))
+        (Key('.',c_evt='period'), Key('0'), Key('←',c_evt='BackSpace'))
     ),
 
     'ip': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
-        (Key('.'), Key('0'), Key('←',evt='suppr'))
+        (Key('.',c_evt='period'), Key('0'), Key('←',c_evt='BackSpace'))
     ),
     
     'hexa': (
         (Key('1'), Key('2'), Key('3'), Key('A'), Key('B')), 
         (Key('4'), Key('5'), Key('6'), Key('C'), Key('D')), 
         (Key('7'), Key('8'), Key('9'), Key('E'), Key('F')),
-        (Key('-'), None, Key('0'), None, Key('←',evt='suppr'))
+        (Key('-',c_evt='minus'), None,     Key('0'), None,     Key('←',c_evt='BackSpace'))
     )
 }
 
@@ -141,6 +157,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.highlight_color = '#ffffff88'
         self.button_texture = None
         
+        self._text_actor = None
+        
         self._width = 0
         self._height = 0
         self._button_size = 0
@@ -158,6 +176,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     #keyboard load profile ; load dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
+        print 'Load profile:', map_name
         if map_name == self._map_name:
             return
         if self._keyboard_map:
@@ -191,6 +210,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 button.kb_text = key.text
                 button.kb_width = key.width
                 button.kb_evt = key.event
+                button.kb_c_evt = key.clutter_event
                 # add button to line
                 line.add(button, key.width)
             self._lines.append(line)
@@ -199,6 +219,14 @@ class Keyboard(clutter.Actor, clutter.Container):
         
         if self._width > 0 and self._height > 0:
             self._refresh_allocation_params()
+    
+    def to_min(self):
+        if self._map_name.endswith('_maj'):
+            self.load_profile('%s_min' % (self._map_name[:-4]))
+
+    def to_maj(self):
+        if self._map_name.endswith('_min'):
+            self.load_profile('%s_maj' % (self._map_name[:-4]))
     
     # clear keyboard : delete buttons
     def clear_keyboard(self):
@@ -210,6 +238,16 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._map_name = None
         self._keyboard_map = None
     
+    def connect_clutter_text(self, text_actor):
+        self._text_actor = text_actor
+    
+    def _emit_key_press(self, keyval):
+        if self._text_actor:
+            event = clutter.Event(clutter.KEY_PRESS)
+            event.keyval = keyval
+            self._text_actor.emit('key-press-event', event)
+        self.emit('keyboard', event)
+    
     # on button press emit message
     def _on_button_press(self, source, event):
         # flash button
@@ -217,11 +255,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         gobject.timeout_add(200, source.set_inner_color, self.inner_color)
         # execute button action
         if source.kb_evt == 'car':
-            self.emit('keyboard', source.kb_text)
-        elif source.kb_evt == 'suppr':
-            self.emit('keyboard', 'suppr')
-        elif source.kb_evt == 'enter':
-            self.emit('keyboard', 'enter')
+            if source.kb_c_evt:
+                self._emit_key_press(source.kb_c_evt)
         elif source.kb_evt == 'fr_min':
             self.load_profile('fr_min')
         elif source.kb_evt == 'fr_maj':
@@ -328,11 +363,15 @@ if __name__ == '__main__':
     text = clutter.Text()
     stage.set_key_focus(text)
     text.set_color('#ffffffff')
+    text.set_selection_color('#8888ffff')
     text.set_font_name('22')
     text.set_size(900, 40)
     text.set_position(50, 5)
-    text.set_editable(True)
     text.set_cursor_visible(True)
+    text.set_editable(True)
+    text.set_selectable(True)
+    text.set_reactive(True)
+    text.grab_key_focus()
     stage.add(text)
     
     kb_bg = clutter.Rectangle()
@@ -387,53 +426,20 @@ if __name__ == '__main__':
             keyboard.load_profile('fr_caract')
 
     #function keyboard_callback : action keyboard is used
-    def keyboard_callback(keyboard, key):
-        map_name = keyboard.get_map_name()
-        #suppr button
-        if key == 'suppr':
-            text.delete_chars(1)
-            text.set_selection(text.get_cursor_position(), text.get_cursor_position())
-        #del button
-        elif key == 'del':
-            text.set_selection(text.get_cursor_position()+1, text.get_cursor_position()+1)
-            text.delete_chars(1)
-            text.set_selection(text.get_cursor_position(), text.get_cursor_position())
-        # others entries
+    def on_text_change(actor):
+        CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        print 'Text changed:', actor.get_text()
+        new_text = actor.get_text()
+        if len(new_text) == 0 or new_text.endswith('.'):
+            keyboard.to_maj()
         else:
-            older_entries = text.get_text()
-            #maj or min mapping : when '. ' maj keyboard is mapped
-            if len(older_entries) >= 1 :
-                last_char = older_entries[-1]
-                if last_char == '.' and key == ' ':
-                    if map_name == 'fr_min':
-                        keyboard.load_profile('fr_maj')
-                    elif map_name == 'en_min':
-                        keyboard.load_profile('en_maj')
-            # maj or min mapping : when '. ' is followed by maj mapping next char will be min
-            if len(older_entries) >= 2 :
-                last_2_char = older_entries[-2] + older_entries[-1]
-                if last_2_char == '. ':
-                    if map_name == 'fr_maj':
-                        keyboard.load_profile('fr_min')
-                    elif map_name == 'en_maj':
-                        keyboard.load_profile('en_min')
-            # insert text
-            print 'insert %s in text' %key, text.get_cursor_position()
-            text.insert_text(key, text.get_cursor_position())
-        # maj or min mapping : when first char is maj the next is min
-        text_length = len(text.get_text())
-        if text_length == 1 : 
-            if map_name == 'fr_maj':
-                keyboard.load_profile('fr_min')
-            elif map_name == 'en_maj':
-                keyboard.load_profile('en_min')
-        # first char is a maj
-        if text_length == 0 : 
-            if map_name == 'fr_min':
-                keyboard.load_profile('fr_maj')
-            elif map_name == 'en_min':
-                keyboard.load_profile('en_maj')
-                
+            second_last_char = '_'
+            if len(new_text) > 1:
+                second_last_char = new_text[-2]
+            last_char = new_text[-1]
+            if last_char in CAPITAL_LETTERS and second_last_char not in CAPITAL_LETTERS:
+                keyboard.to_min()
+    
     # function num_callback used when numeric keyboard is called
     def num_callback(button,event,keyboard):
         map_name = keyboard.get_map_name()
@@ -461,6 +467,14 @@ if __name__ == '__main__':
     right.connect('button-press-event',right_callback,text)
     num.connect('button-press-event',num_callback,keyboard)   
     lan.connect('button-press-event',lang_callback,keyboard)
-    keyboard.connect('keyboard', keyboard_callback)
-        
+    
+    
+    def on_key_press_event(source, event):
+        print 'Key pressed:', event.keyval
+    
+    text.connect('key-press-event', on_key_press_event)
+    text.connect('text-changed', on_text_change)
+    
+    keyboard.connect_clutter_text(text)
+    
     clutter.main()
