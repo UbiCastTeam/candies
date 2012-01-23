@@ -246,7 +246,7 @@ class Keyboard(clutter.Actor, clutter.Container):
             event = clutter.Event(clutter.KEY_PRESS)
             event.keyval = keyval
             self._text_actor.emit('key-press-event', event)
-        self.emit('keyboard', event)
+        self.emit('keyboard', keyval)
     
     # on button press emit message
     def _on_button_press(self, source, event):
