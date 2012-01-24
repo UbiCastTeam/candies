@@ -17,6 +17,7 @@ class MultiLayerContainer(BaseContainer):
     def insert_actor(self, index, actor):
         if actor in self._children:
             raise Exception('Actor %s is already a children of %s' % (actor, self))
+        actor.set_parent(self)
         self._children.insert(index, actor)
         self.queue_relayout()
     
