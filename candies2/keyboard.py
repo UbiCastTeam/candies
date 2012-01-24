@@ -162,7 +162,6 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     #keyboard load profile: load a mapping dictionnary, create buttons and calcul max line width 
     def load_profile(self, map_name):
-        print 'Load profile:', map_name
         if map_name == self._map_name:
             return
         if self._keyboard_map:
@@ -344,7 +343,6 @@ if __name__ == '__main__':
     
     # create text wich will show keyboard entries results
     text = clutter.Text()
-    stage.set_key_focus(text)
     text.set_color('#ffffffff')
     text.set_selection_color('#8888ffff')
     text.set_font_name('22')
@@ -354,8 +352,8 @@ if __name__ == '__main__':
     text.set_editable(True)
     text.set_selectable(True)
     text.set_reactive(True)
-    text.grab_key_focus()
     stage.add(text)
+    stage.set_key_focus(text)
     
     kb_bg = clutter.Rectangle()
     kb_bg.set_color('#ffffff22')
@@ -395,17 +393,17 @@ if __name__ == '__main__':
     # function lang_callback: action when language is changed 
     def lang_callback(button, event, keyboard):
         map_name = keyboard.get_map_name()
-        if map_name =='fr_maj':
+        if map_name == 'fr_maj':
             keyboard.load_profile('en_maj')
-        elif map_name =='fr_min':
+        elif map_name == 'fr_min':
             keyboard.load_profile('en_min')
-        elif map_name =='en_maj':
+        elif map_name == 'en_maj':
             keyboard.load_profile('fr_maj')
-        elif map_name =='en_min':
+        elif map_name == 'en_min':
             keyboard.load_profile('fr_min')
-        elif map_name =='fr_caract':
+        elif map_name == 'fr_caract':
             keyboard.load_profile('en_caract')
-        elif map_name =='en_caract':
+        elif map_name == 'en_caract':
             keyboard.load_profile('fr_caract')
 
     # function keyboard_callback: action keyboard is used
@@ -413,16 +411,19 @@ if __name__ == '__main__':
         CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         print 'Text changed:', actor.get_text()
         new_text = actor.get_text()
-        cursor_pos = actor.get_cursor_position()
-        last_char = new_text[cursor_pos]
-        if len(new_text) == 0 or last_char in ('.', '!', '?'):
+        if len(new_text) == 0:
             keyboard.to_maj()
         else:
-            second_last_char = '_'
-            if cursor_pos >= 1 or len(new_text) > 1 and cursor_pos == -1:
-                second_last_char = new_text[cursor_pos - 1]
-            if last_char in CAPITAL_LETTERS and second_last_char not in CAPITAL_LETTERS:
-                keyboard.to_min()
+            cursor_pos = actor.get_cursor_position()
+            last_char = new_text[cursor_pos]
+            if last_char in ('.', '!', '?'):
+                keyboard.to_maj()
+            else:
+                second_last_char = '_'
+                if cursor_pos >= 1 or len(new_text) > 1 and cursor_pos == -1:
+                    second_last_char = new_text[cursor_pos - 1]
+                if last_char in CAPITAL_LETTERS and second_last_char not in CAPITAL_LETTERS:
+                    keyboard.to_min()
     
     # function num_callback used when numeric keyboard is called
     def num_callback(button,event,keyboard):
