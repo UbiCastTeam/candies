@@ -478,14 +478,14 @@ if __name__ == '__main__':
         cursor_pos = text.get_cursor_position()
         if cursor_pos == -1:
             cursor_pos = len(text.get_text())
-        cursor_res -= 1
-        text.set_selection(cursor_res, cursor_res)
+        cursor_pos -= 1
+        text.set_selection(cursor_pos, cursor_pos)
       
     # function right_callback when right button is used
     def right_callback(button, event, text):
         cursor_pos = text.get_cursor_position()
-        cursor_res += 1
-        text.set_selection(cursor_res, cursor_res)
+        cursor_pos += 1
+        text.set_selection(cursor_pos, cursor_pos)
     
     # function to get clutter keys names
     def print_clutter_key_map(button, event):
