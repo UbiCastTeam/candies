@@ -110,6 +110,21 @@ KEYBOARD_MAPS = {
     )
 }
 
+# keys replacements to avoid some weird behaviour with keys pad
+KEYBOARD_KEYS_REPLACEMENTS = {
+    '_65430': 65460, # KP_Left      ->  KP_4
+    '_65432': 65462, # KP_Right     ->  KP_6
+    '_65431': 65464, # KP_Up        ->  KP_8
+    '_65433': 65458, # KP_Down      ->  KP_2
+    '_65436': 65457, # KP_End       ->  KP_1
+    '_65437': 65461, # KP_Begin     ->  KP_5
+    '_65429': 65463, # KP_Home      ->  KP_7
+    '_65435': 65459, # KP_Page_Down ->  KP_3
+    '_65434': 65465, # KP_Page_Up   ->  KP_9
+    '_65438': 65456, # KP_Insert    ->  KP_0
+    '_65439': 65454, # KP_Delete    ->  KP_Decimal
+}
+
 
 class ButtonLine():
     def __init__(self):
@@ -156,6 +171,24 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._keyboard_map = None
         if map_name:
             self.load_profile(map_name)
+        
+        self.connect('key-press-event', self._on_key_press)
+        self.connect('key-release-event', self._on_key_release)
+    
+    def _on_key_press(self, source, event):
+        # to fix num lock problem
+        #print 'Key press:', event.keyval
+        #print 'Modifier:', dir(event.modifier_state)
+        #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
+        if '_%s' % event.keyval in KEYBOARD_KEYS_REPLACEMENTS:
+            event.keyval = KEYBOARD_KEYS_REPLACEMENTS['_%s' % event.keyval]
+        if self._text_actor:
+            self._text_actor.emit('key-press-event', event)
+    
+    def _on_key_release(self, source, event):
+        #print 'Key release:', event.keyval
+        if self._text_actor:
+            self._text_actor.emit('key-release-event', event)
     
     def get_map_name(self):
         return self._map_name
@@ -353,7 +386,6 @@ if __name__ == '__main__':
     text.set_selectable(True)
     text.set_reactive(True)
     stage.add(text)
-    stage.set_key_focus(text)
     
     kb_bg = clutter.Rectangle()
     kb_bg.set_color('#ffffff22')
@@ -371,6 +403,7 @@ if __name__ == '__main__':
     box = FlowBox()
     box.set_size(900, 50)
     box.set_position(50, 550)
+    
     lan = ClassicButton('language')
     lan.set_size(150, 50)
     box.add(lan)
@@ -386,6 +419,11 @@ if __name__ == '__main__':
     num = ClassicButton('num')
     num.set_size(150, 50)
     box.add(num)
+    
+    keys_btn = ClassicButton('print clutter keys names')
+    keys_btn.set_size(150, 50)
+    box.add(keys_btn)
+    
     stage.add(box)
     
     stage.show()
@@ -415,6 +453,8 @@ if __name__ == '__main__':
             keyboard.to_maj()
         else:
             cursor_pos = actor.get_cursor_position()
+            if cursor_pos >= len(new_text):
+                cursor_pos = -1
             last_char = new_text[cursor_pos]
             if last_char in ('.', '!', '?'):
                 keyboard.to_maj()
@@ -426,38 +466,45 @@ if __name__ == '__main__':
                     keyboard.to_min()
     
     # function num_callback used when numeric keyboard is called
-    def num_callback(button,event,keyboard):
+    def num_callback(button, event, keyboard):
         map_name = keyboard.get_map_name()
         if map_name == 'int':
             keyboard.load_profile('fr_maj')
-        else :
+        else:
             keyboard.load_profile('int')
             
     # function left_callback when left button is used
     def left_callback(button, event, text):
         cursor_pos = text.get_cursor_position()
         if cursor_pos == -1:
-          cursor_pos = len(text.get_text())
-        cursor_res = cursor_pos - 1
+            cursor_pos = len(text.get_text())
+        cursor_res -= 1
         text.set_selection(cursor_res, cursor_res)
       
     # function right_callback when right button is used
-    def right_callback(button,event,text):
+    def right_callback(button, event, text):
         cursor_pos = text.get_cursor_position()
-        cursor_res = cursor_pos+1
+        cursor_res += 1
         text.set_selection(cursor_res, cursor_res)
     
-    # function to print pressed keys
-    def on_key_press_event(source, event):
-        print 'Key pressed:', event.keyval
-    
+    # function to get clutter keys names
+    def print_clutter_key_map(button, event):
+        for k in dir(clutter.keysyms):
+            if hasattr(clutter.keysyms, k):
+                attr = getattr(clutter.keysyms, k)
+                if isinstance(attr, (int, long)):
+                    print '%s\t%s\t%s' % (attr, k, unichr(clutter.keysym_to_unicode(attr)))
+
     # connect signals
-    left.connect('button-press-event',left_callback,text)
-    right.connect('button-press-event',right_callback,text)
-    num.connect('button-press-event',num_callback,keyboard)   
-    lan.connect('button-press-event',lang_callback,keyboard)
-    text.connect('key-press-event', on_key_press_event)
-    text.connect('text-changed', on_text_change)
+    left.connect('button-press-event', left_callback, text)
+    right.connect('button-press-event', right_callback, text)
+    num.connect('button-press-event', num_callback, keyboard)
+    lan.connect('button-press-event', lang_callback, keyboard)
+    lan.connect('button-press-event', lang_callback, keyboard)
+    keys_btn.connect('button-press-event', print_clutter_key_map)
     keyboard.connect_clutter_text(text)
     
+    stage.set_key_focus(keyboard)
+    
     clutter.main()
+
