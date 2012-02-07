@@ -156,6 +156,18 @@ class NumberAdjuster(Box):
         elif value < self.min*self.factor:
             value = int(self.min*self.factor)
         return value
+    
+    def set_min(self, min):
+        self.min = min
+        if self.value < self.min:
+            self.value = self.min
+            self.update()
+    
+    def set_max(self, max):
+        self.max = max
+        if self.value > self.max:
+            self.value = self.max
+            self.update()
 
 
 if __name__ == '__main__':
