@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-class Margin():
+class Margin(object):
     ATTR_NAME = 'margin'
     
     def __init__(self, value, xy_only=False):
+        object.__init__(self)
         if isinstance(value, int):
             self.left = value
             self.right = value
@@ -17,16 +18,16 @@ class Margin():
                 self.top = value[1]
                 self.bottom = value[1]
             elif xy_only:
-                raise ValueError('Invalid value for %s, %s must be a tuple with 2 values' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
+                raise ValueError('Invalid value for %s, %s must be a tuple with 2 values' %(self.ATTR_NAME, self.ATTR_NAME))
             elif len(value) == 4:
                 self.top = value[0]
                 self.right = value[1]
                 self.bottom = value[2]
                 self.left = value[3]
             else:
-                raise ValueError('Invalid value for %s, %s must be a tuple with 2 or 4 values' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
+                raise ValueError('Invalid value for %s, %s must be a tuple with 2 or 4 values' %(self.ATTR_NAME, self.ATTR_NAME))
         else:
-            raise ValueError('Invalid value for %s, %s must be a int or a tuple' %(self.ATTR_NAME, self.ATTR_NAME, len(value)))
+            raise ValueError('Invalid value for %s, %s must be a int or a tuple' %(self.ATTR_NAME, self.ATTR_NAME))
         
         if self.left == self.right:
             self.x = self.left
