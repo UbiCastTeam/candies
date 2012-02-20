@@ -32,6 +32,7 @@ class CheckButton(clutter.Texture):
     
     def _on_press(self, source, event):
         self.toggle_check()
+        self._action()
     
     def toggle_check(self):
         if self.checked:
@@ -40,6 +41,8 @@ class CheckButton(clutter.Texture):
         else:
             self.checked = True
             self.set_from_file(self.checked_image_path)
+
+    def _action(self):
         if self.callback is not None:
             if self.user_data is not None:
                 self.callback(self.checked, self.user_data)
@@ -111,15 +114,18 @@ class CheckBox(BaseContainer):
     
     def _on_press(self, source, event):
         self.toggle_check()
-    
-    def toggle_check(self):
-        self.checked = not self.checked
-        self.refresh_image()
+        self.on_press()
+
+    def on_press(self):
         if self.callback is not None:
             if self.user_data is not None:
                 self.callback(self.checked, self.user_data)
             else:
                 self.callback(self.checked)
+
+    def toggle_check(self):
+        self.checked = not self.checked
+        self.refresh_image()
 
     def set_lock(self, status):
         if status:
