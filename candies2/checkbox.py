@@ -28,7 +28,7 @@ class CheckButton(clutter.Texture):
         self.callback = callback
         self.user_data = user_data
         self.set_reactive(True)
-        self.connect('button-release-event',self._on_press)
+        self.connect('button-release-event', self._on_press)
     
     def _on_press(self, source, event):
         self.toggle_check()
@@ -52,6 +52,7 @@ class CheckButton(clutter.Texture):
     def set_checked(self, boolean):
         if boolean != self.checked:
             self.toggle_check()
+            self._action()
     
     def set_lock(self, lock):
         self.set_reactive(not lock)
@@ -98,10 +99,11 @@ class CheckBox(BaseContainer):
         self._image = clutter.Texture()
         
         self.set_reactive(True)
-        self.connect('button-release-event',self._on_press)
+        self.connect('button-release-event', self._on_press)
         
         self._add(self._image)
         self._add(self._label)
+        self.refresh_image()
     
     def set_text(self, text):
         self._label.set_text(text)
@@ -114,9 +116,9 @@ class CheckBox(BaseContainer):
     
     def _on_press(self, source, event):
         self.toggle_check()
-        self.on_press()
+        self._action()
 
-    def on_press(self):
+    def _action(self):
         if self.callback is not None:
             if self.user_data is not None:
                 self.callback(self.checked, self.user_data)
@@ -138,8 +140,10 @@ class CheckBox(BaseContainer):
     def set_checked(self, boolean):
         if boolean and not self.checked:
             self.toggle_check()
+            self._action()
         elif not boolean and self.checked:
             self.toggle_check()
+            self._action()
     
     def refresh_image(self):
         if self.checked:
