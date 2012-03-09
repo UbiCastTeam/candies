@@ -49,11 +49,25 @@ class LightList(BaseContainer):
         self._children = list()
         self.queue_relayout()
     
+    def remove(self, child_or_index):
+        if child_or_index in self._children:
+            child = child_or_index
+            index = self._children.index(child)
+        elif child_or_index < len(self._children):
+            index = child_or_index
+            child = self._children[index]
+        child.unparent()
+        self._children.pop(index)
+        self.queue_relayout()
+    
     def remove_all(self):
         for child in self._children:
             child.unparent()
         self._children = list()
         self.queue_relayout()
+    
+    def index(self, child):
+        return self._children.index(child)
     
     def do_get_preferred_width(self, for_height):
         preferred_width = 2*self._padding.x
