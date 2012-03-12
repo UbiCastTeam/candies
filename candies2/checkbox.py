@@ -32,15 +32,16 @@ class CheckButton(clutter.Texture):
     
     def _on_press(self, source, event):
         self.toggle_check()
-        self._action()
     
-    def toggle_check(self):
+    def toggle_check(self, silent=False):
         if self.checked:
             self.checked = False
             self.set_from_file(self.not_checked_image_path)
         else:
             self.checked = True
             self.set_from_file(self.checked_image_path)
+        if not silent:
+            self._action()
 
     def _action(self):
         if self.callback is not None:
@@ -49,10 +50,9 @@ class CheckButton(clutter.Texture):
             else:
                 self.callback(self.checked)
     
-    def set_checked(self, boolean):
+    def set_checked(self, boolean, silent=False):
         if boolean != self.checked:
-            self.toggle_check()
-            self._action()
+            self.toggle_check(silent)
     
     def set_lock(self, lock):
         self.set_reactive(not lock)
@@ -116,7 +116,6 @@ class CheckBox(BaseContainer):
     
     def _on_press(self, source, event):
         self.toggle_check()
-        self._action()
 
     def _action(self):
         if self.callback is not None:
@@ -125,9 +124,11 @@ class CheckBox(BaseContainer):
             else:
                 self.callback(self.checked)
 
-    def toggle_check(self):
+    def toggle_check(self, silent=False):
         self.checked = not self.checked
         self.refresh_image()
+        if not silent:
+            self._action()
 
     def set_lock(self, status):
         if status:
@@ -137,13 +138,11 @@ class CheckBox(BaseContainer):
             self.set_reactive(True)
             self.set_opacity(255)
 
-    def set_checked(self, boolean):
+    def set_checked(self, boolean, silent=False):
         if boolean and not self.checked:
-            self.toggle_check()
-            self._action()
+            self.toggle_check(silent)
         elif not boolean and self.checked:
-            self.toggle_check()
-            self._action()
+            self.toggle_check(silent)
     
     def refresh_image(self):
         if self.checked:
