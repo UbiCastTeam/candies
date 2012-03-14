@@ -32,6 +32,7 @@ class VideoPlayer(VideoTexture):
         self._seeking_timeout_id = None
         self._next_seek_percent = None
         self._next_seek_time = None
+        self._play_after_seek = False
         self._keep_ratio = keep_ratio
         self._state = 'IDLE' # state can be IDLE, PLAYING, PAUSED
         self._duration = 0
@@ -84,6 +85,8 @@ class VideoPlayer(VideoTexture):
         if duration > 0:
             self._duration = duration
             if self._next_seek_time:
+                if not self._play_after_seek:
+                    self.pause()
                 self.seek_to_time(self._next_seek_time)
             for listener in self._listeners['on_duration']:
                 listener(duration)
@@ -130,15 +133,18 @@ class VideoPlayer(VideoTexture):
                 listener(state)
     
     def seek_to_time(self, time):
-        if not self._uri:
+        if not self._uri or time is None:
             return
         if self._duration > 0:
             percent = time / self._duration
             self._next_seek_time = None
+            self._play_after_seek = False
             self.seek_to_percent(percent)
         else:
             self._next_seek_time = time
-            self.play()
+            self._play_after_seek = self.get_playing()
+            if not self._play_after_seek:
+                self.play()
     
     def seek_to_percent(self, percent):
         if not self._uri:
