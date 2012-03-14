@@ -149,6 +149,10 @@ class VideoPlayer(VideoTexture):
     def seek_to_percent(self, percent):
         if not self._uri:
             return
+        if percent > 1:
+            percent = 1
+        elif percent < 0:
+            percent = 0
         self._next_seek_percent = percent
         self.emit_position_update(percent)
         for listener in self._listeners['on_seek']:
