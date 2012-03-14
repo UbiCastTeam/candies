@@ -163,9 +163,9 @@ class VideoPlayer(VideoTexture):
     def emit_position_update(self, progress):
         if progress != self._last_progress:
             self._last_progress = progress
-            #self.emit('position_update', progress * self.get_duration(), progress, self.get_duration())
             for listener in self._listeners['on_time_change']:
-                listener(progress * self.get_duration(), progress, self._duration)
+                listener((progress * self.get_duration()) + 0.000001, progress, self._duration)
+                # 0.000001 is to fix float value of progress
     
     def on_progress(self, source, progress):
         if self._seeking_timeout_id is None:
