@@ -33,6 +33,7 @@ class VideoPlayer(VideoTexture):
         self._next_seek_percent = None
         self._next_seek_time = None
         self._play_after_seek = False
+        self._after_seek_emit_count = 0
         self._keep_ratio = keep_ratio
         self._state = 'IDLE' # state can be IDLE, PLAYING, PAUSED
         self._duration = 0
@@ -154,6 +155,7 @@ class VideoPlayer(VideoTexture):
         elif percent < 0:
             percent = 0
         self._next_seek_percent = percent
+        self._after_seek_emit_count = 0
         self.emit_position_update(percent)
         for listener in self._listeners['on_seek']:
             listener(self._next_seek_percent)
@@ -172,10 +174,14 @@ class VideoPlayer(VideoTexture):
     
     def emit_position_update(self, progress):
         if progress != self._last_progress:
+            self._after_seek_emit_count += 1
             self._last_progress = progress
-            for listener in self._listeners['on_time_change']:
-                listener((progress * self.get_duration()) + 0.000001, progress, self._duration)
-                # 0.000001 is to fix float value of progress
+            time = (progress * self.get_duration()) + 0.000001
+            # 0.000001 is to fix float value of progress
+            if self._after_seek_emit_count != 2:
+                # ignore second emit after seek
+                for listener in self._listeners['on_time_change']:
+                    listener(time, progress, self._duration)
     
     def on_progress(self, source, progress):
         if self._seeking_timeout_id is None:
