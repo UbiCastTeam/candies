@@ -209,6 +209,11 @@ class SeekBar(clutter.Actor, clutter.Container):
         if self._last_event_x is None:
             self.set_progress(position)
 
+    def seek_at_progression(self, new_progression):
+        print '******** seek_at_progression method of SeekBar class is deprecated ********'
+        self.set_progress(new_progression)
+        self.emit_seek_request()
+
     def set_cursor_color(self, color):
         self.cursor.props.color = clutter.color_from_string(color)
 
