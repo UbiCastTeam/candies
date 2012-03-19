@@ -72,6 +72,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.sequence_color_1 = '#444444ff'
         self.sequence_color_2 = '#666666ff'
         self._sequence_color = self.sequence_color_2
+        self._limit = list()
         self._min = None
         self._max = None
         
@@ -103,12 +104,22 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.cursor.set_color('Gray')
         self.cursor.set_parent(self)
     
+    def set_limit_progress(self, limit):
+        if limit is not None:
+            self._limit = limit
+        else:
+            self._limit = list()
+
+    '''
     def set_min_progress(self, mini=None):
-        self._min = mini
+        self._limit = self._limit + (mini,)
+        #self._min = mini
     
     def set_max_progress(self, maxi=None):
-        self._max = maxi
-    
+        self._limit = self._limit[:-1] + (self._limit[-1][0],maxi)
+        #self._max = maxi
+        '''
+
     def _on_press(self, source, event):
         clutter.grab_pointer(self.background)
         self._last_event_x = event.x
@@ -139,10 +150,15 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_progress(self, position):
         new_position = max(position, 0.0)
         new_position = min(new_position, 1.0)
-        if self._min is not None:
-            new_position = max(new_position, self._min)
-        if self._max is not None:
-            new_position = min(new_position, self._max)
+        if len(self._limit) > 0:
+            for i in range(len(self._limit)):
+                if self._limit[0] is not None:
+                    if new_position < self._limit[0][0]:
+                        new_position = max(new_position, self._limit[0][0])
+                    if new_position > self._limit[len(self._limit) - 1][1]:
+                        new_position = min(new_position, self._limit[len(self._limit) - 1][1])
+                    if (i + 1) <= len(self._limit) - 1 and self._limit[i + 1][0] > new_position > self._limit[i][1]:
+                        new_position = self._limit[i + 1][0]
         if new_position != self._progress:
             self._progress = new_position
             self.queue_relayout()
