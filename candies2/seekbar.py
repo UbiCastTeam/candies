@@ -72,7 +72,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.sequence_color_1 = '#444444ff'
         self.sequence_color_2 = '#666666ff'
         self._sequence_color = self.sequence_color_2
-        self._limit = list()
         self._min = None
         self._max = None
         
@@ -95,6 +94,11 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.bar.set_color('#000000ff')
         self.bar.set_parent(self)
         
+        #limit
+        self._limit = list()
+        self._limit_blocks = list()
+        self._limit_color = '#000000ff'
+        
         # cursor
         if cursor_image_path != None and os.path.exists(cursor_image_path):
             self.cursor = clutter.Texture()
@@ -105,9 +109,24 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.cursor.set_parent(self)
     
     def set_limit_progress(self, limit):
+        
+        for limit_block in list(self._limit_blocks):
+            limit_block.unparent()
+            limit_block.destroy()
+        self._limit_blocks = list()
+        
         if limit is not None:
+            if isinstance(self.bar, clutter.Rectangle):
+                self.bar.set_color('#00000070')
+            for limit_index in range(len(limit)):
+                block = clutter.Rectangle()
+                block.set_color(self._limit_color)
+                block.set_parent(self)
+                self._limit_blocks.append(block)
             self._limit = limit
         else:
+            if isinstance(self.bar, clutter.Rectangle):
+                self.bar.set_color('#000000ff')
             self._limit = list()
 
     '''
@@ -307,6 +326,16 @@ class SeekBar(clutter.Actor, clutter.Container):
         bar_box.y2 = self._height - self._margin.y - self._padding.bottom
         self.bar.allocate(bar_box, flags)
         
+        # limits
+        for limit_index in range(len(self._limit_blocks)) :
+            limit = self._limit_blocks[limit_index]
+            limit_box = clutter.ActorBox()
+            limit_box.x1 = int(bar_box.x1 + int(self._limit[limit_index][0] * (bar_box.x2 - bar_box.x1)))
+            limit_box.y1 = bar_box.y1
+            limit_box.x2 = int(bar_box.x1 + int(self._limit[limit_index][1] * (bar_box.x2 - bar_box.x1)))
+            limit_box.y2 = bar_box.y2
+            limit.allocate(limit_box, flags)
+        
         # sequences
         for sequence_index in range(len(self._sequence_blocks)):
             sequence = self._sequence_blocks[sequence_index]
@@ -341,6 +370,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def do_foreach(self, func, data=None):
         children = [self.background, self.bar]
+        children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
         children.extend(self._markers)
         children.append(self.cursor)
@@ -349,6 +379,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def do_paint(self):
         children = [self.background, self.bar]
+        children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
         children.extend(self._markers)
         children.append(self.cursor)
@@ -375,6 +406,12 @@ class SeekBar(clutter.Actor, clutter.Container):
                 self.cursor.unparent()
                 self.cursor.destroy()
                 self.cursor = None
+        if hasattr(self, '_limit_blocks'):
+            for limit_block in self._limit_blocks:
+                limit_block.unparent()
+                limit_block.destroy()
+            self._limit_blocks = list()
+            self._limit = list()
         if hasattr(self, '_sequence_blocks'):
             for sequence_block in self._sequence_blocks:
                 sequence_block.unparent()
