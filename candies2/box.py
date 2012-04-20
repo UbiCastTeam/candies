@@ -151,6 +151,7 @@ class Box(clutter.Actor, clutter.Container):
             element['object'].unparent()
             self.elements.remove(element)
             self.queue_relayout()
+            return element['object']
     
     def remove_all_elements(self):
         for element in self.elements:

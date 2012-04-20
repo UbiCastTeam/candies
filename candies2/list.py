@@ -59,6 +59,7 @@ class LightList(BaseContainer):
         child.unparent()
         self._children.pop(index)
         self.queue_relayout()
+        return child
     
     def remove_all(self):
         for child in self._children:

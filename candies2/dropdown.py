@@ -207,6 +207,7 @@ class OptionLine(BaseContainer):
     def do_pick(self, color):
         clutter.Actor.do_pick(self, color)
 
+
 class Select(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Select'
     """
