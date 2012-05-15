@@ -212,23 +212,28 @@ class Keyboard(clutter.Actor, clutter.Container):
         #print 'Key press:', event.keyval
         #print 'Modifier:', dir(event.modifier_state)
         #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
+        emit_key = False
         if self._dead_key:
             if event.unicode_value:
                 keysym = CODE_POINTS.get(event.unicode_value)
                 new_key = getattr(clutter.keysyms, "%s%s" % (keysym, self._dead_key[2]), None)
-                if new_key:
+                if event.unicode_value == clutter.keysyms.space:
+                    event.keyval = self._dead_key[0]
+                    event.unicode_value = self._dead_key[1]
+                    emit_key = True
+                elif new_key:
                     event.keyval = new_key
                     event.unicode_value = int(clutter.keysym_to_unicode(event.keyval))
-                else:
-                    self._emit_key_press(self._dead_key[0], self._dead_key[1])
-                    self._emit_key_release(self._dead_key[0], self._dead_key[1])
+                    emit_key = True
                 self._dead_key = None
         else:
             if event.unicode_value in DEAD_KEYS:
                 self._dead_key = event.keyval, event.unicode_value, DEAD_KEYS[event.unicode_value]
+            else:
+                emit_key = True
             if '_%s' % event.keyval in KEYBOARD_KEYS_REPLACEMENTS:
                 event.keyval = KEYBOARD_KEYS_REPLACEMENTS['_%s' % event.keyval]
-        if not self._dead_key and self._text_actor:
+        if emit_key and self._text_actor:
             self._text_actor.emit('key-press-event', event)
     
     def _on_key_release(self, source, event):
