@@ -35,6 +35,7 @@ class NoClKey(Key):
 # keyboard dictionnary
 KEYBOARD_MAPS = {
     'fr_maj': (
+        (Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
@@ -51,11 +52,12 @@ KEYBOARD_MAPS = {
     ),
     
     'fr_min': (
-         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
-         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
-         (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
-         (NoClKey('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key(',',c_evt='comma'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='fr_maj')),
-         (Key('#+-',nb=2,evt='fr_caract'), Key(' ',nb=8,c_evt='space'))
+        (Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
+        (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
+        (NoClKey('⇧',nb=2,evt='fr_maj'), Key('w'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key(',',c_evt='comma'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='fr_maj')),
+        (Key('#+-',nb=2,evt='fr_caract'), Key(' ',nb=8,c_evt='space'))
      ),
     
     'en_min': (
@@ -208,6 +210,12 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.connect('key-release-event', self._on_key_release)
     
     def _on_key_press(self, source, event):
+        self._key_press_event(event)
+    
+    def _on_key_release(self, source, event):
+        self._key_release_event(event)
+    
+    def _key_press_event(self, event):
         # to fix num lock problem
         #print 'Key press:', event.keyval
         #print 'Modifier:', dir(event.modifier_state)
@@ -225,6 +233,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                     event.keyval = new_key
                     event.unicode_value = int(clutter.keysym_to_unicode(event.keyval))
                     emit_key = True
+                # else: both keys ignored
                 self._dead_key = None
         else:
             if event.unicode_value in DEAD_KEYS:
@@ -236,8 +245,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         if emit_key and self._text_actor:
             self._text_actor.emit('key-press-event', event)
     
-    def _on_key_release(self, source, event):
-        #print 'Key release:', event.keyval
+    def _key_release_event(self, event):
         if self._text_actor:
             self._text_actor.emit('key-release-event', event)
     
@@ -315,7 +323,8 @@ class Keyboard(clutter.Actor, clutter.Container):
             event = clutter.Event(clutter.KEY_PRESS)
             event.keyval = keyval
             event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
-            self._text_actor.emit('key-press-event', event)
+            #self._text_actor.emit('key-press-event', event)
+            self._key_press_event(event)
         self.emit('keyboard', keyval)
     
     def _emit_key_release(self, keyval, unival=None):
@@ -323,7 +332,8 @@ class Keyboard(clutter.Actor, clutter.Container):
             event = clutter.Event(clutter.KEY_RELEASE)
             event.keyval = keyval
             event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
-            self._text_actor.emit('key-release-event', event)
+            #self._text_actor.emit('key-release-event', event)
+            self._key_release_event(event)
     
     def _on_button_press(self, source, event):
         # flash button
@@ -333,6 +343,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         if source.kb_evt == 'car':
             if source.kb_c_evt:
                 self._emit_key_press(source.kb_c_evt)
+                self._emit_key_release(source.kb_c_evt)
         elif source.kb_evt == 'fr_min':
             self.load_profile('fr_min')
         elif source.kb_evt == 'fr_maj':
