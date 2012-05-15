@@ -1,16 +1,17 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
 
-import string
-import gobject
 import clutter
 import common
+import gobject
+import string
 from buttons import ClassicButton
 
 
 # Key class: name, width, event default event=char width=1
-class Key:
+class Key(object):
     def __init__(self, k, nb=1, evt='car', c_evt=None, no_c_evt=False):
+        object.__init__(self)
         self.text = k
         self.width = nb
         self.event = evt
@@ -125,9 +126,39 @@ KEYBOARD_KEYS_REPLACEMENTS = {
     '_65439': 65454, # KP_Delete    ->  KP_Decimal
 }
 
+DEAD_KEYS = {
+    96: "grave", # keyval: 65104
+    180: "acute", # 65105
+    94: "circumflex", # 65106
+    126: "tilde", # 65107
+    175: "macron", # 65108
+    418: "breve", # 65109
+    511: "abovedot", # 651010
+    168: "diaeresis", # 65111
+    #65112: "abovering", # 65112
+    445: "doubleacute", # 65113
+    439: "caron", # 65114
+    184: "cedilla", # 65115
+    434: "ogonek", # 65116
+    #65117: "iota", # 65117
+    1246: "voiced_sound", # 65118
+    1247: "semivoiced_sound", # 65119
+    #65120: "belowdot" # 65120
+}
 
-class ButtonLine():
+CODE_POINTS = dict()
+for keysym in dir(clutter.keysyms):
+    value = getattr(clutter.keysyms, keysym)
+    try:
+        CODE_POINTS[clutter.keysym_to_unicode(value)] = keysym
+    except (TypeError, ValueError):
+        pass
+
+
+class ButtonLine(object):
+    
     def __init__(self):
+        object.__init__(self)
         self.buttons = list()
         self.width = 0
         self.padding_x = 0
@@ -159,6 +190,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         self.button_texture = None
         
         self._text_actor = None
+        self._dead_key = None
         
         self._width = 0
         self._height = 0
@@ -180,9 +212,23 @@ class Keyboard(clutter.Actor, clutter.Container):
         #print 'Key press:', event.keyval
         #print 'Modifier:', dir(event.modifier_state)
         #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
-        if '_%s' % event.keyval in KEYBOARD_KEYS_REPLACEMENTS:
-            event.keyval = KEYBOARD_KEYS_REPLACEMENTS['_%s' % event.keyval]
-        if self._text_actor:
+        if self._dead_key:
+            if event.unicode_value:
+                keysym = CODE_POINTS.get(event.unicode_value)
+                new_key = getattr(clutter.keysyms, "%s%s" % (keysym, self._dead_key[2]), None)
+                if new_key:
+                    event.keyval = new_key
+                    event.unicode_value = int(clutter.keysym_to_unicode(event.keyval))
+                else:
+                    self._emit_key_press(self._dead_key[0], self._dead_key[1])
+                    self._emit_key_release(self._dead_key[0], self._dead_key[1])
+                self._dead_key = None
+        else:
+            if event.unicode_value in DEAD_KEYS:
+                self._dead_key = event.keyval, event.unicode_value, DEAD_KEYS[event.unicode_value]
+            if '_%s' % event.keyval in KEYBOARD_KEYS_REPLACEMENTS:
+                event.keyval = KEYBOARD_KEYS_REPLACEMENTS['_%s' % event.keyval]
+        if not self._dead_key and self._text_actor:
             self._text_actor.emit('key-press-event', event)
     
     def _on_key_release(self, source, event):
@@ -259,12 +305,20 @@ class Keyboard(clutter.Actor, clutter.Container):
     def connect_clutter_text(self, text_actor):
         self._text_actor = text_actor
     
-    def _emit_key_press(self, keyval):
+    def _emit_key_press(self, keyval, unival=None):
         if self._text_actor:
             event = clutter.Event(clutter.KEY_PRESS)
             event.keyval = keyval
+            event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
             self._text_actor.emit('key-press-event', event)
         self.emit('keyboard', keyval)
+    
+    def _emit_key_release(self, keyval, unival=None):
+        if self._text_actor:
+            event = clutter.Event(clutter.KEY_RELEASE)
+            event.keyval = keyval
+            event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
+            self._text_actor.emit('key-release-event', event)
     
     def _on_button_press(self, source, event):
         # flash button
