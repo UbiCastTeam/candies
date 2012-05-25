@@ -56,7 +56,6 @@ class RadioBox(CheckBox):
     def _on_press(self, source, event):
         if not self.checked:
             self.toggle_check()
-            self.on_press()
             for btn in self._related_buttons:
                 btn.set_checked(False)
     
