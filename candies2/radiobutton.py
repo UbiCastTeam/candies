@@ -44,7 +44,9 @@ class RadioBox(CheckBox):
     
     def set_related_buttons(self, buttons):
         # related buttons list must be a list of RadioButton
-        self._related_buttons = buttons
+        self._related_buttons = list(buttons)
+        if self in self._related_buttons:
+            self._related_buttons.remove(self)
         checked_found = False
         for btn in self._related_buttons:
             if btn.checked:
