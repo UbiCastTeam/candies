@@ -83,6 +83,9 @@ class AutoScrollPanel(HBox):
                     self.add_element(self._scrollbar, 'scrollbar', expand=True)
             else:
                 if self.get_by_name('actor') is None:
+                    if self._scrollbar.is_pointer_grabbed():
+                        # freeze if pointer is not ungrabbed
+                        clutter.ungrab_pointer()
                     self.remove_all_elements()
                     self._clipper.remove_actor()
                     self._actor.set_anchor_point(0, 0)

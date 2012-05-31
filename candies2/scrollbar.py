@@ -31,8 +31,8 @@ class Scrollbar(clutter.Actor, clutter.Container):
         clutter.Actor.__init__(self)
         self.padding = padding
         self.position = position
-        self.reallocate=reallocate
-        self.show_label=False
+        self.reallocate = reallocate
+        self.show_label = False
         self.scroller_position_percent = value
         self.height = 0
         self.last_event_y = None
@@ -40,6 +40,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.h = horizontal
         self.flags = None
         self.box = None
+        self.pointer_grabbed = False
         
         if bar_image_path != None and os.path.exists(bar_image_path):
             self.scrollbar_background = clutter.Texture()
@@ -122,6 +123,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
     
     def on_scroll_press(self, source, event):
         clutter.grab_pointer(self.event_listener)
+        self.pointer_grabbed = True
         self.last_event_y = event.y
         self.last_event_x = event.x
         self.set_progress_with_event(event)
@@ -130,13 +132,17 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
     def on_scroll_release(self, source, event):
         clutter.ungrab_pointer()
+        self.pointer_grabbed = False
         self.last_event_y = None
         self.last_event_x = None
         if self.scroller_press_image_path is not None and self.scroller_image_path is not None:
-            self.scroller.set_from_file( self.scroller_image_path)
+            self.scroller.set_from_file(self.scroller_image_path)
 
     def on_scroll_move(self, source, event):
         self.set_progress_with_event(event)
+    
+    def is_pointer_grabbed(self):
+        return self.pointer_grabbed
     
     def set_progress_with_event(self, event):
         if self.h:
@@ -401,7 +407,6 @@ class Clipper(clutter.Actor, clutter.Container):
                 self.actor.set_anchor_point(0, position)
                 self.actor.set_clip(0, position, box_width, box_height)
                 self.actor.allocate_preferred_size(flags)
-        
         clutter.Actor.do_allocate(self, box, flags)
         
     def do_foreach(self, func, data=None):
