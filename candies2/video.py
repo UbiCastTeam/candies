@@ -10,6 +10,7 @@ import gobject
 import gst
 import clutter
 from cluttergst import VideoTexture
+import time
 
 import logging
 logger = logging.getLogger('candies2.videoplayer')
@@ -102,8 +103,12 @@ class VideoPlayer(VideoTexture):
         else:
             self._uri = None
         # play stop to fix first paint
+        current_volume = self.get_audio_volume()
+        self.set_audio_volume(0)  
         self.set_playing(True)
+        time.sleep(0.04)
         self.set_playing(False)
+        self.set_audio_volume(current_volume)
     
     def add_listener(self, event_name, function):
         if event_name in self._listeners.keys():
