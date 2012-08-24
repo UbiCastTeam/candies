@@ -35,7 +35,7 @@ class NoClKey(Key):
 # keyboard dictionnary
 KEYBOARD_MAPS = {
     'fr_maj': (
-        (Key('À',c_evt='Agrave'), Key('Ç',c_evt='Ccedillea'), Key('É',c_evt='Eacute'), Key('È',c_evt='Egrave'), Key('Ù',c_evt='Ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('À',c_evt='Agrave'), Key('Ç',c_evt='Ccedilla'), Key('É',c_evt='Eacute'), Key('È',c_evt='Egrave'), Key('Ù',c_evt='Ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
@@ -52,7 +52,7 @@ KEYBOARD_MAPS = {
     ),
     
     'fr_min': (
-        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedillea'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedilla'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
         (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
