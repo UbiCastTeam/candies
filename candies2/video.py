@@ -109,25 +109,21 @@ class VideoPlayer(VideoTexture):
         self.set_audio_volume(current_volume)
     
     def add_listener(self, event_name, function):
-        if event_name in self._listeners.keys():
-            if function not in self._listeners[event_name]:
-                self._listeners[event_name].append(function)
-            else:
-                raise Exception('Function %s is already in listeners.' % function)
-        else:
+        if event_name not in self._listeners:
             raise Exception('Can not add function to listeners. %s is not a valid event name.' % event_name)
+        if function in self._listeners[event_name]:
+            raise Exception('Function %s is already in listeners.' % function)
+        self._listeners[event_name].append(function)
     
     def remove_listener(self, event_name, function):
-        if event_name in self._listeners.keys():
-            if function in self._listeners[event_name]:
-                self._listeners[event_name].remove(function)
-            else:
-                raise Exception('Function %s is not in listeners.' % function)
-        else:
+        if event_name not in self._listeners:
             raise Exception('Can not remove function from listeners. %s is not a valid event name.' % event_name)
+        if function not in self._listeners[event_name]:
+            raise Exception('Function %s is not in listeners.' % function)
+        self._listeners[event_name].remove(function)
     
     def remove_all_listeners(self):
-        for event_name in self._listeners.keys():
+        for event_name in self._listeners.iterkeys():
             self._listeners[event_name] = list()
     
     def _set_state(self, state):
@@ -179,17 +175,20 @@ class VideoPlayer(VideoTexture):
         if progress != self._last_progress:
             self._after_seek_emit_count += 1
             self._last_progress = progress
-            time = (progress * self.get_duration()) + 0.000001
-            # 0.000001 is to fix float value of progress
-            if self._after_seek_emit_count != 2:
-                # ignore second emit after seek
-                for listener in self._listeners['on_time_change']:
-                    listener(time, progress, self._duration)
+            duration = self.get_duration()
+            if duration > 0:
+                time = (progress * self.get_duration()) + 0.000001
+                # 0.000001 is to fix float value of progress
+                if self._after_seek_emit_count != 2:
+                    # ignore second emit after seek
+                    for listener in self._listeners['on_time_change']:
+                        listener(time, progress, self._duration)
     
     def on_progress(self, source, progress):
         if self._seeking_timeout_id is None:
-            if self.get_progress() > 0:
-                self.emit_position_update(self.get_progress())
+            progress = self.get_progress()
+            if progress > 0:
+                self.emit_position_update(progress)
 
     def play(self):
         if not self._uri:
