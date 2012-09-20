@@ -215,7 +215,7 @@ class Select(clutter.Actor, clutter.Container):
     A select input.
     """
     
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offset=0):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offsets=None):
         clutter.Actor.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -223,7 +223,16 @@ class Select(clutter.Actor, clutter.Container):
         self.on_change_callback = on_change_callback
         self.user_data = user_data
         self.direction = direction
-        self.y_offset = y_offset
+        if y_offsets:
+            if isinstance(y_offsets, (list, tuple)):
+                if len(y_offsets) > 1:
+                    self.y_offsets = tuple(y_offsets[:2])
+                else:
+                    self.y_offsets = (y_offsets[0], y_offsets[0])
+            else:
+                self.y_offsets = (y_offsets, y_offsets)
+        else:
+            self.y_offsets = (0, 0)
         self.icon_height = icon_height
         self._stage_width, self._stage_height = 0, 0
         self._opened = False
@@ -444,15 +453,15 @@ class Select(clutter.Actor, clutter.Container):
             total_height = option_height * len(self._list.get_elements())
             base_y = 0
             if self._stage_height > 0:
-                if total_height > self._stage_height - 2 * self.stage_padding - self.y_offset:
-                    total_height = self._stage_height - 2 * self.stage_padding - self.y_offset
-                    base_y = -box_y + self.stage_padding + self.y_offset
+                if total_height > self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]:
+                    total_height = self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]
+                    base_y = -box_y + self.stage_padding + self.y_offsets[0]
                     #TODO enable scrollbar
                 elif self.direction == "up":
-                    if total_height > box_y + main_height - self.y_offset:
-                        base_y = -box_y + total_height - main_height + self.y_offset + self.stage_padding
-                elif box_y + total_height > self._stage_height - self.stage_padding:
-                    base_y = -box_y + self._stage_height - self.stage_padding - total_height
+                    if total_height > box_y + main_height - self.y_offsets[0]:
+                        base_y = -box_y + total_height - main_height + self.y_offsets[0] + self.stage_padding
+                elif box_y + total_height > self._stage_height - self.stage_padding - self.y_offsets[1]:
+                    base_y = -box_y + self._stage_height - self.stage_padding - self.y_offsets[1] - total_height
             x1 = 0
             x2 = main_width
             if self.direction == "up":
