@@ -274,6 +274,31 @@ class SeekBar(clutter.Actor, clutter.Container):
             self._markers.append(marker_obj)
         self.queue_relayout()
     
+    def set_marker(self, marker):
+        position = marker.get('position', 0)
+        position = min(position, 1.0)
+        position = max(position, 0.0)
+        color = marker.get('color', '#ffffffaa')
+        # look for existing marker at that time
+        index = 0
+        while index < len(self._markers_position):
+            pos = self._markers_position[index]
+            if pos > position or abs(pos - position) < 0.000001:
+                break
+            index += 1
+        if self._markers_position and abs(pos - position) < 0.000001:
+            # assume this is the same pos
+            marker_obj = self._markers[index]
+        else:
+            # no marker at that position, create one
+            marker_obj = clutter.Rectangle()
+            marker_obj.set_color(color)
+            marker_obj.set_parent(self)
+            self._markers_position.insert(index, position)
+            self._markers.insert(index, marker_obj)
+        marker_obj.set_color(color)
+        self.queue_relayout()
+    
     def clear_markers(self):
         for marker in self._markers:
             marker.unparent()
