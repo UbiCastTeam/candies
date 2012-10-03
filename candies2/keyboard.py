@@ -83,33 +83,35 @@ KEYBOARD_MAPS = {
         (NoClKey('ABC',nb=2,evt='en_maj'), Key('<',c_evt='less'), Key('$',c_evt='dollar'), Key('>',c_evt='greater'), Key('←',nb=2,c_evt='BackSpace')),
         (NoClKey('abc',nb=2,evt='en_min'), Key(' ',nb=8,c_evt='space'))
     ),
-            
+    
     'int': (
-        (Key('1'), Key('2'), Key('3')), 
-        (Key('4'), Key('5'), Key('6')), 
+        (Key('-', c_evt='minus'), Key('←', nb=2, c_evt='BackSpace')),
         (Key('7'), Key('8'), Key('9')),
-        (Key('0',nb=2), Key('←',c_evt='BackSpace'))
-    ), 
+        (Key('4'), Key('5'), Key('6')),
+        (Key('1'), Key('2'), Key('3')),
+        (Key('0', nb=2), None)
+    ),  
 
     'float': (
-        (Key('1'), Key('2'), Key('3')), 
-        (Key('4'), Key('5'), Key('6')), 
+        (Key('-', c_evt='minus'), Key('←', nb=2, c_evt='BackSpace')),
         (Key('7'), Key('8'), Key('9')),
-        (Key('.',c_evt='period'), Key('0'), Key('←',c_evt='BackSpace'))
+        (Key('4'), Key('5'), Key('6')),
+        (Key('1'), Key('2'), Key('3')),
+        (Key('0', nb=2), Key('.', c_evt='period'))
     ),
 
     'ip': (
         (Key('1'), Key('2'), Key('3')), 
         (Key('4'), Key('5'), Key('6')), 
         (Key('7'), Key('8'), Key('9')),
-        (Key('.',c_evt='period'), Key('0'), Key('←',c_evt='BackSpace'))
+        (Key('.',c_evt='period'), Key('0'), Key('←', c_evt='BackSpace'))
     ),
     
     'hexa': (
         (Key('1'), Key('2'), Key('3'), Key('A'), Key('B')), 
         (Key('4'), Key('5'), Key('6'), Key('C'), Key('D')), 
         (Key('7'), Key('8'), Key('9'), Key('E'), Key('F')),
-        (Key('-',c_evt='minus'), None,     Key('0'), None,     Key('←',c_evt='BackSpace'))
+        (Key('-', c_evt='minus'), None, Key('0'), None, Key('←', c_evt='BackSpace'))
     )
 }
 
@@ -183,7 +185,6 @@ class Keyboard(clutter.Actor, clutter.Container):
         clutter.Actor.__init__(self)
         self._spacing = common.Spacing(spacing)
         
-        self.default_btn_size = 64
         self.font_name = 'Sans 18'
         self.font_color = '#000000ff'
         self.inner_color = '#ffffff44'
@@ -198,7 +199,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._height = 0
         self._button_size = 0
         self._padding_y = 0
-        self._colums_count = 0
+        self._columns_count = 0
         
         self._lines = list()
         self._map_name = ''
@@ -292,7 +293,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 line.add(button, key.width)
             self._lines.append(line)
             lines_width.append(line.width)
-        self._colums_count = max(lines_width)
+        self._columns_count = max(lines_width)
         
         if self._width > 0 and self._height > 0:
             self._refresh_allocation_params()
@@ -370,8 +371,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         return preferred_height, preferred_height
     
     def _refresh_allocation_params(self):
-        if self._colums_count > 0:
-            button_width = int(float(self._width - self._colums_count * self._spacing.x + self._spacing.x) / self._colums_count)
+        if self._columns_count > 0:
+            button_width = int(float(self._width - self._columns_count * self._spacing.x + self._spacing.x) / self._columns_count)
             button_height = int(float(self._height - len(self._lines) * self._spacing.y + self._spacing.y) / len(self._lines))
             self._button_size = min(button_width, button_height)
             
