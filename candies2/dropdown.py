@@ -449,7 +449,7 @@ class Select(clutter.Actor, clutter.Container):
                 hidder_box = clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
             self._hidder.allocate(hidder_box, flags)
             
-            option_height = max(option_box.y2 - option_box.y1, self.icon_height + 2 * self._padding.y)
+            option_height = self.icon_height + 2 * self._padding.y
             total_height = option_height * len(self._list.get_elements())
             base_y = 0
             if self._stage_height > 0:
