@@ -8,12 +8,14 @@ from circle import Circle
 class ClickCatcher(BaseContainer):
     __gtype_name__ = 'ClickCatcher'
     
-    def __init__(self, actor=None, circles_radius=60, circles_color='#ff8888aa'):
+    def __init__(self, actor=None, circles_radius=60, circles_color='#ff8888aa', click_callback=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._actor = None
         if actor:
             self.set_actor(actor)
-        
+       
+        self.click_callback = click_callback
+
         self._circle_radius = circles_radius
         self._circle_center = 0, 0
         self._circle = Circle()
@@ -55,6 +57,8 @@ class ClickCatcher(BaseContainer):
         if not self._timeline_completed:
             self._timeline.stop()
         self._circle_center = event.x, event.y
+        if self.click_callback is not None:
+            self.click_callback(event.x, event.y)
         self.queue_relayout()
         self._timeline.start()
         self._timeline_completed = False
