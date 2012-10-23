@@ -181,8 +181,8 @@ class Keyboard(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Keyboard'
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
-    KEYBOARD_REPEAT_DELAY_MS = 400
-    KEYBOARD_REPEAT_RATE_MS = 60
+    REPEAT_DELAY_MS = 400
+    REPEAT_RATE_MS = 60
     
     def __init__(self, map_name='', spacing=15):
         clutter.Actor.__init__(self)
@@ -336,7 +336,7 @@ class Keyboard(clutter.Actor, clutter.Container):
             if self._keyboard_repeat_id:
                 gobject.source_remove(self._keyboard_repeat_id)
                 self._keyboard_repeat_id = None
-            self._keyboard_delay_id = gobject.timeout_add(self.KEYBOARD_REPEAT_DELAY_MS, self._key_delay, event)
+            self._keyboard_delay_id = gobject.timeout_add(self.REPEAT_DELAY_MS, self._key_delay, event)
             self._key_press_event(event)
         self.emit('keyboard', keyval)
     
@@ -356,7 +356,9 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def _key_delay(self, event):
         self._key_press_event(event)
-        self._keyboard_repeat_id = gobject.timeout_add(self.KEYBOARD_REPEAT_RATE_MS, self._key_repeat, event)
+        if self._keyboard_repeat_id:
+            gobject.source_remove(self._keyboard_repeat_id)
+        self._keyboard_repeat_id = gobject.timeout_add(self.REPEAT_RATE_MS, self._key_repeat, event)
         return False
     
     def _key_repeat(self, event):
