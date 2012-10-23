@@ -181,6 +181,9 @@ class Keyboard(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Keyboard'
     __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
     
+    KEYBOARD_REPEAT_DELAY_MS = 400
+    KEYBOARD_REPEAT_RATE_MS = 60
+    
     def __init__(self, map_name='', spacing=15):
         clutter.Actor.__init__(self)
         self._spacing = common.Spacing(spacing)
@@ -194,6 +197,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         
         self._text_actor = None
         self._dead_key = None
+        self._keyboard_delay_id = None
+        self._keyboard_repeat_id = None
         
         self._width = 0
         self._height = 0
@@ -284,6 +289,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 button.set_border_color(self.border_color)
                 button.set_parent(self)
                 button.connect('button-press-event', self._on_button_press)
+                button.connect('button-release-event', self._on_button_release)
                 # save key param in button object
                 button.kb_text = key.text
                 button.kb_width = key.width
@@ -325,10 +331,22 @@ class Keyboard(clutter.Actor, clutter.Container):
             event.keyval = keyval
             event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
             #self._text_actor.emit('key-press-event', event)
+            if self._keyboard_delay_id:
+                gobject.source_remove(self._keyboard_delay_id)
+            if self._keyboard_repeat_id:
+                gobject.source_remove(self._keyboard_repeat_id)
+                self._keyboard_repeat_id = None
+            self._keyboard_delay_id = gobject.timeout_add(self.KEYBOARD_REPEAT_DELAY_MS, self._key_delay, event)
             self._key_press_event(event)
         self.emit('keyboard', keyval)
     
     def _emit_key_release(self, keyval, unival=None):
+        if self._keyboard_repeat_id:
+            gobject.source_remove(self._keyboard_repeat_id)
+            self._keyboard_repeat_id = None
+        if self._keyboard_delay_id:
+            gobject.source_remove(self._keyboard_delay_id)
+            self._keyboard_delay_id = None
         if self._text_actor:
             event = clutter.Event(clutter.KEY_RELEASE)
             event.keyval = keyval
@@ -336,14 +354,30 @@ class Keyboard(clutter.Actor, clutter.Container):
             #self._text_actor.emit('key-release-event', event)
             self._key_release_event(event)
     
+    def _key_delay(self, event):
+        self._key_press_event(event)
+        self._keyboard_repeat_id = gobject.timeout_add(self.KEYBOARD_REPEAT_RATE_MS, self._key_repeat, event)
+        return False
+    
+    def _key_repeat(self, event):
+        self._key_press_event(event)
+        return True
+    
     def _on_button_press(self, source, event):
-        # flash button
+        # highlight button
         source.set_inner_color(self.highlight_color)
-        gobject.timeout_add(200, source.set_inner_color, self.inner_color)
-        # execute button action
+        clutter.grab_pointer(source)
+        # press button
         if source.kb_evt == 'car':
             if source.kb_c_evt:
                 self._emit_key_press(source.kb_c_evt)
+    
+    def _on_button_release(self, source, event):
+        clutter.ungrab_pointer()
+        source.set_inner_color(self.inner_color)
+        # release button
+        if source.kb_evt == 'car':
+            if source.kb_c_evt:
                 self._emit_key_release(source.kb_c_evt)
         elif source.kb_evt == 'fr_min':
             self.load_profile('fr_min')
