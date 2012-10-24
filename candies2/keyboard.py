@@ -421,7 +421,7 @@ class Keyboard(clutter.Actor, clutter.Container):
             position = self._text_actor.get_cursor_position()
             current_text = self._text_actor.get_text()
             if position < 0 or position >= len(current_text):
-                postion = -1
+                position = -1
             self._text_actor.insert_text(text, position)
     
     def _get_from_clipboard(self, clipboard="main"):
