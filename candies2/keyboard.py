@@ -212,6 +212,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         if map_name:
             self.load_profile(map_name)
         
+        self._clipboards = dict(main="", secondary="")
+        
         self.connect('key-press-event', self._on_key_press)
         self.connect('key-release-event', self._on_key_release)
     
@@ -322,8 +324,15 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._map_name = None
         self._keyboard_map = None
     
-    def connect_clutter_text(self, text_actor):
+    def connect_clutter_text(self, text_actor, stage=None):
         self._text_actor = text_actor
+        if stage:
+            self._text_actor.connect("button-release-event", self._on_text_actor_release, stage)
+    
+    def _on_text_actor_release(self, source, event, stage):
+        if callable(stage):
+            stage = stage()
+        stage.set_key_focus(self)
     
     def _emit_key_press(self, keyval, unival=None):
         if self._text_actor:
@@ -395,6 +404,39 @@ class Keyboard(clutter.Actor, clutter.Container):
             self.load_profile('fr_caract')
         elif source.kb_evt == 'num':
             self.load_profile('int')
+    
+    def copy(self, clipboard="main"):
+        text = self._text_actor.get_selection()
+        if text or clipboard != "main":
+            self._set_to_clipboard(text, clipboard)
+    
+    def cut(self, clipboard="main"):
+        self.copy(clipboard)
+        self._text_actor.delete_selection()
+    
+    def paste(self, clipboard="main"):
+        text = self._get_from_clipboard(clipboard)
+        if text:
+            position = self._text_actor.get_cursor_position()
+            current_text = self._text_actor.get_text()
+            if position < 0 or position >= len(current_text):
+                postion = -1
+            self._text_actor.insert_text(text, position)
+    
+    def _get_from_clipboard(self, clipboard="main"):
+        if not self._clipboards[clipboard]:
+            # read from file if it exists
+            if os.path.isfile("/tmp/clipboard.%s" % clipboard):
+                clipboard_file = open("/tmp/clipboard.%s" % clipboard, "r")
+                self._clipboards[clipboard] = clipboard_file.read()
+                clipboard_file.close()
+        return self._clipboards[clipboard]
+    
+    def _set_to_clipboard(self, text, clipboard="main"):
+        self._clipboards[clipboard] = text
+        clipboard_file = open("/tmp/clipboard.%s" % clipboard, "w")
+        clipboard_file.write(self._clipboards[clipboard])
+        clipboard_file.close()
     
     def do_get_preferred_width(self, for_height):
         #TODO
@@ -492,6 +534,7 @@ if __name__ == '__main__':
     text.set_editable(True)
     text.set_selectable(True)
     text.set_reactive(True)
+    #text.set_reactive(False)
     stage.add(text)
     
     kb_bg = clutter.Rectangle()
@@ -609,7 +652,7 @@ if __name__ == '__main__':
     lan.connect('button-press-event', lang_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
     keys_btn.connect('button-press-event', print_clutter_key_map)
-    keyboard.connect_clutter_text(text)
+    keyboard.connect_clutter_text(text, stage)
     
     stage.set_key_focus(keyboard)
     
