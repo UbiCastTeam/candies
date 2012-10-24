@@ -4,6 +4,7 @@
 import clutter
 import common
 import gobject
+import os
 import string
 from buttons import ClassicButton
 
