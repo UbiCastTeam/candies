@@ -214,6 +214,9 @@ class Keyboard(clutter.Actor, clutter.Container):
             self.load_profile(map_name)
         
         self._clipboards = dict(main="", secondary="")
+        self._middle_click = False
+        self._next_position = None
+        self._next_selection_bound = None
         
         self.connect('key-press-event', self._on_key_press)
         self.connect('key-release-event', self._on_key_release)
@@ -225,12 +228,32 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._key_release_event(event)
     
     def _key_press_event(self, event):
-        # to fix num lock problem
+        # for specific keys handling (num lock problem, dead keys, invalid keys mapping, copy/cut/paste)
         #print 'Key press:', event.keyval
         #print 'Modifier:', dir(event.modifier_state)
         #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
+        #print "CODE:", event.get_key_code()
+        #print "SYMBOL:", event.get_key_symbol()
+        #print "UNICODE:", event.get_key_unicode()
+        #print "HK:", event.hardware_keycode
+        #print "KEYVAL:", event.keyval
+        #print "MODIFIER:", event.modifier_state, dir(event.modifier_state)
+        #print "UV:", event.unicode_value
         emit_key = False
-        if self._dead_key:
+        # CONTROL_MASK: control, HYPER_MASK: ?, LOCK_MASK: caps lock, META_MASK: ?, MOD1_MASK: alt, MOD2_MASK: num lock, MOD3_MASK: ?, MOD4_MASK: windows, MOD5_MASK: alt gr
+        # MODIFIER_MASK: ?, RELEASE_MASK: ?, SHIFT_MASK: shift, SUPER_MASK: ?
+        # ASCII / unicode codes
+        CTRL_C = 3  # copy
+        CTRL_V = 22 # paste
+        CTRL_X = 24 # cut
+        if not ((clutter.HYPER_MASK | clutter.META_MASK | clutter.MOD1_MASK | clutter.MOD4_MASK | clutter.MOD5_MASK | clutter.SUPER_MASK) & event.modifier_state) and (event.unicode_value in (CTRL_C, CTRL_X, CTRL_V)):
+            if event.unicode_value == CTRL_C:
+                self.copy()
+            elif event.unicode_value == CTRL_X:
+                self.cut()
+            elif event.unicode_value == CTRL_V:
+                self.paste()
+        elif self._dead_key:
             if event.unicode_value:
                 keysym = CODE_POINTS.get(event.unicode_value)
                 new_key = getattr(clutter.keysyms, "%s%s" % (keysym, self._dead_key[2]), None)
@@ -325,15 +348,61 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._map_name = None
         self._keyboard_map = None
     
-    def connect_clutter_text(self, text_actor, stage=None):
+    def connect_clutter_text(self, text_actor):
         self._text_actor = text_actor
-        if stage:
-            self._text_actor.connect("button-release-event", self._on_text_actor_release, stage)
+        self._text_actor.connect("notify::position", self._on_text_actor_position_changed)
+        self._text_actor.connect("notify::selection-bound", self._on_text_actor_selection_bound_changed)
+        self._text_actor.connect("button-press-event", self._on_text_actor_press)
+        self._text_actor.connect("button-release-event", self._on_text_actor_release)
     
-    def _on_text_actor_release(self, source, event, stage):
-        if callable(stage):
-            stage = stage()
-        stage.set_key_focus(self)
+    def _on_text_actor_position_changed(self, source, position):
+        if self._middle_click:
+            self._middle_click = False
+            new_position = self._text_actor.get_cursor_position()
+            if self._next_position == -1:
+                min_bound = self._next_selection_bound
+                max_bound = -1
+            elif self._next_selection_bound == -1:
+                min_bound = self._next_position
+                max_bound = -1
+            else:
+                min_bound = min(self._next_position, self._next_selection_bound)
+                max_bound = max(self._next_position, self._next_selection_bound)
+            if self._next_position != -1 and self._next_selection_bound != -1 and self._next_position != self._next_selection_bound and min_bound <= new_position <= max_bound:
+                self._next_position = self._next_selection_bound = max_bound
+            elif self._next_position == -1 or (new_position != -1 and new_position <= self._next_position):
+                if self._next_position != -1:
+                    self._next_position += len(self._clipboards["secondary"])
+                if self._next_selection_bound != -1:
+                    self._next_selection_bound += len(self._clipboards["secondary"])
+            self.paste(clipboard="secondary")
+        else:
+            self.copy(clipboard="secondary")
+    
+    def _on_text_actor_selection_bound_changed(self, source, selection_bound):
+        if not self._middle_click:
+            self.copy(clipboard="secondary")
+    
+    def _on_text_actor_press(self, source, event):
+        self._middle_click = False
+        self._next_position = None
+        self._next_selection_bound = None
+        if event.button == 2: # middle button
+            self._middle_click = True
+            self._next_position = self._text_actor.get_cursor_position()
+            self._next_selection_bound = self._text_actor.get_selection_bound()
+    
+    def _on_text_actor_release(self, source, event):
+        # copy selection to secondary clipboard
+        if event.button == 1: # left button
+            stage = event.get_stage()
+            if stage:
+                stage.set_key_focus(self)
+        elif event.button == 2 and self._next_position is not None: # middle button
+            self._text_actor.set_cursor_position(self._next_position)
+            self._text_actor.set_selection_bound(self._next_selection_bound)
+            self._next_position = None
+            self._next_selection_bound = None
     
     def _emit_key_press(self, keyval, unival=None):
         if self._text_actor:
@@ -418,6 +487,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     def paste(self, clipboard="main"):
         text = self._get_from_clipboard(clipboard)
         if text:
+            self._text_actor.delete_selection()
             position = self._text_actor.get_cursor_position()
             current_text = self._text_actor.get_text()
             if position < 0 or position >= len(current_text):
@@ -653,7 +723,7 @@ if __name__ == '__main__':
     lan.connect('button-press-event', lang_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
     keys_btn.connect('button-press-event', print_clutter_key_map)
-    keyboard.connect_clutter_text(text, stage)
+    keyboard.connect_clutter_text(text)
     
     stage.set_key_focus(keyboard)
     
