@@ -34,6 +34,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.reallocate = reallocate
         self.show_label = False
         self.scroller_position_percent = value
+        self.scroller_height = 0
         self.height = 0
         self.last_event_y = None
         self.last_event_x = None
@@ -162,9 +163,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if new_position != self.scroller_position_percent:
             self.scroller_position_percent = new_position
             self.emit('scroll_position', self.scroller_position_percent)
-            self.queue_relayout()
-            if self.reallocate:
-                self.do_allocate(self.box,self.flags)
+            if self.scroller_height != 0 and self.height != 0:
+                self.queue_relayout()
+                if self.reallocate:
+                    self.do_allocate(self.box,self.flags)
 
     def get_scroller_position_percent(self):
         return self.scroller_position_percent
