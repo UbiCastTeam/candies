@@ -253,6 +253,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 self.cut()
             elif event.unicode_value == CTRL_V:
                 self.paste()
+            # TODO: CTRL <-- (previous word), CTRL --> (next word), CTRL U (delete beginning of line), CTRL K (delete end of line)
         elif self._dead_key:
             if event.unicode_value:
                 keysym = CODE_POINTS.get(event.unicode_value)
@@ -267,6 +268,11 @@ class Keyboard(clutter.Actor, clutter.Container):
                     emit_key = True
                 # else: both keys ignored
                 self._dead_key = None
+        elif event.hardware_keycode in (113, 114): # arrow keys
+            if event.hardware_keycode == 113: # left arrow
+                self.move_cursor_left()
+            else: # right arrow
+                self.move_cursor_right()
         else:
             if event.unicode_value in DEAD_KEYS:
                 self._dead_key = event.keyval, event.unicode_value, DEAD_KEYS[event.unicode_value]
@@ -494,6 +500,39 @@ class Keyboard(clutter.Actor, clutter.Container):
                 position = -1
             self._text_actor.insert_text(text, position)
     
+    def move_cursor_left(self, type_="char", *args, **kwargs):
+        cursor_pos = self._text_actor.get_cursor_position()
+        selection_bound = self._text_actor.get_selection_bound()
+        same = (cursor_pos == selection_bound)
+        min_pos = cursor_pos
+        if cursor_pos == -1:
+            min_pos = selection_bound
+        elif selection_bound != -1:
+            min_pos = min(cursor_pos, selection_bound)
+        if min_pos == -1:
+            min_pos = len(self._text_actor.get_text())
+        if same:
+            min_pos -= 1
+        cursor_pos = max(0, min_pos)
+        self._text_actor.set_selection(cursor_pos, cursor_pos)
+    
+    def move_cursor_right(self, type_="char", *args, **kwargs):
+        cursor_pos = self._text_actor.get_cursor_position()
+        selection_bound = self._text_actor.get_selection_bound()
+        same = (cursor_pos == selection_bound)
+        max_pos = cursor_pos
+        if selection_bound == -1:
+            max_pos = selection_bound
+        elif cursor_pos != -1:
+            max_pos = max(cursor_pos, selection_bound)
+        if max_pos == -1 or max_pos >= len(self._text_actor.get_text()) - 1:
+            cursor_pos = -1
+        else:
+            cursor_pos = max_pos
+            if same:
+                cursor_pos += 1
+        self._text_actor.set_selection(cursor_pos, cursor_pos)
+    
     def _get_from_clipboard(self, clipboard="main"):
         if not self._clipboards[clipboard]:
             # read from file if it exists
@@ -717,8 +756,10 @@ if __name__ == '__main__':
                     print '%s\t%s\t%s' % (attr, k, unichr(clutter.keysym_to_unicode(attr)))
 
     # connect signals
-    left.connect('button-press-event', left_callback, text)
-    right.connect('button-press-event', right_callback, text)
+    #left.connect('button-press-event', left_callback, text)
+    left.connect('button-press-event', keyboard.move_cursor_left)
+    #right.connect('button-press-event', right_callback, text)
+    right.connect('button-press-event', keyboard.move_cursor_right)
     num.connect('button-press-event', num_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
