@@ -456,6 +456,8 @@ class Select(clutter.Actor, clutter.Container):
                 if total_height > self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]:
                     total_height = self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]
                     base_y = -box_y + self.stage_padding + self.y_offsets[0]
+                    if self.direction == "up":
+                        base_y += total_height - main_height
                     #TODO enable scrollbar
                 elif self.direction == "up":
                     if total_height > box_y + main_height - self.y_offsets[0]:
