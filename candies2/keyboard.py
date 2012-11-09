@@ -229,8 +229,6 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def _key_press_event(self, event):
         # for specific keys handling (num lock problem, dead keys, invalid keys mapping, copy/cut/paste)
-        #print 'Key press:', event.keyval
-        #print 'Modifier:', dir(event.modifier_state)
         #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
         #print "CODE:", event.get_key_code()
         #print "SYMBOL:", event.get_key_symbol()
@@ -244,16 +242,41 @@ class Keyboard(clutter.Actor, clutter.Container):
         # MODIFIER_MASK: ?, RELEASE_MASK: ?, SHIFT_MASK: shift, SUPER_MASK: ?
         # ASCII / unicode codes
         CTRL_C = 3  # copy
+        CTRL_K = 11 # delete end
+        CTRL_L = 12 # delete all
+        CTRL_U = 21 # delete beginning
         CTRL_V = 22 # paste
+        CTRL_W = 23 # delete previous word (bounded by white space character)
         CTRL_X = 24 # cut
-        if not ((clutter.HYPER_MASK | clutter.META_MASK | clutter.MOD1_MASK | clutter.MOD4_MASK | clutter.MOD5_MASK | clutter.SUPER_MASK) & event.modifier_state) and (event.unicode_value in (CTRL_C, CTRL_X, CTRL_V)):
+        ctrl_keys = (CTRL_C, CTRL_K, CTRL_L, CTRL_U, CTRL_V, CTRL_W, CTRL_X)
+        # hardware keycodes
+        BACKSPACE = 22
+        LEFT_ARROW = 113
+        RIGHT_ARROW = 114
+        arrow_keys = (LEFT_ARROW, RIGHT_ARROW)
+        # Alt Backspace or Escape Backspace: delete previous word (bounded by a non-alphanumeric character))
+        ignored_masks = clutter.HYPER_MASK | clutter.META_MASK | clutter.MOD1_MASK | clutter.MOD4_MASK | clutter.MOD5_MASK | clutter.SUPER_MASK
+        if not ignored_masks & event.modifier_state and (event.unicode_value in ctrl_keys or (clutter.CONTROL_MASK & event.modifier_state and event.hardware_keycode in arrow_keys)):
             if event.unicode_value == CTRL_C:
                 self.copy()
-            elif event.unicode_value == CTRL_X:
-                self.cut()
+            elif event.unicode_value == CTRL_K:
+                self.delete_end()
+            elif event.unicode_value == CTRL_L:
+                self.delete_all()
+            elif event.unicode_value == CTRL_U:
+                self.delete_beginning()
             elif event.unicode_value == CTRL_V:
                 self.paste()
-            # TODO: CTRL <-- (previous word), CTRL --> (next word), CTRL U (delete beginning of line), CTRL K (delete end of line)
+            elif event.unicode_value == CTRL_X:
+                self.cut()
+            elif event.unicode_value == CTRL_W:
+                self.delete_previous_word(bound="whitespace")
+            elif event.hardware_keycode == LEFT_ARROW:
+                self.move_cursor_left(type_="word", select=bool(clutter.SHIFT_MASK & event.modifier_state))
+            elif event.hardware_keycode == RIGHT_ARROW:
+                self.move_cursor_right(type_="word", select=bool(clutter.SHIFT_MASK & event.modifier_state))
+        elif clutter.MOD1_MASK & event.modifier_state and event.hardware_keycode == BACKSPACE:
+            self.delete_previous_word(bound="alphanumeric")
         elif self._dead_key:
             if event.unicode_value:
                 keysym = CODE_POINTS.get(event.unicode_value)
@@ -268,8 +291,8 @@ class Keyboard(clutter.Actor, clutter.Container):
                     emit_key = True
                 # else: both keys ignored
                 self._dead_key = None
-        elif event.hardware_keycode in (113, 114): # arrow keys
-            if event.hardware_keycode == 113: # left arrow
+        elif not clutter.SHIFT_MASK & event.modifier_state and not clutter.CONTROL_MASK & event.modifier_state and event.hardware_keycode in (LEFT_ARROW, RIGHT_ARROW): # arrow keys
+            if event.hardware_keycode == LEFT_ARROW: # left arrow
                 self.move_cursor_left()
             else: # right arrow
                 self.move_cursor_right()
@@ -400,10 +423,9 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def _on_text_actor_release(self, source, event):
         # copy selection to secondary clipboard
-        if event.button == 1: # left button
-            stage = event.get_stage()
-            if stage:
-                stage.set_key_focus(self)
+        stage = event.get_stage()
+        if stage:
+            stage.set_key_focus(self)
         elif event.button == 2 and self._next_position is not None: # middle button
             self._text_actor.set_cursor_position(self._next_position)
             self._text_actor.set_selection_bound(self._next_selection_bound)
@@ -496,42 +518,9 @@ class Keyboard(clutter.Actor, clutter.Container):
             self._text_actor.delete_selection()
             position = self._text_actor.get_cursor_position()
             current_text = self._text_actor.get_text()
-            if position < 0 or position >= len(current_text):
+            if position < 0 or position > len(current_text):
                 position = -1
             self._text_actor.insert_text(text, position)
-    
-    def move_cursor_left(self, type_="char", *args, **kwargs):
-        cursor_pos = self._text_actor.get_cursor_position()
-        selection_bound = self._text_actor.get_selection_bound()
-        same = (cursor_pos == selection_bound)
-        min_pos = cursor_pos
-        if cursor_pos == -1:
-            min_pos = selection_bound
-        elif selection_bound != -1:
-            min_pos = min(cursor_pos, selection_bound)
-        if min_pos == -1:
-            min_pos = len(self._text_actor.get_text())
-        if same:
-            min_pos -= 1
-        cursor_pos = max(0, min_pos)
-        self._text_actor.set_selection(cursor_pos, cursor_pos)
-    
-    def move_cursor_right(self, type_="char", *args, **kwargs):
-        cursor_pos = self._text_actor.get_cursor_position()
-        selection_bound = self._text_actor.get_selection_bound()
-        same = (cursor_pos == selection_bound)
-        max_pos = cursor_pos
-        if selection_bound == -1:
-            max_pos = selection_bound
-        elif cursor_pos != -1:
-            max_pos = max(cursor_pos, selection_bound)
-        if max_pos == -1 or max_pos >= len(self._text_actor.get_text()) - 1:
-            cursor_pos = -1
-        else:
-            cursor_pos = max_pos
-            if same:
-                cursor_pos += 1
-        self._text_actor.set_selection(cursor_pos, cursor_pos)
     
     def _get_from_clipboard(self, clipboard="main"):
         if not self._clipboards[clipboard]:
@@ -547,6 +536,116 @@ class Keyboard(clutter.Actor, clutter.Container):
         clipboard_file = open("/tmp/clipboard.%s" % clipboard, "w")
         clipboard_file.write(self._clipboards[clipboard])
         clipboard_file.close()
+    
+    def _get_positions(self):
+        cursor_pos = self._text_actor.get_cursor_position()
+        selection_bound = self._text_actor.get_selection_bound()
+        min_pos = cursor_pos
+        max_pos = selection_bound
+        if cursor_pos == -1:
+            min_pos = selection_bound
+            max_pos = cursor_pos
+        elif selection_bound != -1:
+            min_pos = min(cursor_pos, selection_bound)
+            max_pos = max(cursor_pos, selection_bound)
+        return cursor_pos, selection_bound, min_pos, max_pos
+    
+    def move_cursor_left(self, type_="char", select=False, *args, **kwargs):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        if type_ == "word":
+            if select:
+                selection_bound = self._get_previous_word_position(bound="alphanumeric")
+            else:
+                selection_bound = cursor_pos = self._get_previous_word_position(bound="alphanumeric")
+        else: # char
+            same = (cursor_pos == selection_bound)
+            if min_pos == -1:
+                min_pos = len(self._text_actor.get_text())
+            if same:
+                min_pos -= 1
+            selection_bound = cursor_pos = max(0, min_pos)
+        self._text_actor.set_cursor_position(cursor_pos)
+        self._text_actor.set_selection_bound(selection_bound)
+    
+    def move_cursor_right(self, type_="char", select=False, *args, **kwargs):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        if type_ == "word":
+            if select:
+                selection_bound = self._get_next_word_position(bound="alphanumeric")
+            else:
+                selection_bound = cursor_pos = self._get_next_word_position(bound="alphanumeric")
+        else: # char
+            same = (cursor_pos == selection_bound)
+            if max_pos == -1 or max_pos >= len(self._text_actor.get_text()) - 1:
+                cursor_pos = -1
+            else:
+                cursor_pos = max_pos
+                if same:
+                    cursor_pos += 1
+            selection_bound = cursor_pos
+        self._text_actor.set_cursor_position(cursor_pos)
+        self._text_actor.set_selection_bound(selection_bound)
+    
+    def delete_beginning(self):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        same = (cursor_pos == selection_bound)
+        self._text_actor.delete_text(0, min_pos)
+        self._text_actor.set_cursor_position(0)
+        self._text_actor.set_selection_bound(max_pos - min_pos)
+    
+    def delete_end(self):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        same = (cursor_pos == selection_bound)
+        self._text_actor.delete_text(cursor_pos, -1)
+        self._text_actor.set_cursor_position(min_pos)
+        self._text_actor.set_selection_bound(max_pos)
+    
+    def delete_all(self):
+        self._text_actor.delete_text(0, -1)
+        self._text_actor.set_cursor_position(0)
+        self._text_actor.set_selection_bound(0)
+    
+    def _get_previous_word_position(self, bound="whitespace"):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        if selection_bound == 0:
+            return 0
+        if bound == "whitespace":
+            def is_bound(text, i):
+                return text[i].isspace() and not text[i+1].isspace()
+        else: # non-alphanumeric
+            def is_bound(text, i):
+                return not text[i].isalnum() and text[i+1].isalnum()
+        text = self._text_actor.get_text()
+        if selection_bound == -1:
+            i = len(text) - 2
+        else:
+            i = selection_bound - 2
+        while i >= 0 and not is_bound(text, i):
+            i -= 1
+        return max(0, i + 1)
+    
+    def _get_next_word_position(self, bound="whitespace"):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        text = self._text_actor.get_text()
+        if selection_bound in (-1, len(text)):
+            return -1
+        if bound == "whitespace":
+            def is_bound(text, i):
+                return not text[i-1].isspace() and text[i].isspace()
+        else: # non-alphanumeric
+            def is_bound(text, i):
+                return text[i-1].isalnum() and not text[i].isalnum()
+        i = selection_bound + 1
+        while i < len(text) and not is_bound(text, i):
+            i += 1
+        return i
+    
+    def delete_previous_word(self, bound="whitespace"):
+        cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
+        previous_word_position = self._get_previous_word_position(bound)
+        self._text_actor.delete_text(previous_word_position, min_pos)
+        self._text_actor.set_cursor_position(previous_word_position)
+        self._text_actor.set_selection_bound(previous_word_position + max_pos - min_pos)
     
     def do_get_preferred_width(self, for_height):
         #TODO
