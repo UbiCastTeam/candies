@@ -291,11 +291,11 @@ class Keyboard(clutter.Actor, clutter.Container):
                     emit_key = True
                 # else: both keys ignored
                 self._dead_key = None
-        elif not clutter.SHIFT_MASK & event.modifier_state and not clutter.CONTROL_MASK & event.modifier_state and event.hardware_keycode in (LEFT_ARROW, RIGHT_ARROW): # arrow keys
+        elif event.hardware_keycode in (LEFT_ARROW, RIGHT_ARROW): # arrow keys
             if event.hardware_keycode == LEFT_ARROW: # left arrow
-                self.move_cursor_left()
+                self.move_cursor_left(select=bool(clutter.SHIFT_MASK & event.modifier_state))
             else: # right arrow
-                self.move_cursor_right()
+                self.move_cursor_right(select=bool(clutter.SHIFT_MASK & event.modifier_state))
         else:
             if event.unicode_value in DEAD_KEYS:
                 self._dead_key = event.keyval, event.unicode_value, DEAD_KEYS[event.unicode_value]
@@ -558,12 +558,18 @@ class Keyboard(clutter.Actor, clutter.Container):
             else:
                 selection_bound = cursor_pos = self._get_previous_word_position(bound="alphanumeric")
         else: # char
-            same = (cursor_pos == selection_bound)
-            if min_pos == -1:
-                min_pos = len(self._text_actor.get_text())
-            if same:
-                min_pos -= 1
-            selection_bound = cursor_pos = max(0, min_pos)
+            if select:
+                if selection_bound == -1:
+                    selection_bound = len(self._text_actor.get_text()) - 1
+                elif selection_bound > 0:
+                    selection_bound -= 1
+            else:
+                same = (cursor_pos == selection_bound)
+                if min_pos == -1:
+                    min_pos = len(self._text_actor.get_text())
+                if same:
+                    min_pos -= 1
+                selection_bound = cursor_pos = max(0, min_pos)
         self._text_actor.set_cursor_position(cursor_pos)
         self._text_actor.set_selection_bound(selection_bound)
     
@@ -575,14 +581,20 @@ class Keyboard(clutter.Actor, clutter.Container):
             else:
                 selection_bound = cursor_pos = self._get_next_word_position(bound="alphanumeric")
         else: # char
-            same = (cursor_pos == selection_bound)
-            if max_pos == -1 or max_pos >= len(self._text_actor.get_text()) - 1:
-                cursor_pos = -1
+            if select:
+                if selection_bound == -1 or selection_bound >= len(self._text_actor.get_text()) - 1:
+                    selection_bound = -1
+                else:
+                    selection_bound += 1
             else:
-                cursor_pos = max_pos
-                if same:
-                    cursor_pos += 1
-            selection_bound = cursor_pos
+                same = (cursor_pos == selection_bound)
+                if max_pos == -1 or max_pos >= len(self._text_actor.get_text()) - 1:
+                    cursor_pos = -1
+                else:
+                    cursor_pos = max_pos
+                    if same:
+                        cursor_pos += 1
+                selection_bound = cursor_pos
         self._text_actor.set_cursor_position(cursor_pos)
         self._text_actor.set_selection_bound(selection_bound)
     
