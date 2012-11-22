@@ -10,7 +10,8 @@ class SimpleClick(gobject.GObject):
     def __init__(self, actor):
         gobject.GObject.__init__(self)
         self.actor = actor
-        if 'simple-click-event' not in gobject.signal_list_names(actor):
+        #if 'simple-click-event' not in gobject.signal_list_names(actor):
+        if gobject.signal_lookup('simple-click-event',actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
                 gobject.signal_new('simple-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
             except:
@@ -38,12 +39,14 @@ class LongClick(SimpleClick):
     
     def __init__(self, actor, long_delay=None, long_msg=None):
         SimpleClick.__init__(self, actor)
-        if 'long-press-event' not in gobject.signal_list_names(actor):
+        #if 'long-press-event' not in gobject.signal_list_names(actor):
+        if gobject.signal_lookup('long-press-event',actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
                 gobject.signal_new('long-press-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
             except:
                 pass
-        if 'long-click-event' not in gobject.signal_list_names(actor):
+        #if 'long-click-event' not in gobject.signal_list_names(actor):
+        if gobject.signal_lookup('long-press-event',actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
                 gobject.signal_new('long-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
             except:
