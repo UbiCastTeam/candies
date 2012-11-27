@@ -238,6 +238,7 @@ class Select(clutter.Actor, clutter.Container):
         self._opened = False
         
         self._selected = None
+        self._locked = False
         self.open_icon = open_icon_path
         self._background_box = None
         self._has_icons = False
@@ -274,16 +275,18 @@ class Select(clutter.Actor, clutter.Container):
         self._selected_option.set_reactive(True)
         self._selected_option.connect('button-release-event', self._on_selected_click)
         self._selected_option.set_parent(self)
-
-    def set_lock(self, status):
+        self._set_lock(True)
+    
+    def _set_lock(self, status):
         self.set_disabled(status)
         self.set_opacity(255 - status*128)
 
+    def set_lock(self, status):
+        self._set_lock(status)
+        self._locked = status
+
     def set_disabled(self, boolean):
-        if boolean:
-            self._selected_option.set_reactive(False)
-        else:
-            self._selected_option.set_reactive(True)
+        self._selected_option.set_reactive(not boolean)
     
     def get_stage(self):
         obj = self
@@ -304,13 +307,17 @@ class Select(clutter.Actor, clutter.Container):
     def get_selected(self):
         return self._selected
     
-    def set_locked(self, lock):
+    def _set_locked(self, lock):
         if lock:
             self._selected_option.set_reactive(False)
             self._selected_option.icon.hide()
         else:
             self._selected_option.set_reactive(True)
             self._selected_option.icon.show()
+    
+    def set_locked(self, lock):
+        self._set_locked(lock)
+        self._locked = lock
     
     def add_option(self, name, hname, icon_path=None):
         new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
@@ -331,9 +338,13 @@ class Select(clutter.Actor, clutter.Container):
             self._selected.show_background()
             self._selected_option.set_name(name)
             self._selected_option.set_text(hname)
+        
+        if not self._locked:
+            self._set_lock(False)
+            self._set_locked(False)
     
     def remove_option(self, name):
-        if self._list.get_elements_count() == 1:
+        if len(self._list.get_elements()) == 1:
             self.remove_all_options()
         else:
             self._list.remove_element('option_%s' %name)
@@ -353,6 +364,7 @@ class Select(clutter.Actor, clutter.Container):
         self._selected = None
         self._selected_option.set_name('empty')
         self._selected_option.set_text('')
+        self._set_lock(True)
     
     def check_scrollbar(self):
         self._auto_scroll.check_scrollbar()
