@@ -282,6 +282,7 @@ class Select(clutter.Actor, clutter.Container):
         self.set_opacity(255 - status*128)
 
     def set_lock(self, status):
+        self._set_locked(False)
         self._set_lock(status)
         self._locked = status
 
@@ -316,6 +317,7 @@ class Select(clutter.Actor, clutter.Container):
             self._selected_option.icon.show()
     
     def set_locked(self, lock):
+        self._set_lock(False)
         self._set_locked(lock)
         self._locked = lock
     
