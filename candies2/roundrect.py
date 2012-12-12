@@ -101,7 +101,14 @@ class RoundRectangle(clutter.Actor):
 
     def __init__(self, texture=None):
         clutter.Actor.__init__(self)
+        self._allocation_box = (0, 0, 0, 0)
         self._radius = 0.0
+        self._paint_radius_size = 0.
+        self._paint_radius = 0.
+        self._paint_double_border_width = 0.
+        self._paint_width_minus_border_width = 0.
+        self._paint_height_minus_border_width = 0.
+        self._paint_radius_minus_border_width = 0.
         self._color = clutter.color_from_string('Black')
         self._border_color = clutter.color_from_string('Black')
         self._border_width = 0.0
@@ -120,6 +127,7 @@ class RoundRectangle(clutter.Actor):
     
     def set_radius(self, radius):
         self._radius = radius
+        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[0], self._allocation_box[3] - self._allocation_box[1])
         self.queue_redraw()
     
     def set_inner_color(self, color):
@@ -135,6 +143,7 @@ class RoundRectangle(clutter.Actor):
     
     def set_border_width(self, width):
         self._border_width = width
+        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[0], self._allocation_box[3] - self._allocation_box[1])
         self.queue_redraw()
 
     def do_set_property(self, pspec, value):
@@ -162,42 +171,35 @@ class RoundRectangle(clutter.Actor):
             raise TypeError('Unknown property ' + pspec.name)
 
     def __paint_rectangle(self, width, height, color, border_color=None):
-        radius_size = 2*self._radius
-        if radius_size <= width and radius_size <= height:
-            radius = self._radius
-        elif radius_size > width and radius_size <= height:
-            radius = width / 2.0
-        elif radius_size <= width and radius_size > height:
-            radius = height / 2.0
-        else:
-            radius = min(width, height) / 2.0
-        
-        if border_color is not None and self._border_width > 0 and 2*self._border_width < width and 2*self._border_width < height:
-            cogl.path_round_rectangle(0, 0, width, height, radius, 1)
+        if border_color is not None and self._border_width > 0 and self._paint_double_border_width < width and self._paint_double_border_width < height:
+            cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
             cogl.path_close()
             cogl.set_source_color(border_color)
             cogl.path_fill()
             
-            w = self._border_width
-            cogl.path_round_rectangle(w, w, width - w, height - w, radius - w, 1)
+            cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
             cogl.path_close()
             cogl.set_source_color(color)
             cogl.path_fill()
             
             # texture
             if self._texture:
-                cogl.path_round_rectangle(w, w, width - w, height - w, radius - w, 1)
+                cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
                 cogl.path_close()
                 cogl.set_source_texture(self._texture)
                 cogl.path_fill()
         else:
-            cogl.path_round_rectangle(0, 0, width, height, radius, 1)
+            cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
             cogl.path_close()
             cogl.set_source_color(color)
             cogl.path_fill()
     
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
+        width = x2 - x1
+        height = y2 - y1
+        if self._allocation_box != (x1, y1, x2, y2):
+            self._calculate_paint_values(width, height)
 
         paint_color = self._color.copy()
         real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
@@ -207,7 +209,22 @@ class RoundRectangle(clutter.Actor):
         real_alpha = self.get_paint_opacity() * border_color.alpha / 255
         border_color.alpha = real_alpha
 
-        self.__paint_rectangle(x2 - x1, y2 - y1, paint_color, border_color)
+        self.__paint_rectangle(width, height, paint_color, border_color)
+    
+    def _calculate_paint_values(self, width, height):
+        self._paint_radius_size = 2 * self._radius
+        if self._paint_radius_size <= width and self._paint_radius_size <= height:
+            self._paint_radius = self._radius
+        elif self._paint_radius_size > width and self._paint_radius_size <= height:
+            self._paint_radius = width / 2.0
+        elif self._paint_radius_size <= width and self._paint_radius_size > height:
+            self._paint_radius = height / 2.0
+        else:
+            self._paint_radius = min(width, height) / 2.0
+        self._paint_double_border_width = 2 * self._border_width
+        self._paint_width_minus_border_width = width - self._border_width
+        self._paint_height_minus_border_width = height - self._border_width
+        self._paint_radius_minus_border_width = self._paint_radius - self._border_width
     
     def do_destroy(self):
         self.unparent()
@@ -245,7 +262,7 @@ if __name__ == '__main__':
         max_count = 20000
         
         texture_path = '/path/to/an/image'
-        texture = cogl.texture_new_from_file(light_path)
+        texture = cogl.texture_new_from_file(texture_path)
         
         def create_test_object():
             t = RoundRectangle(texture = texture)
