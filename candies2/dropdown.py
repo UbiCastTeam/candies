@@ -321,7 +321,7 @@ class Select(clutter.Actor, clutter.Container):
         self._set_locked(lock)
         self._locked = lock
     
-    def add_option(self, name, hname, icon_path=None):
+    def add_option(self, name, hname, icon_path=None, index=-1):
         new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
         if icon_path is not None and not self._has_icons:
             self._has_icons = True
@@ -331,7 +331,7 @@ class Select(clutter.Actor, clutter.Container):
         new_option.set_reactive(True)
         new_option.connect('button-release-event', self._on_click)
         
-        self._list.add_element(new_option, 'option_%s' %name, expand=True)
+        self._list.add_element(new_option, 'option_%s' %name, expand=True, index=index)
         self.check_scrollbar()
         
         if self._selected is None:
@@ -367,6 +367,12 @@ class Select(clutter.Actor, clutter.Container):
         self._selected_option.set_name('empty')
         self._selected_option.set_text('')
         self._set_lock(True)
+    
+    def has_option(self, name):
+        for element in self._list.get_elements():
+            if element['name'] == "option_%s" % name:
+                return True
+        return False
     
     def check_scrollbar(self):
         self._auto_scroll.check_scrollbar()
