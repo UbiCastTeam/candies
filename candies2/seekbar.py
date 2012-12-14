@@ -158,6 +158,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         else:
             current_pos -= 0.1
         self.set_progress(current_pos)
+        self.emit_seek_request()
     
     def set_progress_with_event(self, event):
         if self._last_event_x is None: return
