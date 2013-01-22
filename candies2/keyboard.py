@@ -503,14 +503,25 @@ class Keyboard(clutter.Actor, clutter.Container):
         elif source.kb_evt == 'num':
             self.load_profile('int')
     
+    def is_text_crypted(self):
+        try:
+            return self._text_actor.is_crypted()
+        except Exception:
+            try:
+                return self._text_actor.get_password_char() != u'\x00'
+            except Exception:
+                return False
+    
     def copy(self, clipboard="main"):
-        text = self._text_actor.get_selection()
-        if text or clipboard != "main":
-            self._set_to_clipboard(text, clipboard)
+        if not self.is_text_crypted():
+            text = self._text_actor.get_selection()
+            if text or clipboard != "main":
+                self._set_to_clipboard(text, clipboard)
     
     def cut(self, clipboard="main"):
-        self.copy(clipboard)
-        self._text_actor.delete_selection()
+        if not self.is_text_crypted():
+            self.copy(clipboard)
+            self._text_actor.delete_selection()
     
     def paste(self, clipboard="main"):
         text = self._get_from_clipboard(clipboard)
