@@ -7,6 +7,7 @@ import clutter
 import common
 import unicodedata
 from container import BaseContainer
+from box import HBox
 from buttons import ClassicButton
 from autoscroll import AutoScrollPanel
 from list import LightList
@@ -201,7 +202,7 @@ class FileChooser(BaseContainer):
         "all": TypeFilter("all", None, "All")
     }
     
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, custom_widget=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -212,7 +213,7 @@ class FileChooser(BaseContainer):
             self._start_dir = start_dir
         else:
             self._start_dir = self._base_dir
-        
+        self.custom_widget = custom_widget
         self._allow_hidden_files = allow_hidden_files
         self._display_hidden_files = display_hidden_files_at_start
         if not self._allow_hidden_files:
@@ -278,7 +279,9 @@ class FileChooser(BaseContainer):
         self._panel_bg.set_color(self.styles['panel_bg_color'])
         self._add(self._panel_bg)
         
-        self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=10, h_align='left')
+        self.top_container = HBox(spacing=8, padding=12)
+        self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=0, h_align='left')
+        self.top_container.add_element(self._slider, "slider", expand=True, resizable=1.0)
         button = self._slider.get_next_button()
         button.set_font_name(self.styles['button_font_name'])
         button.set_font_color(self.styles['button_font_color'])
@@ -291,8 +294,8 @@ class FileChooser(BaseContainer):
         button.set_inner_color(self.styles['button_inner_color'])
         button.set_border_color(self.styles['button_border_color'])
         button.set_texture(self.styles['button_texture'])
-        self._add(self._slider)
-        
+        self._add(self.top_container)
+        #self._add(self._slider)
         self._files_list = LightList(element_size=self.styles['element_size'])
         self._files_panel = AutoScrollPanel(self._files_list)
         self._add(self._files_panel)
@@ -399,6 +402,14 @@ class FileChooser(BaseContainer):
     def _on_change_type_filter(self, type_filter):
         self.refresh()
     
+    def set_custom_widget(self, custom_widget=None):
+        self.top_container.remove_element("custom_widget")
+        if custom_widget:
+            self.custom_widget = custom_widget
+            self.top_container.add_element(self.custom_widget, "custom_widget", expand=False)
+        else:
+            self.custom_widget = None
+
     def set_base_dir(self, base_dir, selected=None):
         self._base_dir = base_dir
         
@@ -411,7 +422,7 @@ class FileChooser(BaseContainer):
         self.paths = list()
         
         self.open_dir(base_dir, selected)
-    
+
     def set_start_dir(self, start_dir, selected=None):
         # start_dir must be a subdirectory of base_dir
         # startswith is not enough because /home/toto1 is not a subdir of /home/toto
@@ -728,16 +739,23 @@ class FileChooser(BaseContainer):
         inner_height = height - 2*self._padding.y
         
         bg_box = clutter.ActorBox(0, 0, width, height)
-        
+        '''
         slider_box = clutter.ActorBox()
         slider_box.x1 = self._padding.x
         slider_box.y1 = self._padding.y
         slider_box.x2 = self._padding.x + inner_width
         slider_box.y2 = self._padding.y + self.styles['top_bar_height']
+        '''
+        top_container_box = clutter.ActorBox()
+        top_container_box.x1 = self._padding.x
+        top_container_box.y1 = self._padding.y
+        top_container_box.x2 = self._padding.x + inner_width
+        top_container_box.y2 = self._padding.y + self.styles['top_bar_height']
         
         panel_bg_box = clutter.ActorBox()
         panel_bg_box.x1 = self._padding.x
-        panel_bg_box.y1 = slider_box.y2
+        #panel_bg_box.y1 = slider_box.y2
+        panel_bg_box.y1 = top_container_box.y2
         panel_bg_box.x2 = width - self._padding.x
         panel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
         
@@ -776,7 +794,8 @@ class FileChooser(BaseContainer):
         validate_box.x2 = validate_box.x1 + validate_width
         
         self._bg.allocate(bg_box, flags)
-        self._slider.allocate(slider_box, flags)
+        #self._slider.allocate(slider_box, flags)
+        self.top_container.allocate(top_container_box, flags)
         self._panel_bg.allocate(panel_bg_box, flags)
         self._files_panel.allocate(panel_box, flags)
         self._preview.allocate(preview_box, flags)
