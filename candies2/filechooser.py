@@ -8,6 +8,7 @@ import common
 import unicodedata
 from container import BaseContainer
 from box import HBox
+from box import VBox
 from buttons import ClassicButton
 from autoscroll import AutoScrollPanel
 from list import LightList
@@ -202,20 +203,23 @@ class FileChooser(BaseContainer):
         "all": TypeFilter("all", None, "All")
     }
     
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, custom_widget=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self._base_dir = base_dir
+        self.path = None
         # start_dir must be a subdirectory of base_dir
         # startswith is not enough because /home/toto1 is not a subdir of /home/toto
         if start_dir and os.path.dirname(start_dir).startswith(base_dir):
             self._start_dir = start_dir
         else:
             self._start_dir = self._base_dir
+        self.delete_button = delete_button
         self.custom_widget = custom_widget
         self._allow_hidden_files = allow_hidden_files
         self._display_hidden_files = display_hidden_files_at_start
+        self._delete_file_button = None
         if not self._allow_hidden_files:
             self._display_hidden_files = False
         self._directories_first = directories_first
@@ -300,9 +304,11 @@ class FileChooser(BaseContainer):
         self._files_panel = AutoScrollPanel(self._files_list)
         self._add(self._files_panel)
         
+        self.right_container = VBox(spacing=8, padding=8)
         self._preview = PreviewDisplayer(padding=self.components_padding)
         self._preview.hide()
-        self._add(self._preview)
+        self.right_container.add_element(self._preview, "preview", expand=True, resizable=0.9)
+        self._add(self.right_container)
         
         self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
         self._cancel.set_reactive(True)
@@ -402,6 +408,19 @@ class FileChooser(BaseContainer):
     def _on_change_type_filter(self, type_filter):
         self.refresh()
     
+    def set_delete_button(self, activate_delete_button=False):
+        self.right_container.remove_element("delete_file_button")
+        if activate_delete_button:
+            # delete button
+            self._delete_file_button = ClassicButton('Delete')
+            self._delete_file_button.connect('button-release-event', self._on_delete_file_pressed)
+            self._delete_file_button.set_font_name(self.styles['button_font_name'])
+            self._delete_file_button.set_font_color(self.styles['button_font_color'])
+            self._delete_file_button.set_inner_color(self.styles['button_inner_color'])
+            self._delete_file_button.set_border_color(self.styles['button_border_color'])
+            self._delete_file_button.set_texture(self.styles['button_texture'])
+            self.right_container.add_element(self._delete_file_button, "delete_file_button", expand=True, resizable=0.1)
+
     def set_custom_widget(self, custom_widget=None):
         self.top_container.remove_element("custom_widget")
         if custom_widget:
@@ -513,6 +532,8 @@ class FileChooser(BaseContainer):
             return self._slider.get_next_button()
         elif name == 'previous_btn':
             return self._slider.get_previous_button()
+        elif name == 'delete_btn':
+            return self._delete_file_button
         elif name == 'cancel_btn':
             return self._cancel
         elif name == 'validate_btn':
@@ -559,8 +580,8 @@ class FileChooser(BaseContainer):
                 self.select_entry(file_entry)
     
     def select_entry(self, source, event=None):
-        path = source.name
-        is_dir = os.path.isdir(path)
+        self.path = source.name
+        is_dir = os.path.isdir(self.path)
         if not source.selected:
             if self._selected is not None:
                 self._selected.set_selected(False)
@@ -568,18 +589,18 @@ class FileChooser(BaseContainer):
             self.paths[-1][1] = source.text
             source.set_selected(True)
             if not is_dir and source.extension in ('bmp', 'png', 'gif', 'tiff', 'jpg'):
-                self._preview.set_from_file(path)
+                self._preview.set_from_file(self.path)
                 self._preview.show()
             else:
                 self._preview.hide()
         elif event is None:
             if is_dir:
-                self.open_dir(path)
+                self.open_dir(self.path)
             else:
                 if self.callback:
-                    self.callback(path)
+                    self.callback(self.path)
         if event is not None and is_dir:
-            self.open_dir(path)
+            self.open_dir(self.path)
     
     def _files_comparator(self, file1, file2):
         abs_path1 = os.path.join(self._current_dir, file1)
@@ -724,6 +745,14 @@ class FileChooser(BaseContainer):
                 self._slider.go_to_beginning()
             path, selected, button = self.paths[-1]
             self.change_dir(path, selected)
+
+    def _on_delete_file_pressed(self, source, event):
+        try:
+            os.remove(self.path)
+        except Exception:
+            pass
+        self.refresh()
+        self.path = None
     
     def refresh(self):
         selected = None
@@ -739,13 +768,7 @@ class FileChooser(BaseContainer):
         inner_height = height - 2*self._padding.y
         
         bg_box = clutter.ActorBox(0, 0, width, height)
-        '''
-        slider_box = clutter.ActorBox()
-        slider_box.x1 = self._padding.x
-        slider_box.y1 = self._padding.y
-        slider_box.x2 = self._padding.x + inner_width
-        slider_box.y2 = self._padding.y + self.styles['top_bar_height']
-        '''
+
         top_container_box = clutter.ActorBox()
         top_container_box.x1 = self._padding.x
         top_container_box.y1 = self._padding.y
@@ -765,11 +788,11 @@ class FileChooser(BaseContainer):
         panel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
         panel_box.y2 = panel_bg_box.y2
         
-        preview_box = clutter.ActorBox()
-        preview_box.x1 = panel_box.x2 + self._spacing.x
-        preview_box.y1 = panel_bg_box.y1
-        preview_box.x2 = panel_bg_box.x2
-        preview_box.y2 = panel_bg_box.y2
+        right_box = clutter.ActorBox()
+        right_box.x1 = panel_box.x2 + self._spacing.x
+        right_box.y1 = panel_bg_box.y1
+        right_box.x2 = panel_bg_box.x2
+        right_box.y2 = panel_bg_box.y2
         
         type_filter_box = clutter.ActorBox()
         type_filter_box.y1 = panel_bg_box.y2 + self.components_padding
@@ -794,11 +817,10 @@ class FileChooser(BaseContainer):
         validate_box.x2 = validate_box.x1 + validate_width
         
         self._bg.allocate(bg_box, flags)
-        #self._slider.allocate(slider_box, flags)
         self.top_container.allocate(top_container_box, flags)
         self._panel_bg.allocate(panel_bg_box, flags)
         self._files_panel.allocate(panel_box, flags)
-        self._preview.allocate(preview_box, flags)
+        self.right_container.allocate(right_box, flags)
         self._validate.allocate(validate_box, flags)
         self._type_filter_select.allocate(type_filter_box, flags)
         self._cancel.allocate(cancel_box, flags)
