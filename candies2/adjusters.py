@@ -92,6 +92,14 @@ class NumberAdjuster(Box):
         self.plus.set_reactive(status)
         self.minus.set_reactive(status)
         self.value_btn.set_reactive(status)
+    
+    def set_value(self, value, silent=False):
+        if value < self.min:
+            value = self.min
+        elif value > self.max:
+            value = self.max
+        self.value = value
+        self.update(silent)
 
     def inc(self, button, event):
         button.set_inner_color(self.button_highlight_color)
@@ -113,9 +121,10 @@ class NumberAdjuster(Box):
             self.update()
         gobject.timeout_add(200, button.set_inner_color, self.button_inner_color)
 
-    def update(self):
+    def update(self, silent=False):
         self.update_rounded_value()
-        self.emit('value_updated', self.value)
+        if not silent:
+            self.emit('value_updated', self.value)
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'text':
