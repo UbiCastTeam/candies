@@ -2,20 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import os
-import gobject
 import clutter
 import common
+import gobject
+import magic
 import unicodedata
-from container import BaseContainer
+
+from aligner import Aligner
+from autoscroll import AutoScrollPanel
 from box import HBox
 from box import VBox
 from buttons import ClassicButton
-from autoscroll import AutoScrollPanel
-from list import LightList
-from aligner import Aligner
-from slider import Slider
+from container import BaseContainer
 from dropdown import OptionLine, Select
-
+from list import LightList
+from multilayer import MultiLayerContainer
+from slider import Slider
+from video import VideoPlayer
 
 class FileEntry(BaseContainer):
     '''
@@ -30,6 +33,8 @@ class FileEntry(BaseContainer):
         self.name = name
         self.selected = False
         self._icon_src = icon_src
+        # TODO gérer les caractere latin et utf8
+        #self.text = encode_string(text)
         self.text = text
         self.extension = extension
         self._is_dir = is_dir
@@ -53,7 +58,7 @@ class FileEntry(BaseContainer):
         self._label.set_line_wrap(False)
         self._label.set_ellipsize(2) # let 2 words after "..."
         self._label.set_line_alignment(3) # align text to left
-        self._label.set_text(text)
+        self._label.set_text(self.text)
         self._add(self._label)
     
     def set_selected(self, boolean):
@@ -166,7 +171,6 @@ class PreviewDisplayer(BaseContainer):
         
         clutter.Actor.do_allocate(self, box, flags)
 
-
 class TypeFilter(object):
     
     def __init__(self, name, extensions, label=None):
@@ -203,7 +207,7 @@ class FileChooser(BaseContainer):
         "all": TypeFilter("all", None, "All")
     }
     
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, custom_image=None, padding=0, spacing=0, styles=None, icons=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -215,8 +219,8 @@ class FileChooser(BaseContainer):
             self._start_dir = start_dir
         else:
             self._start_dir = self._base_dir
-        self.delete_button = delete_button
         self.custom_widget = custom_widget
+        self.custom_image = custom_image
         self._allow_hidden_files = allow_hidden_files
         self._display_hidden_files = display_hidden_files_at_start
         self._delete_file_button = None
@@ -299,15 +303,29 @@ class FileChooser(BaseContainer):
         button.set_border_color(self.styles['button_border_color'])
         button.set_texture(self.styles['button_texture'])
         self._add(self.top_container)
-        #self._add(self._slider)
         self._files_list = LightList(element_size=self.styles['element_size'])
         self._files_panel = AutoScrollPanel(self._files_list)
         self._add(self._files_panel)
         
         self.right_container = VBox(spacing=8, padding=8)
+        self.preview_block = MultiLayerContainer()
+        self._video_container = MultiLayerContainer()
+        self._aligner = Aligner(expand=True, keep_ratio=True)
         self._preview = PreviewDisplayer(padding=self.components_padding)
-        self._preview.hide()
-        self.right_container.add_element(self._preview, "preview", expand=True, resizable=0.9)
+
+        self._video_player = VideoPlayer()
+        self._video_player.connect('button-release-event', self._on_click)
+        self.playbutton = Aligner(keep_ratio=True)
+        self._texture = None
+        if self.custom_image:
+            # TODO check path
+            self._texture = clutter.Texture()
+            self._texture.set_from_file(self.custom_image)
+            self._texture.set_opacity(255)
+            self.playbutton.set_element(self._texture)
+            self.playbutton.set_reactive(True)
+        self.right_container.add_element(self.preview_block, "preview", expand=True, resizable=0.9, center=True)
+        
         self._add(self.right_container)
         
         self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
@@ -354,9 +372,11 @@ class FileChooser(BaseContainer):
         directory = self._base_dir
         while directory != self._start_dir:
             if directory == os.sep:
+                label = directory
                 button = ClassicButton(directory)
             else:
-                button = ClassicButton(os.path.basename(directory))
+                label = os.path.basename(directory)
+            button = ClassicButton(label)
             button.index = len(self.paths) + 1
             button.connect('button-release-event', self._on_button_click)
             button.set_font_name(self.styles['button_font_name'])
@@ -395,7 +415,7 @@ class FileChooser(BaseContainer):
         if self._buttons_flash_fct:
             self._buttons_flash_fct(self._cancel)
         if self.callback:
-            self.callback(None)
+            self.callback(self.path)
     
     def _on_display_hidden_files(self, group, action_name, keyval, modifiers):
         if self._allow_hidden_files:
@@ -429,6 +449,15 @@ class FileChooser(BaseContainer):
         else:
             self.custom_widget = None
 
+    def set_custom_image(self, custom_image=None):
+        self.playbutton.remove_element()
+        if custom_image:
+            self._texture = clutter.Texture()
+            self._texture.set_from_file(custom_image)
+            self._texture.set_opacity(255)
+            self.playbutton.set_element(self._texture)
+            self.playbutton.set_reactive(True)
+
     def set_base_dir(self, base_dir, selected=None):
         self._base_dir = base_dir
         
@@ -461,9 +490,11 @@ class FileChooser(BaseContainer):
         directory = self._base_dir
         while directory != self._start_dir:
             if directory == os.sep:
+                label = directory
                 button = ClassicButton(directory)
             else:
-                button = ClassicButton(os.path.basename(directory))
+                label = os.path.basename(directory)
+            button = ClassicButton(label)
             button.index = len(self.paths) + 1
             button.connect('button-release-event', self._on_button_click)
             button.set_font_name(self.styles['button_font_name'])
@@ -588,11 +619,37 @@ class FileChooser(BaseContainer):
             self._selected = source
             self.paths[-1][1] = source.text
             source.set_selected(True)
-            if not is_dir and source.extension in ('bmp', 'png', 'gif', 'tiff', 'jpg'):
-                self._preview.set_from_file(self.path)
-                self._preview.show()
+            self._video_container.remove_all()
+            self.preview_block.remove_all()
+            try:
+                mc = magic.open(magic.MAGIC_MIME_TYPE)
+                mc.load()
+                mime_type = mc.file(source.name)
+                mc.close()
+                file_type = mime_type.split('/')[0]
+            except Exception, e:
+                pass
             else:
-                self._preview.hide()
+                if file_type == 'image':
+                    self._preview.set_from_file(self.path)
+                    self._aligner.set_element(self._preview)
+                    self.preview_block.add(self._aligner)
+                    self.preview_block.show()
+                elif file_type == 'video':
+                    self.path = os.path.abspath(self.path)
+                    self.reset_player()
+                    self._video_player.set_file(self.path)
+                    self._video_player.set_reactive(True)
+                    self._video_player.set_audio_volume(0)
+                    self._video_player.play()
+                    gobject.timeout_add(40, self._video_player.pause)
+                    self._aligner.set_element(self._video_player)
+                    self._video_container.add(self._aligner)
+                    self._video_container.add(self.playbutton)
+                    self.preview_block.add(self._video_container)
+                    self.preview_block.show()
+                else:
+                    self.preview_block.hide()
         elif event is None:
             if is_dir:
                 self.open_dir(self.path)
@@ -601,7 +658,22 @@ class FileChooser(BaseContainer):
                     self.callback(self.path)
         if event is not None and is_dir:
             self.open_dir(self.path)
-    
+
+    def _on_click(self, source=None, event=None):
+        if self._video_player:
+            if self._video_player.get_playing():
+                self._video_player.pause()
+                if self._texture:
+                    self._texture.show()
+            else:
+                self._video_player.play()
+                if self._texture:
+                    self._texture.hide()
+
+    def reset_player(self):
+        if self.path is not None:
+            self._video_player.reset_pipeline()
+
     def _files_comparator(self, file1, file2):
         abs_path1 = os.path.join(self._current_dir, file1)
         abs_path2 = os.path.join(self._current_dir, file2)
@@ -662,6 +734,10 @@ class FileChooser(BaseContainer):
         
         cycle = 'even'
         index = 0
+        if len(files) > 0:
+            self.right_container.show()
+        else:
+            self.right_container.hide()
         for name in files:
             file_path = os.path.join(dir_path, name)
             is_dir = os.path.isdir(file_path)
@@ -691,7 +767,7 @@ class FileChooser(BaseContainer):
         try:
             to_select = self._files_list.get_children()[index]
         except IndexError:
-            pass
+            self.preview_block.hide()
         else:
             self.select_entry(to_select)
     
@@ -751,8 +827,8 @@ class FileChooser(BaseContainer):
             os.remove(self.path)
         except Exception:
             pass
-        self.refresh()
         self.path = None
+        self.refresh()
     
     def refresh(self):
         selected = None
