@@ -107,6 +107,10 @@ class VideoPlayer(VideoTexture):
         self.set_playing(True)
         self.set_playing(False)
         self.set_audio_volume(current_volume)
+
+    def reset_pipeline(self):
+        pipe = self.get_pipeline()
+        pipe.set_state(gst.STATE_NULL)
     
     def add_listener(self, event_name, function):
         if event_name not in self._listeners:
@@ -258,17 +262,17 @@ if __name__ == '__main__':
     stage.add(p)
     
     def test(source, event, p):
-        p.set_filename('/home/sdiemer/storage/www/videos/billyBrowsers.ogg')
+        p.set_filename('/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
         p.set_audio_volume(0.4)
         p.play()
         
-        gobject.timeout_add(1000, p.set_file, '/home/sdiemer/storage/videos/recordings-folder-test-1/2011-07-27_16-10-58/original.mkv')
+        gobject.timeout_add(1000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
         gobject.timeout_add(1100, p.play)
         gobject.timeout_add(1300, p.set_audio_volume, 0.2)
         gobject.timeout_add(2300, p.set_audio_volume, 0.1)
         gobject.timeout_add(3300, p.set_audio_volume, 0.0)
         
-        gobject.timeout_add(6000, p.set_file, '/home/sdiemer/storage/videos/recordings-folder-test-1/2011-07-27_16-10-58/original.mkv')
+        gobject.timeout_add(6000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
         gobject.timeout_add(6100, p.play)
         gobject.timeout_add(6300, p.set_audio_volume, 0.2)
         gobject.timeout_add(7300, p.set_audio_volume, 0.1)
