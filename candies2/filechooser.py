@@ -442,12 +442,15 @@ class FileChooser(BaseContainer):
             self.right_container.add_element(self._delete_file_button, "delete_file_button", expand=True, resizable=0.1)
 
     def set_custom_widget(self, custom_widget=None):
-        self.top_container.remove_element("custom_widget")
+        self.remove_custom_widget()
         if custom_widget:
             self.custom_widget = custom_widget
             self.top_container.add_element(self.custom_widget, "custom_widget", expand=False)
         else:
             self.custom_widget = None
+
+    def remove_custom_widget(self):
+        self.top_container.remove_element("custom_widget")
 
     def set_custom_image(self, custom_image=None):
         self.playbutton.remove_element()
