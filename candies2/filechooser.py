@@ -414,6 +414,7 @@ class FileChooser(BaseContainer):
     def _on_cancel(self, *args):
         if self._buttons_flash_fct:
             self._buttons_flash_fct(self._cancel)
+        self.path = None
         if self.callback:
             self.callback(self.path)
     
