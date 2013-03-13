@@ -387,6 +387,9 @@ class Select(clutter.Actor, clutter.Container):
     def __len__(self):
         return len(self.get_options())
     
+    def __nonzero__(self):
+        return True
+    
     def is_empty(self):
         return len(self) == 0
     
