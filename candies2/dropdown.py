@@ -374,6 +374,22 @@ class Select(clutter.Actor, clutter.Container):
                 return True
         return False
     
+    def get_options(self):
+        return [(e["object"].name, e["object"].get_text()) for e in self._list.get_elements()]
+    
+    def get_option(self, index):
+        try:
+            option = self._list.get_elements()[index]["object"]
+            return (option.name, option.get_text())
+        except IndexError:
+            return None
+    
+    def __len__(self):
+        return len(self.get_options())
+    
+    def is_empty(self):
+        return len(self) == 0
+    
     def check_scrollbar(self):
         self._auto_scroll.check_scrollbar()
     
