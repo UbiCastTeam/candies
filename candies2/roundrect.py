@@ -17,19 +17,39 @@ class OutlinedRoundRectangle(clutter.Actor):
             gobject.TYPE_FLOAT, 'Radius', 'Radius of the round angles',
             0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
         ),
+        'width' : (
+            gobject.TYPE_FLOAT, 'width', 'Width',
+            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
+        ),
     }
     
     def __init__(self):
         clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string('Black')
+        self._allocation_box = (0, 0, 0, 0)
         self._radius = 0.0
+        self._color = clutter.color_from_string('Black')
+        self._width = 0.0
+    
+    def get_clutter_color(self, color):
+        if isinstance(color, tuple):
+            c = clutter.Color(*color)
+        else:
+            c = clutter.color_from_string(color)
+        return c
     
     def set_radius(self, radius):
         self._radius = radius
+        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[0], self._allocation_box[3] - self._allocation_box[1])
         self.queue_redraw()
     
     def set_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = self.get_clutter_color(color)
+        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[0], self._allocation_box[3] - self._allocation_box[1])
+        self.queue_redraw()
+    
+    def set_width(self, width):
+        self._width = width
+        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[0], self._allocation_box[3] - self._allocation_box[1])
         self.queue_redraw()
     
     def do_set_property(self, pspec, value):
@@ -37,6 +57,8 @@ class OutlinedRoundRectangle(clutter.Actor):
             self.set_color(value)
         elif pspec.name == 'radius':
             self.set_radius(value)
+        elif pspec.name == 'width':
+            self.set_width(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -45,30 +67,61 @@ class OutlinedRoundRectangle(clutter.Actor):
             return self._color
         elif pspec.name == 'radius':
             return self._radius
+        elif pspec.name == 'width':
+            return self._width
         else:
             raise TypeError('Unknown property ' + pspec.name)
     
-    def __paint_rectangle(self, width, height, color):
-        cogl.path_round_rectangle(0, 0, width, height, self._radius, 1)
-        cogl.path_close()
-        cogl.set_source_color(color)
-        cogl.path_stroke()
+    def _calculate_paint_values(self, width, height):
+        self._real_color = self._color.copy()
+        real_alpha = int(round(self.get_paint_opacity() * self._real_color.alpha / 255.))
+        self._real_color.alpha = real_alpha
+        
+        self._external_radius = self._radius + self._width
+        self._internal_width = width - 2 * self._width
+        self._internal_height = height - 2 * self._width
+        
+        self._width_minus_external_radius = width - self._external_radius
+        self._height_minus_external_radius = height - self._external_radius
+        
+        self._width_plus_radius = self._width + self._radius
+        self._width_plus_internal_height_minus_radius = self._width + self._internal_height - self._radius
+        self._width_plus_internal_width_minus_radius = self._width + self._internal_width - self._radius
+        self._width_plus_internal_height = self._width + self._internal_height
+        self._width_plus_internal_width = self._width + self._internal_width
     
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
-
-        paint_color = self._color.copy()
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
+        width = x2 - x1
+        height = y2 - y1
+        if self._allocation_box != (x1, y1, x2, y2):
+            self._calculate_paint_values(width, height)
+            self._allocation_box = (x1, y1, x2, y2)
         
-        self.__paint_rectangle(x2 - x1, y2 - y1, paint_color)
-
-    def do_pick(self, pick_color):
-        if self.should_pick_paint() == False:
-            return
-
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_rectangle(x2 - x1, y2 - y1, pick_color)
+        # external rectangle
+        cogl.path_line(self._external_radius, 0, self._width_minus_external_radius, 0)
+        cogl.path_arc(self._width_minus_external_radius, self._external_radius, self._external_radius, self._external_radius, -90, 0)
+        cogl.path_line_to(width, self._height_minus_external_radius)
+        cogl.path_arc(self._width_minus_external_radius, self._height_minus_external_radius, self._external_radius, self._external_radius, 0, 90)
+        cogl.path_line_to(self._external_radius, height)
+        cogl.path_arc(self._external_radius, self._height_minus_external_radius, self._external_radius, self._external_radius, 90, 180)
+        cogl.path_line_to(0, self._external_radius)
+        cogl.path_arc(self._external_radius, self._external_radius, self._external_radius, self._external_radius, 180, 270)
+        
+        # internal rectangle
+        cogl.path_line_to(self._width, self._width_plus_radius)
+        cogl.path_line_to(self._width, self._width_plus_internal_height_minus_radius)
+        cogl.path_arc(self._width_plus_radius, self._width_plus_internal_height_minus_radius, self._radius, self._radius, -180, -270)
+        cogl.path_line_to(self._width_plus_internal_width_minus_radius, self._width_plus_internal_height)
+        cogl.path_arc(self._width_plus_internal_width_minus_radius, self._width_plus_internal_height_minus_radius, self._radius, self._radius, -270, -360)
+        cogl.path_line_to(self._width_plus_internal_width, self._width_plus_radius)
+        cogl.path_arc(self._width_plus_internal_width_minus_radius, self._width_plus_radius, self._radius, self._radius, 0, -90)
+        cogl.path_line_to(self._width_plus_radius, self._width)
+        cogl.path_arc(self._width_plus_radius, self._width_plus_radius, self._radius, self._radius, -90, -180)
+        
+        cogl.path_close()
+        cogl.set_source_color(self._real_color)
+        cogl.path_fill()
     
     def do_destroy(self):
         self.unparent()
@@ -200,6 +253,7 @@ class RoundRectangle(clutter.Actor):
         height = y2 - y1
         if self._allocation_box != (x1, y1, x2, y2):
             self._calculate_paint_values(width, height)
+            self._allocation_box = (x1, y1, x2, y2)
 
         paint_color = self._color.copy()
         real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
@@ -236,12 +290,31 @@ if __name__ == '__main__':
     stage.connect('destroy', clutter.main_quit)
 
     rect = OutlinedRoundRectangle()
-    rect.set_radius(25)
+    rect.set_radius(10)
+    rect.set_width(5)
     rect.set_color('#ff0000ff')
     rect.set_size(160, 120)
     rect.set_anchor_point(80, 60)
     rect.set_position(160, 240)
     stage.add(rect)
+    
+    hack = dict(radius=10, width=5)
+    def set_width(rect):
+        hack["width"] += 1
+        rect.set_width(hack["width"])
+        if hack["width"] > 30:
+            rect.set_width(10)
+            return False
+        return True
+    def set_radius(rect):
+        hack["radius"] += 5
+        rect.set_radius(hack["radius"])
+        if hack["radius"] > 60:
+            rect.set_radius(20)
+            gobject.timeout_add_seconds(1, set_width, rect)
+            return False
+        return True
+    gobject.timeout_add_seconds(1, set_radius, rect)
     
     rect = RoundRectangle()
     rect.set_radius(25)
@@ -294,3 +367,4 @@ if __name__ == '__main__':
 
     stage.show()
     clutter.main()
+

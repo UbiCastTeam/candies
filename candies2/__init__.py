@@ -18,7 +18,7 @@ from slider import Slider
 from circle import Circle
 from percentround import PercentRound
 from disk import Disk
-from roundrect import RoundRectangle
+from roundrect import OutlinedRoundRectangle, RoundRectangle
 from clock import Clock
 from stattracer import Tracer
 
