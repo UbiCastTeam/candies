@@ -12,7 +12,6 @@ class BaseContainer(clutter.Actor, clutter.Container):
     def __init__(self, allow_add=False, allow_remove=False, pick_enabled=True):
         clutter.Actor.__init__(self)
         self._children = list()
-        self.__focused = False
         self.__allow_add = allow_add
         self.__allow_remove = allow_remove
         self.__pick_enabled = pick_enabled
@@ -74,16 +73,16 @@ class BaseContainer(clutter.Actor, clutter.Container):
             self._children = list()
 
     def set_focused(self, boolean):
-        if boolean and not self.__focused:
+        if boolean:
             stage = self.get_stage()
             if stage:
-                self._old_key_focus = stage.get_key_focus()
+                if stage.get_key_focus() != self:
+                    self._old_key_focus = stage.get_key_focus()
                 stage.set_key_focus(self)
-        elif not boolean and self.__focused:
+        else:
             stage = self.get_stage()
             if stage and hasattr(self, '_old_key_focus'):
                 stage.set_key_focus(self._old_key_focus)
-        self.__focused = boolean
     
     def get_stage(self):
         obj = self
