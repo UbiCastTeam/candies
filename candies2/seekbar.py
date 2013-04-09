@@ -54,7 +54,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, margin=0, padding=0, bar_image_path=None, cursor_image_path=None, seek_function=None):
+    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
@@ -69,9 +69,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         # Sequences blocks
         self._edit_points = list()
         self._sequence_blocks = list()
-        self.sequence_color_1 = '#444444ff'
-        self.sequence_color_2 = '#666666ff'
-        self._sequence_color = self.sequence_color_2
+        self.sequence_color_1 = '#00dd00ff'
+        self.sequence_color_2 = '#00ff00ff'
+        self._sequence_color = self.sequence_color_2flen
         self._min = None
         self._max = None
         
@@ -91,7 +91,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.bar.set_from_file(bar_image_path)
         else:
             self.bar = clutter.Rectangle()
-            self.bar.set_color('#000000ff')
+            self.bar.set_color(bar_color)
         self.bar.set_parent(self)
         
         #limit
@@ -175,8 +175,8 @@ class SeekBar(clutter.Actor, clutter.Container):
                 if self._limit[0] is not None:
                     if new_position < self._limit[0][0]:
                         new_position = max(new_position, self._limit[0][0])
-                    if new_position > self._limit[len(self._limit) - 1][1]:
-                        new_position = min(new_position, self._limit[len(self._limit) - 1][1])
+                    if new_position > self._limit[-1][1]:
+                        new_position = min(new_position, self._limit[-1][1])
                     if (i + 1) <= len(self._limit) - 1 and self._limit[i + 1][0] > new_position > self._limit[i][1]:
                         new_position = self._limit[i + 1][0]
         if new_position != self._progress:
@@ -215,7 +215,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         if len(self.edit_points) > 1:
             used_edit_points = list(self.edit_points)
             if len(used_edit_points) % 2 == 1:
-                used_edit_points = used_edit_points[:len(used_edit_points)-1]
+                used_edit_points = used_edit_points[:-1]
             nb_sequences = int(len(used_edit_points) / 2)
             self._sequence_color = self.sequence_color_2
             for sequence_index in range(nb_sequences):
