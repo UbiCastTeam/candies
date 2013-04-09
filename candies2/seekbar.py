@@ -71,7 +71,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._sequence_blocks = list()
         self.sequence_color_1 = '#00dd00ff'
         self.sequence_color_2 = '#00ff00ff'
-        self._sequence_color = self.sequence_color_2flen
+        self._sequence_color = self.sequence_color_2
         self._min = None
         self._max = None
         
