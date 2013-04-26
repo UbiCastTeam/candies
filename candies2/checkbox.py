@@ -104,7 +104,10 @@ class CheckBox(BaseContainer):
         self._add(self._image)
         self._add(self._label)
         self.refresh_image()
-    
+
+    def get_text(self):
+        return self._label.get_text()
+
     def set_text(self, text):
         self._label.set_text(text)
     
