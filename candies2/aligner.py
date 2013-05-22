@@ -65,7 +65,7 @@ class Aligner(clutter.Actor, clutter.Container):
             self.background = None
     
     def do_get_preferred_width(self, for_height):
-        prefered_width = 2*self._margin.x + 2*self._padding.x
+        preferred_width = 2*self._margin.x + 2*self._padding.x
         
         if self.element:
             if for_height != -1:
@@ -77,20 +77,20 @@ class Aligner(clutter.Actor, clutter.Container):
             if self.expand:
                 if self.keep_ratio and element_width != 0 and element_height != 0 and h > 0:
                     ratio = float(element_width) / float(element_height)
-                    prefered_width += int(h * ratio)
+                    preferred_width += int(h * ratio)
                 else:
-                    prefered_width += int(self.element.get_preferred_width(h)[1])
+                    preferred_width += int(self.element.get_preferred_width(h)[1])
             else:
                 if element_width != 0 and element_height != 0 and h > 0 and element_height > h:
                     ratio = float(element_width) / float(element_height)
-                    prefered_width += int(h * ratio)
+                    preferred_width += int(h * ratio)
                 else:
-                    prefered_width += int(self.element.get_preferred_width(h)[1])
+                    preferred_width += int(self.element.get_preferred_width(h)[1])
         
-        return prefered_width, prefered_width
+        return preferred_width, preferred_width
     
     def do_get_preferred_height(self, for_width):
-        prefered_height = 2*self._margin.y + 2*self._padding.y
+        preferred_height = 2*self._margin.y + 2*self._padding.y
         
         if self.element:
             if for_width != -1:
@@ -102,17 +102,17 @@ class Aligner(clutter.Actor, clutter.Container):
             if self.expand:
                 if self.keep_ratio and element_width != 0 and element_height != 0 and w > 0:
                     ratio = float(element_width) / float(element_height)
-                    prefered_height += int(w / ratio)
+                    preferred_height += int(w / ratio)
                 else:
-                    prefered_height += int(self.element.get_preferred_height(w)[1])
+                    preferred_height += int(self.element.get_preferred_height(w)[1])
             else:
                 if element_width != 0 and element_height != 0 and w > 0 and element_height > w:
                     ratio = float(element_width) / float(element_height)
-                    prefered_height += int(w / ratio)
+                    preferred_height += int(w / ratio)
                 else:
-                    prefered_height += int(self.element.get_preferred_height(w)[1])
+                    preferred_height += int(self.element.get_preferred_height(w)[1])
         
-        return prefered_height, prefered_height
+        return preferred_height, preferred_height
     
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
@@ -144,7 +144,7 @@ class Aligner(clutter.Actor, clutter.Container):
                     element_width = inner_width
                     element_height = inner_height
             else:
-                if element_width != 0 and element_height != 0:
+                if self.keep_ratio and element_width != 0 and element_height != 0:
                     ratio = float(element_width) / float(element_height)
                     if element_width > inner_width:
                         element_width = inner_width
