@@ -193,7 +193,7 @@ class TypeFilter(object):
         if not self.extensions:
             return True
         extension = os.path.splitext(filename)[1][1:]
-        return extension in self.extensions
+        return extension.lower() in self.extensions
 
 
 class FileChooser(BaseContainer):
