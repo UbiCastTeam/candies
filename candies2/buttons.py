@@ -114,10 +114,9 @@ class ImageButton(ClassicButton):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'image'):
-            if self.image is not None:
+            if self.image:
                 self.image.unparent()
                 self.image.destroy()
-                self.image = None
         try:
             ClassicButton.do_destroy(self)
         except:

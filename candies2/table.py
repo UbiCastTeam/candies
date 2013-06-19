@@ -330,16 +330,13 @@ class Table(clutter.Actor, clutter.Container):
     
     def do_destroy(self):
         self.unparent()
-        self._children = list()
-        self._draw_last_count = 0
         if hasattr(self, '_matrix'):
             for i in range(len(self._rows)):
                 for j in range(len(self._columns)):
                     actor = self._matrix[i][j]
-                    if actor is not None:
+                    if actor:
                         actor.unparent()
                         actor.destroy()
-                    self._matrix[i][j] = None
 
 #main to test
 if __name__ == '__main__':

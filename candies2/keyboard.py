@@ -739,7 +739,6 @@ class Keyboard(clutter.Actor, clutter.Container):
                 for button in line.buttons:
                     button.unparent()
                     button.destroy()
-            self._lines = list()
 
 
 if __name__ == '__main__':

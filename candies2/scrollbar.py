@@ -305,32 +305,27 @@ class Scrollbar(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'scrollbar_background'):
-            if self.scrollbar_background is not None:
+            if self.scrollbar_background:
                 self.scrollbar_background.unparent()
                 self.scrollbar_background.destroy()
-                self.scrollbar_background = None
         if hasattr(self, 'label'):
-            if self.label is not None:
+            if self.label:
                 self.label.unparent()
                 self.label.destroy()
-                self.label = None
         if hasattr(self, 'scroller'):
-            if self.scroller is not None:
+            if self.scroller:
                 self.scroller.unparent()
                 self.scroller.destroy()
-                self.scroller = None
         if hasattr(self, 'event_listener'):
-            if self.event_listener is not None:
+            if self.event_listener:
                 self.event_listener.unparent()
                 self.event_listener.destroy()
-                self.event_listener = None
         if hasattr(self, 'scale_positions_list'):
-            if self.scale_positions_list is not None:
+            if self.scale_positions_list:
                 for child in self.scale_list:
-                    if child is not None:
+                    if child:
                         child.unparent()
                         child.destroy()
-                        child = None
     
     def set_lock(self, lock):
         self.set_reactive(not lock)
@@ -425,10 +420,9 @@ class Clipper(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'actor'):
-            if self.actor is not None:
+            if self.actor:
                 self.actor.unparent()
                 self.actor.destroy()
-                self.actor = None
 
 
 class CoglClipper(BaseContainer):

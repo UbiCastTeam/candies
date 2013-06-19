@@ -209,15 +209,13 @@ class Aligner(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'background'):
-            if self.background is not None:
+            if self.background:
                 self.background.unparent()
                 self.background.destroy()
-                self.background = None
         if hasattr(self, 'element'):
-            if self.element is not None:
+            if self.element:
                 self.element.unparent()
                 self.element.destroy()
-                self.element = None
 
 
 if __name__ == '__main__':

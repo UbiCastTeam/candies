@@ -54,7 +54,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None):
+    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None, sequence_color_1='#444444ff', sequence_color_2='#666666ff'):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
@@ -418,37 +418,27 @@ class SeekBar(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'background'):
-            if self.background is not None:
+            if self.background:
                 self.background.unparent()
                 self.background.destroy()
-                self.background = None
         if hasattr(self, 'bar'):
-            if self.bar is not None:
+            if self.bar:
                 self.bar.unparent()
                 self.bar.destroy()
-                self.bar = None
         if hasattr(self, 'cursor'):
-            if self.cursor is not None:
+            if self.cursor:
                 self.cursor.unparent()
                 self.cursor.destroy()
-                self.cursor = None
         if hasattr(self, '_limit_blocks'):
             for limit_block in self._limit_blocks:
                 limit_block.unparent()
                 limit_block.destroy()
-            self._limit_blocks = list()
-            self._limit = list()
         if hasattr(self, '_sequence_blocks'):
             for sequence_block in self._sequence_blocks:
                 sequence_block.unparent()
                 sequence_block.destroy()
-            self._sequence_blocks = list()
-            self.edit_points = list()
         if hasattr(self, '_markers'):
             for marker in self._markers:
                 marker.unparent()
                 marker.destroy()
-            self._markers = list()
-            self._markers_position = list()
-
 

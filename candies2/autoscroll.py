@@ -105,4 +105,19 @@ class AutoScrollPanel(HBox):
             #print '--------------------------- max', self._max_width, self._max_height
             self.check_scrollbar(relayout=False)
         HBox.do_allocate(self, box, flags)
+    
+    def do_destroy(self):
+        if hasattr(self, "_scrollbar"):
+            try:
+                self.remove_element("scrollbar")
+            except Exception:
+                pass
+            self._scrollbar.destroy()
+        if hasattr(self, "_clipper"):
+            try:
+                self.remove_element("clipper")
+            except Exception:
+                pass
+            self._clipper.destroy()
+        HBox.do_destroy(self)
 

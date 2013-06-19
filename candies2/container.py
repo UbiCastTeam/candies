@@ -70,7 +70,6 @@ class BaseContainer(clutter.Actor, clutter.Container):
             for child in self._children:
                 child.unparent()
                 child.destroy()
-            self._children = list()
 
     def set_focused(self, boolean):
         if boolean:

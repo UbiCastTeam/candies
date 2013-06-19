@@ -67,10 +67,7 @@ class Box(clutter.Actor, clutter.Container):
         return None
     
     def set_horizontal(self, boolean):
-        if boolean:
-            self._horizontal = True
-        else:
-            self._horizontal = False
+        self._horizontal = boolean
     
     def set_background(self, background):
         self.background = background
@@ -490,7 +487,7 @@ class Box(clutter.Actor, clutter.Container):
         
         #box background
         if self.background:
-            if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
+            if self.bg_ignore_allocation_box and len(self.elements) > 0:
                 if self._horizontal:
                     bgbox = clutter.ActorBox()
                     bgbox.x1 = self._margin.x
@@ -515,7 +512,7 @@ class Box(clutter.Actor, clutter.Container):
         
         #box overlay
         if self.overlay:
-            if self.bg_ignore_allocation_box == True and len(self.elements) > 0:
+            if self.bg_ignore_allocation_box and len(self.elements) > 0:
                 if self._horizontal:
                     ovbox = clutter.ActorBox()
                     ovbox.x1 = self._margin.x + self._padding.x
@@ -541,10 +538,7 @@ class Box(clutter.Actor, clutter.Container):
         clutter.Actor.do_allocate(self, box, flags)
     
     def set_bg_ignore_allocation_box(self, state):
-        if state:
-            self.bg_ignore_allocation_box = True
-        else:
-            self.bg_ignore_allocation_box = False
+        self.bg_ignore_allocation_box = state
         self.queue_redraw()
     
     def do_foreach(self, func, data=None):
@@ -582,17 +576,14 @@ class Box(clutter.Actor, clutter.Container):
             for element in self.elements:
                 element['object'].unparent()
                 element['object'].destroy()
-            self.elements = list()
         if hasattr(self, 'background'):
             if self.background:
                 self.background.unparent()
                 self.background.destroy()
-                self.background = None
         if hasattr(self, 'overlay'):
             if self.overlay:
                 self.overlay.unparent()
                 self.overlay.destroy()
-                self.overlay = None
 
 class HBox(Box):
     __gtype_name__ = 'HBox'

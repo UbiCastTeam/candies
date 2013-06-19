@@ -275,17 +275,14 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             if self.content_actor:
                 self.content_actor.unparent()
                 self.content_actor.destroy()
-                self.content_actor = None
         if hasattr(self, 'tooltip_actor'):
             if self.tooltip_actor:
                 self.tooltip_actor.unparent()
                 self.tooltip_actor.destroy()
-                self.tooltip_actor = None
         if hasattr(self, 'tooltip_pointer'):
             if self.tooltip_pointer:
                 self.tooltip_pointer.unparent()
                 self.tooltip_pointer.destroy()
-                self.tooltip_pointer = None
 
 if __name__ == '__main__':
     stage = clutter.Stage()

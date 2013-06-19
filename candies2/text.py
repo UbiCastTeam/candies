@@ -319,12 +319,10 @@ class TextContainer(clutter.Actor, clutter.Container):
             if self.rect:
                 self.rect.unparent()
                 self.rect.destroy()
-                self.rect = None
         if hasattr(self, 'label'):
             if self.label:
                 self.label.unparent()
                 self.label.destroy()
-                self.label = None
 
 
 if __name__ == '__main__':

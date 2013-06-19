@@ -25,6 +25,7 @@ class OptionLine(BaseContainer):
         self.font_color = font_color
         self.default_color = color
         self.default_border_color = border_color
+        self.rounded = rounded
         
         # background
         if rounded:
@@ -69,7 +70,8 @@ class OptionLine(BaseContainer):
         self.set_opacity(128 if lock else 255)
     
     def set_texture(self, texture):
-        self.background.set_texture(texture)
+        if self.rounded:
+            self.background.set_texture(texture)
     
     def set_line_wrap(self, boolean):
         self.label.set_line_wrap(boolean)
@@ -116,7 +118,8 @@ class OptionLine(BaseContainer):
         self.background.set_border_color(color)
     
     def set_radius(self, radius):
-        self.background.set_radius(radius)
+        if self.rounded:
+            self.background.set_radius(radius)
     
     def set_border_width(self, width):
         self.background.set_border_width(width)
@@ -340,7 +343,6 @@ class Select(clutter.Actor, clutter.Container):
             self._selected.show_background()
             self._selected_option.set_name(name)
             self._selected_option.set_text(hname)
-        
         if not self._locked:
             self._set_lock(False)
             self._set_locked(False)
@@ -352,7 +354,7 @@ class Select(clutter.Actor, clutter.Container):
             self._list.remove_element('option_%s' %name)
             self._has_icons = False
             for element in self._list.get_elements():
-                if element['object'].has_icon == True:
+                if element['object'].has_icon:
                     self._has_icons = True
                     break
             for element in self._list.get_elements():
@@ -566,27 +568,21 @@ class Select(clutter.Actor, clutter.Container):
     def do_destroy(self):
         self.unparent()
         if hasattr(self, '_hidder'):
-            if self._hidder is not None:
+            if self._hidder:
                 self._hidder.unparent()
                 self._hidder.destroy()
-                self._hidder = None
         if hasattr(self, '_background'):
-            if self._background is not None:
+            if self._background:
                 self._background.unparent()
                 self._background.destroy()
-                self._background = None
         if hasattr(self, '_selected_option'):
-            if self._selected_option is not None:
+            if self._selected_option:
                 self._selected_option.unparent()
                 self._selected_option.destroy()
-                self._selected_option = None
-        if hasattr(self, 'auto_scroll'):
-            if self._auto_scroll is not None:
+        if hasattr(self, '_auto_scroll'):
+            if self._auto_scroll:
                 self._auto_scroll.unparent()
                 self._auto_scroll.destroy()
-                self._auto_scroll = None
-        self._selected = None
-        self._list = None
 
 
 if __name__ == '__main__':
