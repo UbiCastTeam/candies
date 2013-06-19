@@ -172,7 +172,6 @@ class TexturedBlock(BaseContainer):
     def remove_content(self):
         if self.content_actor:
             self._remove(self.content_actor)
-            self.content_actor.destroy()
             self.content_actor = None
     
     def set_content(self, content):
@@ -202,7 +201,6 @@ class TexturedBlock(BaseContainer):
     def set_title_actor(self, actor=None):
         if self.title_actor:
             self._remove(self.title_actor)
-            self.title_actor.destroy()
             self.title_actor = None
         if actor:
             self.title_actor = actor
