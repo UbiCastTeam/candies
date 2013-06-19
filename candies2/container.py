@@ -47,7 +47,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
     def _remove(self, child):
         if child in self._children:
             self._children.remove(child)
-            child.unparent
+            child.unparent()
     
     def do_foreach(self, func, data=None):
         for child in self._children:
