@@ -5,13 +5,14 @@ import gobject
 import clutter
 from clutter import cogl
 import common
+from container import BaseContainer
 from text import TextContainer
 
-class TexturedBlock(clutter.Actor, clutter.Container):
+class TexturedBlock(BaseContainer):
     __gtype_name__ = 'TexturedBlock'
     
     def __init__(self, title=None, title_actor=None, content_actor=None, margin=0, padding=10, spacing=10, title_padding=None, textures_package=None):
-        clutter.Actor.__init__(self)
+        BaseContainer.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -23,7 +24,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
         
         self.title_actor = title_actor
         if title_actor:
-            self.title_actor.set_parent(self)
+            self._add(self.title_actor)
         if title_padding:
             self._title_padding = common.Padding(title_padding)
         else:
@@ -35,13 +36,13 @@ class TexturedBlock(clutter.Actor, clutter.Container):
             self.default_title_actor.set_text(title)
         self.default_title_actor.set_line_alignment(1)
         self.default_title_actor.set_line_wrap(False)
-        self.default_title_actor.set_parent(self)
+        self._add(self.default_title_actor)
         self._title_alignement = 'center'
         self._title_height = 0
         
         self.content_actor = content_actor
         if self.content_actor:
-            self.content_actor.set_parent(self)
+            self._add(self.content_actor)
         
         self.width = 0
         self.height = 0
@@ -170,14 +171,15 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     
     def remove_content(self):
         if self.content_actor:
-            self.content_actor.unparent()
+            self._remove(self.content_actor)
+            self.content_actor.destroy()
             self.content_actor = None
     
     def set_content(self, content):
         self.remove_content()
         self.content_actor = content
         if self.content_actor:
-            self.content_actor.set_parent(self)
+            self._add(self.content_actor)
     
     def check_title(self):
         if self.title_actor:
@@ -199,11 +201,12 @@ class TexturedBlock(clutter.Actor, clutter.Container):
     
     def set_title_actor(self, actor=None):
         if self.title_actor:
-            self.title_actor.unparent()
+            self._remove(self.title_actor)
+            self.title_actor.destroy()
             self.title_actor = None
         if actor:
             self.title_actor = actor
-            self.title_actor.set_parent(self)
+            self._add(self.title_actor)
     
     def get_title_actor(self):
         if self.title_actor:
@@ -427,21 +430,7 @@ class TexturedBlock(clutter.Actor, clutter.Container):
                 self.default_title_actor.paint()
         if self.content_actor:
             self.content_actor.paint()
-    
-    def do_destroy(self):
-        self.unparent()
-        if hasattr(self, 'title_actor'):
-            if self.title_actor:
-                self.title_actor.unparent()
-                self.title_actor.destroy()
-        if hasattr(self, 'default_title_actor'):
-            if self.default_title_actor:
-                self.default_title_actor.unparent()
-                self.default_title_actor.destroy()
-        if hasattr(self, 'content_actor'):
-            if self.content_actor:
-                self.content_actor.unparent()
-                self.content_actor.destroy()
+
 
 
 if __name__ == '__main__':
