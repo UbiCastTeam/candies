@@ -5,7 +5,7 @@ import gobject
 import clutter
 from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
-
+from clutter import cogl
 
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
@@ -128,7 +128,15 @@ if __name__ == '__main__':
     from flowbox import FlowBox
     stage = clutter.Stage()
     stage.connect('destroy', clutter.main_quit)
-    
+    #toto = cogl.Material()
+    texture_path = '/home/aviolo/sources/easycast/unstable/easycast/images/buttons/copy.png'
+    texture = clutter.cogl.texture_new_from_file(texture_path, clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
+    #toto.set_layer(0, texture)
+    #stage.add(toto)
+    t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture = texture, rounded = True)
+    t.set_size(640, 480)
+    stage.add(t)
+    '''
     # Main flowbox
     box0 = FlowBox()
     box0.set_size(640, 640)
@@ -202,15 +210,15 @@ if __name__ == '__main__':
     b.set_position(250, 325)
     stage.add(b)
     
-    b = ClassicButton('E')
+    b = ClassicButton('E', texture=texture)
     b.set_inner_color('Pink')
     b.set_size(170, 170)
     b.set_position(425, 210)
     stage.add(b)
     
     stage.add(box0)
-    
-    test_memory_usage = True
+    '''
+    test_memory_usage = False
     if test_memory_usage:
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
@@ -218,8 +226,8 @@ if __name__ == '__main__':
         
         max_count = 5000
         
-        texture_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
-        #texture = clutter.cogl.texture_new_from_file(texture_path)
+        #texture_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
+        texture = clutter.cogl.texture_new_from_file(texture_path, clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
         texture = None
         
         def create_test_object():

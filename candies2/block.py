@@ -442,19 +442,19 @@ if __name__ == '__main__':
     textures_path = '/home/sdiemer/Bureau/textures/'
     """
     textures_package = {
-        'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png')),
-        'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png')),
-        'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png')),
-        'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png')),
-        'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png')),
-        'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png')),
-        'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png')),
-        'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png')),
-        'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png')),
+        'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
         
-        'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png')),
-        'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png')),
-        'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png')),
+        'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
     }
     """
     textures_package = dict()
@@ -481,19 +481,19 @@ if __name__ == '__main__':
         max_count = 20000
         
         textures_package = {
-            'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png')),
-            'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png')),
-            'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png')),
-            'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png')),
-            'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png')),
-            'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png')),
-            'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png')),
-            'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png')),
-            'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png')),
+            'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
             
-            'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png')),
-            'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png')),
-            'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png')),
+            'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
         }
         
         def create_test_object(textures_package):

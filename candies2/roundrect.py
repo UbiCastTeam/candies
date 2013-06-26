@@ -335,7 +335,7 @@ if __name__ == '__main__':
         max_count = 20000
         
         texture_path = '/path/to/an/image'
-        texture = cogl.texture_new_from_file(texture_path)
+        texture = cogl.texture_new_from_file(texture_path, clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
         
         def create_test_object():
             t = RoundRectangle(texture = texture)

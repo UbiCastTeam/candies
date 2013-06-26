@@ -100,7 +100,7 @@ if __name__ == '__main__':
     stage.connect('destroy',clutter.main_quit)
     
     import gobject, datetime
-    t = cogl.texture_new_from_file('clock.png')
+    t = cogl.texture_new_from_file('clock.png', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
     c = Clock()
     c.set_texture(t)
     c.set_size(400, 400)
