@@ -9,13 +9,16 @@ from text import TextContainer
 from box import VBox
 from autoscroll import AutoScrollPanel
 
+
 class OptionLine(BaseContainer):
     __gtype_name__ = 'OptionLine'
     """
     A option line for select input. Can be used alone to have a text with icon.
     """
     
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True, crypted=False):
+    INDENT_WIDTH = 24
+    
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True, crypted=False, indent_level=0):
         BaseContainer.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -26,6 +29,7 @@ class OptionLine(BaseContainer):
         self.default_color = color
         self.default_border_color = border_color
         self.rounded = rounded
+        self.indent_level = indent_level
         
         # background
         if rounded:
@@ -53,6 +57,11 @@ class OptionLine(BaseContainer):
         else:
             self.icon.hide()
         self._add(self.icon)
+        # spacer (for indentation)
+        self.spacer = clutter.Rectangle()
+        self.spacer.set_width(indent_level * self.INDENT_WIDTH)
+        self.spacer.hide()
+        self._add(self.spacer)
         # label
         self.label = TextContainer(text, padding=0, rounded=False, crypted=crypted)
         self.label.set_font_color(self.font_color)
@@ -152,6 +161,7 @@ class OptionLine(BaseContainer):
         if for_height != -1:
             for_height -= 2*self._padding.y
         preferred_width = self.icon_height + 2*self._padding.x + self._spacing.x
+        preferred_width += self.spacer.get_preferred_width(for_height)[1]
         preferred_width += self.label.get_preferred_width(for_height)[1]
         return preferred_width, preferred_width
     
@@ -186,25 +196,35 @@ class OptionLine(BaseContainer):
             icon_box.y2 = icon_box.y1 + icon_height
             self.icon.allocate(icon_box, flags)
             
-            # label
-            label_box = clutter.ActorBox()
-            label_box.x1 = icon_box.x2 + self._spacing.x
-            label_box.y1 = self._padding.y
-            label_box.x2 = main_width - self._padding.x
-            label_box.y2 = main_height - self._padding.y
-            self.label.allocate(label_box, flags)
+            # spacer
+            spacer_width = self.indent_level * self.INDENT_WIDTH
+            spacer_box = clutter.ActorBox()
+            spacer_box.x1 = icon_box.x2 + self._spacing.x
+            spacer_box.y1 = self._padding.y
+            spacer_box.x2 = spacer_box.x1 + spacer_width
+            spacer_box.y2 = main_height - self._padding.y
+            self.spacer.allocate(spacer_box, flags)
         else:
             # icon
             icon_box = clutter.ActorBox(0, 0, 0, 0)
             self.icon.allocate(icon_box, flags)
             
-            # label
-            label_box = clutter.ActorBox()
-            label_box.x1 = self._padding.x
-            label_box.y1 = self._padding.y
-            label_box.x2 = main_width - self._padding.x
-            label_box.y2 = main_height - self._padding.y
-            self.label.allocate(label_box, flags)
+            # spacer
+            spacer_width = self.indent_level * self.INDENT_WIDTH
+            spacer_box = clutter.ActorBox()
+            spacer_box.x1 = self._spacing.x
+            spacer_box.y1 = self._padding.y
+            spacer_box.x2 = spacer_box.x1 + spacer_width
+            spacer_box.y2 = main_height - self._padding.y
+            self.spacer.allocate(spacer_box, flags)
+            
+        # label
+        label_box = clutter.ActorBox()
+        label_box.x1 = spacer_box.x2 + self._spacing.x
+        label_box.y1 = self._padding.y
+        label_box.x2 = main_width - self._padding.x
+        label_box.y2 = main_height - self._padding.y
+        self.label.allocate(label_box, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     
@@ -218,7 +238,7 @@ class Select(clutter.Actor, clutter.Container):
     A select input.
     """
     
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offsets=None):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offsets=None, alignment="center"):
         clutter.Actor.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -236,6 +256,7 @@ class Select(clutter.Actor, clutter.Container):
                 self.y_offsets = (y_offsets, y_offsets)
         else:
             self.y_offsets = (0, 0)
+        self.alignment = alignment
         self.icon_height = icon_height
         self._stage_width, self._stage_height = 0, 0
         self._opened = False
@@ -324,8 +345,9 @@ class Select(clutter.Actor, clutter.Container):
         self._set_locked(lock)
         self._locked = lock
     
-    def add_option(self, name, hname, icon_path=None, index=-1):
-        new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
+    def add_option(self, name, hname, icon_path=None, index=-1, indent_level=0):
+        new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
+        new_option.set_line_alignment(self.alignment)
         if icon_path is not None and not self._has_icons:
             self._has_icons = True
             for element in self._list.get_elements():
