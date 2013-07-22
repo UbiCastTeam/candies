@@ -377,6 +377,10 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._map_name = None
         self._keyboard_map = None
     
+    def select_all(self):
+        self._text_actor.set_cursor_position(0)
+        self._text_actor.set_selection_bound(-1)
+    
     def connect_clutter_text(self, text_actor):
         self._text_actor = text_actor
         self._text_actor.connect("notify::position", self._on_text_actor_position_changed)
