@@ -615,14 +615,12 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def delete_beginning(self):
         cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
-        same = (cursor_pos == selection_bound)
         self._text_actor.delete_text(0, min_pos)
         self._text_actor.set_cursor_position(0)
         self._text_actor.set_selection_bound(max_pos - min_pos)
     
     def delete_end(self):
         cursor_pos, selection_bound, min_pos, max_pos = self._get_positions()
-        same = (cursor_pos == selection_bound)
         self._text_actor.delete_text(cursor_pos, -1)
         self._text_actor.set_cursor_position(min_pos)
         self._text_actor.set_selection_bound(max_pos)
