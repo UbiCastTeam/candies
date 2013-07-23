@@ -220,7 +220,7 @@ class OptionLine(BaseContainer):
             
         # label
         label_box = clutter.ActorBox()
-        label_box.x1 = spacer_box.x2 + self._spacing.x
+        label_box.x1 = spacer_box.x2
         label_box.y1 = self._padding.y
         label_box.x2 = main_width - self._padding.x
         label_box.y2 = main_height - self._padding.y
