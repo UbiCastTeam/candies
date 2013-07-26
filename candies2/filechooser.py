@@ -675,8 +675,15 @@ class FileChooser(BaseContainer):
                     self._texture.hide()
 
     def reset_player(self):
-        if self.path is not None:
+        if self.path is not None and self._video_player is not None:
+            self._video_player.pause()
             self._video_player.reset_pipeline()
+            self._video_player.set_uri('')
+
+    def reinit(self):
+        self._video_player.destroy()
+        self._video_player = VideoPlayer()
+        self._video_player.connect('button-release-event', self._on_click)
 
     def _files_comparator(self, file1, file2):
         abs_path1 = os.path.join(self._current_dir, file1)
