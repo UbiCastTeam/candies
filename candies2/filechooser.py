@@ -648,6 +648,7 @@ class FileChooser(BaseContainer):
                     self._video_player.play()
                     gobject.timeout_add(40, self._video_player.pause)
                     self._aligner.set_element(self._video_player)
+                    self._texture.show()
                     self._video_container.add(self._aligner)
                     self._video_container.add(self.playbutton)
                     self.preview_block.add(self._video_container)
