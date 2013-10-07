@@ -555,14 +555,21 @@ class Box(clutter.Actor, clutter.Container):
         if self.overlay:
             self.overlay.paint()
         draw_last_objects = list()
+        current_value = 0
         for element in self.elements:
-            if element.get('draw_last'):
-                draw_last_objects.append(element['object'])
+            draw_last = element.get('draw_last')
+            if draw_last:
+                if isinstance(draw_last, bool):
+                    current_value -= 1
+                    draw_last_value = current_value
+                else:
+                    draw_last_value = draw_last
+                draw_last_objects.append(dict(obj=element['object'], value=draw_last_value))
             else:
                 element['object'].paint()
-        draw_last_objects.reverse()
-        for obj in draw_last_objects:
-            obj.paint()
+        draw_last_objects.sort(key=lambda x: x["value"])#, reverse=True)
+        for item in draw_last_objects:
+            item["obj"].paint()
     
     def do_pick(self, color):
         if self.pick_enabled:
