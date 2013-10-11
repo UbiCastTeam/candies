@@ -67,7 +67,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._markers_position = list()
         self._marker_width = 2
         # Sequences blocks
-        self._edit_points = list()
+        self._trimming_points = list()
         self._sequence_blocks = list()
         self.sequence_color_1 = '#00dd00ff'
         self.sequence_color_2 = '#00ff00ff'
@@ -190,33 +190,33 @@ class SeekBar(clutter.Actor, clutter.Container):
         if self.seek_function is not None:
             self.seek_function(self._progress)
     
-    def set_edit_points(self, edit_points):
-        self._clear_edit_points()
-        for point in edit_points:
-            self._add_edit_point(point)
+    def set_trimming_points(self, trimming_points):
+        self._clear_trimming_points()
+        for point in trimming_points:
+            self._add_trimming_point(point)
         self.queue_relayout()
     
-    def add_edit_point(self, progression):
-        self._add_edit_point(progression)
+    def add_trimming_point(self, progression):
+        self._add_trimming_point(progression)
         self.queue_relayout()
     
-    def _add_edit_point(self, progression):
-        edit_point = progression
+    def _add_trimming_point(self, progression):
+        trimming_point = progression
         progression = min(progression, 1.0)
         progression = max(progression, 0.0)
-        self.edit_points.append(edit_point)
-        self.edit_points.sort()
+        self.trimming_points.append(trimming_point)
+        self.trimming_points.sort()
 
         for sequence_block in list(self._sequence_blocks):
             sequence_block.unparent()
             sequence_block.destroy()
         self._sequence_blocks = list()
 
-        if len(self.edit_points) > 1:
-            used_edit_points = list(self.edit_points)
-            if len(used_edit_points) % 2 == 1:
-                used_edit_points = used_edit_points[:-1]
-            nb_sequences = int(len(used_edit_points) / 2)
+        if len(self.trimming_points) > 1:
+            used_trimming_points = list(self.trimming_points)
+            if len(used_trimming_points) % 2 == 1:
+                used_trimming_points = used_trimming_points[:-1]
+            nb_sequences = int(len(used_trimming_points) / 2)
             self._sequence_color = self.sequence_color_2
             for sequence_index in range(nb_sequences):
                 sequence = clutter.Rectangle()
@@ -228,17 +228,17 @@ class SeekBar(clutter.Actor, clutter.Container):
                 sequence.set_parent(self)
                 self._sequence_blocks.append(sequence)
     
-    def clear_edit_points(self):
-        self._clear_edit_points()
+    def clear_trimming_points(self):
+        self._clear_trimming_points()
         self.queue_relayout()
 
-    def _clear_edit_points(self):
+    def _clear_trimming_points(self):
         for sequence_index in range(len(self._sequence_blocks)):
             sequence = self._sequence_blocks[sequence_index]
             sequence.unparent()
             sequence.destroy()
             sequence = None
-        self.edit_points = list()
+        self.trimming_points = list()
         self._sequence_blocks = list()
     
     def update_position(self, current_time, position, duration):
@@ -366,9 +366,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         for sequence_index in range(len(self._sequence_blocks)):
             sequence = self._sequence_blocks[sequence_index]
             sequence_box = clutter.ActorBox()
-            sequence_box.x1 = int(bar_box.x1 + int(self.edit_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.x1 = int(bar_box.x1 + int(self.trimming_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
             sequence_box.y1 = bar_box.y1
-            sequence_box.x2 = int(bar_box.x1 + int(self.edit_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.x2 = int(bar_box.x1 + int(self.trimming_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
             sequence_box.y2 = bar_box.y2
             sequence.allocate(sequence_box, flags)
         
