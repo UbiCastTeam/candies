@@ -101,10 +101,7 @@ class OptionLine(BaseContainer):
         self.label.set_text(text)
     
     def has_icon(self):
-        if self.icon_path is not None:
-            return True
-        else:
-            return False
+        return self.icon_path is not None
     
     def set_icon(self, new_icon_path=None):
         self.icon_path = new_icon_path
@@ -407,6 +404,20 @@ class Select(clutter.Actor, clutter.Container):
             return (option.name, option.get_text())
         except IndexError:
             return None
+    
+    def get_option_obj(self, index):
+        try:
+            option = self._list.get_elements()[index]["object"]
+            return option
+        except IndexError:
+            return None
+    
+    def set_option_text(self, index, text):
+        option = self.get_option_obj(index)
+        if option:
+            option.set_text(text)
+            if option == self._selected:
+                self._selected_option.set_text(text)
     
     def __len__(self):
         return len(self.get_options())
