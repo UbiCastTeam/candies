@@ -372,12 +372,12 @@ class Select(clutter.Actor, clutter.Container):
         else:
             option = self._list.remove_element('option_%s' %name)
             if self._selected == option:
-                if len(self._list.get_elements()) == 0:
+                try:
+                    self.select_option(self.get_option(0)[0])
+                except TypeError:
                     self._selected = None
                     self._selected_option.set_name('empty')
                     self._selected_option.set_text('')
-                else:
-                    self.select_option(self.get_option(0)[0])
             self._has_icons = False
             for element in self._list.get_elements():
                 if element['object'].has_icon:
