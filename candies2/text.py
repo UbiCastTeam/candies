@@ -122,7 +122,6 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._padding = common.Padding(padding)
         self._line_wrap = False
         self._multiline = False
-        self._alignment = 'center'
         self._symbol = u'•'
         self._crypted = crypted
         
@@ -133,7 +132,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.set_parent(self)
         self.label.set_line_wrap(True)
         self.label.set_ellipsize(2) # let 2 words after "..."
-        self.label.set_line_alignment(1) # center text
+        self.set_line_alignment('center') # center text
         if crypted:
             self.label.set_password_char(self._symbol)
         
@@ -203,29 +202,18 @@ class TextContainer(clutter.Actor, clutter.Container):
             self.rect.set_border_width(width)
     
     def set_line_wrap(self, boolean):
-        if boolean:
-            self._line_wrap = True
-            self.label.set_line_wrap(True)
-        else:
-            self._line_wrap = False
-            self.label.set_line_wrap(False)
+        self._line_wrap = boolean
+        self.label.set_line_wrap(boolean)
             
     def set_line_alignment(self, alignment):
-        if alignment == 'center':
-            self._alignment = 'center'
-            self.label.set_line_alignment(1)
-        elif alignment == 'right':
-            self._alignment = 'right'
-            self.label.set_line_alignment(2)
-        elif alignment == 'left':
-            self._alignment = 'left'
-            self.label.set_line_alignment(3)
+        try:
+            alignment = 1 + ('center', 'right', 'left').index(alignment)
+        except ValueError:
+            pass
+        self.label.set_line_alignment(alignment)
     
     def set_justify(self, boolean):
-        if boolean:
-            self.label.set_justify(True)
-        else:
-            self.label.set_justify(False)
+        self.label.set_justify(boolean)
     
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
