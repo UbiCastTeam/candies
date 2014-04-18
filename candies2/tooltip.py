@@ -222,6 +222,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                     pointer_y_pos = 0 - pointer_height
                     tooltip_y_pos = 0 - tooltip_height - pointer_height + self.tooltip_y_padding
                 else:
+                    self.tooltip_pointer.set_rotation(clutter.Z_AXIS, 180, self.tooltip_pointer.get_width() / 2, self.tooltip_pointer.get_height() / 2, 0)
                     pointer_y_pos = box_height
                     tooltip_y_pos = box_height + pointer_height - self.tooltip_y_padding
                 
