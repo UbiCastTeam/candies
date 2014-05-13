@@ -109,8 +109,9 @@ class VideoPlayer(VideoTexture):
         self.set_audio_volume(current_volume)
 
     def reset_pipeline(self):
-        pipe = self.get_pipeline()
-        pipe.set_state(gst.STATE_NULL)
+        if hasattr(self, 'get_pipeline'):
+            pipe = self.get_pipeline()
+            pipe.set_state(gst.STATE_NULL)
     
     def add_listener(self, event_name, function):
         if event_name not in self._listeners:
