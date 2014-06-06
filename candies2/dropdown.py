@@ -297,18 +297,22 @@ class Select(clutter.Actor, clutter.Container):
         self._selected_option.connect('button-release-event', self._on_selected_click)
         self._selected_option.set_parent(self)
         self._set_lock(True)
+
+    def get_lock(self):
+        return self._locked
     
     def _set_lock(self, status):
-        self.set_disabled(status)
-        self.set_opacity(255 - status*128)
+        if status:
+            self._selected_option.set_reactive(False)
+            self._selected_option.icon.hide()
+        else:
+            self._selected_option.set_reactive(True)
+            self._selected_option.icon.show()
+        self.set_opacity(127 if status else 255)
 
     def set_lock(self, status):
-        self._set_locked(False)
         self._set_lock(status)
         self._locked = status
-
-    def set_disabled(self, boolean):
-        self._selected_option.set_reactive(not boolean)
     
     def get_stage(self):
         obj = self
@@ -328,19 +332,6 @@ class Select(clutter.Actor, clutter.Container):
     
     def get_selected(self):
         return self._selected
-    
-    def _set_locked(self, lock):
-        if lock:
-            self._selected_option.set_reactive(False)
-            self._selected_option.icon.hide()
-        else:
-            self._selected_option.set_reactive(True)
-            self._selected_option.icon.show()
-    
-    def set_locked(self, lock):
-        self._set_lock(False)
-        self._set_locked(lock)
-        self._locked = lock
     
     def add_option(self, name, hname, icon_path=None, index=-1, indent_level=0):
         new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
@@ -364,7 +355,6 @@ class Select(clutter.Actor, clutter.Container):
             self._selected_option.set_text(hname)
         if not self._locked:
             self._set_lock(False)
-            self._set_locked(False)
     
     def remove_option(self, name):
         if len(self._list.get_elements()) == 1:
