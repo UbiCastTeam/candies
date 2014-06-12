@@ -54,7 +54,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None, sequence_color_1='#444444ff', sequence_color_2='#666666ff'):
+    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None, sequence_color_1='#00dd00ff', sequence_color_2='#00ff00ff'):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
@@ -69,8 +69,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         # Sequences blocks
         self._trimming_points = list()
         self._sequence_blocks = list()
-        self.sequence_color_1 = '#00dd00ff'
-        self.sequence_color_2 = '#00ff00ff'
+        self.sequence_color_1 = sequence_color_1
+        self.sequence_color_2 = sequence_color_2
         self._sequence_color = self.sequence_color_2
         self._min = None
         self._max = None
