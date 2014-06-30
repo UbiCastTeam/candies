@@ -109,20 +109,22 @@ class Box(clutter.Actor, clutter.Container):
     def add(self, *new_elements):
         for new_ele in new_elements:
             if 'name' not in new_ele or 'object' not in new_ele:
-                raise KeyError('Can not add element to box. Element to add must be a dict with at least "name" and "object" in his keys')
+                raise KeyError('Cannot add element to box. Element to add must be a dict with at least "name" and "object" in his keys')
             self.elements.append(new_ele)
             if self._overlay_displayed:
                 new_ele['object'].hide()
             new_ele['object'].set_parent(self)
         self.queue_relayout()
     
-    def add_element(self, obj, name, index=-1, **properties):
+    def add_element(self, obj, name, index=None, **properties):
         element = properties.copy()
         element['name'] = name
         element['object'] = obj
-        if index == -1 or index < 0 or index > len(self.elements):
+        if index is None or index > len(self.elements):
             self.elements.append(element)
         else:
+            if index < 0:
+                index += len(self.elements)
             self.elements.insert(index, element)
         if self._overlay_displayed:
             obj.hide()

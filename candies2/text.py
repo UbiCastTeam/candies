@@ -289,7 +289,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         
         inner_width = width - 2*self._padding.x - 2*self._margin.x
         inner_height = height - 2*self._padding.y - 2*self._margin.y
-        self._allocate_label(self._margin.x + self._padding.x, self._margin.y + self._padding.y, inner_width, inner_height, flags)
+        self._allocate_label(self._margin.left + self._padding.left, self._margin.top + self._padding.top, inner_width, inner_height, flags)
         
         clutter.Actor.do_allocate(self, box, flags)
     
