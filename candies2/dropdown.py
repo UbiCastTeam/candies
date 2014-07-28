@@ -333,7 +333,7 @@ class Select(clutter.Actor, clutter.Container):
     def get_selected(self):
         return self._selected
     
-    def add_option(self, name, hname, icon_path=None, index=-1, indent_level=0):
+    def add_option(self, name, hname, icon_path=None, index=None, indent_level=0):
         new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
         new_option.set_line_alignment(self.alignment)
         if icon_path is not None and not self._has_icons:
