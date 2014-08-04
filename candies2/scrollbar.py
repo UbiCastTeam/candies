@@ -277,7 +277,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
             scroller_box.x1 = self.padding + scroller_position
             scroller_box.x2 = scroller_box.x1 + scroller_height
         self.scroller.allocate(scroller_box,flags)
-        scroller_height = box_height - 2*self.padding - scroller_height
         if scroller_height:
             self.scroller_position_percent = (scroller_position)/(box_height - 2*self.padding - scroller_height)
         else:
