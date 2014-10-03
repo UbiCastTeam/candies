@@ -57,6 +57,9 @@ class AutoScrollPanel(HBox):
     def go_to_bottom(self):
         self._scrollbar.go_to_bottom()
     
+    def scroll_to(self, percent):
+        self._scrollbar.set_scroller_progress_percent(percent)
+    
     def get_scrollbar(self):
         return self._scrollbar
     
