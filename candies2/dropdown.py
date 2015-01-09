@@ -63,7 +63,7 @@ class OptionLine(BaseContainer):
         self.spacer.hide()
         self._add(self.spacer)
         # label
-        self.label = TextContainer(text, padding=0, rounded=False, crypted=crypted)
+        self.label = TextContainer(unicode(text), padding=0, rounded=False, crypted=crypted)
         self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')
