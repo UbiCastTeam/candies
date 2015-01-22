@@ -109,7 +109,7 @@ class CheckBox(BaseContainer):
         return self._label.get_text()
 
     def set_text(self, text):
-        self._label.set_text(text)
+        self._label.set_text(str(text))
     
     def set_font_name(self, font_name):
         self._label.set_font_name(font_name)

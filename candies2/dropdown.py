@@ -92,13 +92,13 @@ class OptionLine(BaseContainer):
         self.label.set_justify(boolean)
     
     def set_text(self, text):
-        self.label.set_text(text)
+        self.label.set_text(str(text))
     
     def set_name(self, text):
         self.name = text
     
     def set_hname(self, text):
-        self.label.set_text(text)
+        self.label.set_text(str(text))
     
     def has_icon(self):
         return self.icon_path is not None
@@ -352,7 +352,7 @@ class Select(clutter.Actor, clutter.Container):
             self._selected.set_font_color(self.selected_font_color)
             self._selected.show_background()
             self._selected_option.set_name(name)
-            self._selected_option.set_text(hname)
+            self._selected_option.set_text(str(hname))
         if not self._locked:
             self._set_lock(False)
     
@@ -412,9 +412,9 @@ class Select(clutter.Actor, clutter.Container):
     def set_option_text(self, index, text):
         option = self.get_option_obj(index)
         if option:
-            option.set_text(text)
+            option.set_text(str(text))
             if option == self._selected:
-                self._selected_option.set_text(text)
+                self._selected_option.set_text(str(text))
     
     def __len__(self):
         return len(self.get_options())

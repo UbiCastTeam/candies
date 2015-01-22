@@ -54,7 +54,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if label != None :
             self.label = clutter.Text()
             self.label.set_color('#FFFFFFFF')
-            self.label.set_text(label)
+            self.label.set_text(str(label))
             self.label.set_parent(self)
             self.show_label = True
 
@@ -265,7 +265,6 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 scroller_box.y1 += self.padding
             scroller_box.y2 = scroller_box.y1 + scroller_width
         scroller_position = self.scroller_position_percent * (box_height - 2*self.padding - scroller_height)
-#        self.scroller_position -= scroller_height/2
         if scroller_position >= box_height - 2*self.padding - scroller_height:
             scroller_position = box_height - 2*self.padding - scroller_height
         if scroller_position <= 0:

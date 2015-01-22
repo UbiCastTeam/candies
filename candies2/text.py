@@ -151,7 +151,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.rect.set_parent(self)
     
     def set_text(self, text):
-        self.label.set_text(text)
+        self.label.set_text(str(text))
     
     def insert_text(self, text, position):
         self.label.insert_text(text, position)
@@ -219,7 +219,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         if pspec.name == 'color':
             self.set_inner_color(value)
         elif pspec.name == 'text':
-            self.set_text(value)
+            self.set_text(str(value))
         elif pspec.name == 'font-color':
             self.set_font_color(value)
         elif pspec.name == 'border-color':

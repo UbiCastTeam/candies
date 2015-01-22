@@ -33,7 +33,7 @@ class TexturedBlock(BaseContainer):
         self.title_text = title
         self.check_title()
         if self.title_text is not None:
-            self.default_title_actor.set_text(title)
+            self.default_title_actor.set_text(str(title))
         self.default_title_actor.set_line_alignment(1)
         self.default_title_actor.set_line_wrap(False)
         self._add(self.default_title_actor)
@@ -192,7 +192,7 @@ class TexturedBlock(BaseContainer):
         self.title_text = title
         self.check_title()
         if self.title_text is not None:
-            self.default_title_actor.set_text(title)
+            self.default_title_actor.set_text(str(title))
         self.queue_relayout()
     
     def get_title(self):

@@ -58,7 +58,7 @@ class FileEntry(BaseContainer):
         self._label.set_line_wrap(False)
         self._label.set_ellipsize(2) # let 2 words after "..."
         self._label.set_line_alignment(3) # align text to left
-        self._label.set_text(self.text)
+        self._label.set_text(str(self.text))
         self._add(self._label)
     
     def set_selected(self, boolean):
