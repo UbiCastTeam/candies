@@ -35,8 +35,17 @@ class NoClKey(Key):
 
 # keyboard dictionnary
 KEYBOARD_MAPS = {
-    'fr_maj': (
+    'de_maj': (
         (Key('À',c_evt='Agrave'), Key('Ç',c_evt='Ccedilla'), Key('É',c_evt='Eacute'), Key('È',c_evt='Egrave'), Key('Ù',c_evt='Ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Z'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
+        (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key(',',c_evt='comma')),
+        (NoClKey('⇧',nb=2,evt='de_min'), Key('Y'), Key('X'), Key('C'), Key('V'), Key('B'), Key('N'), Key('M'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='de_min')),
+        (NoClKey('#+-',nb=2,evt='de_caract'), Key(' ',nb=8,c_evt='space'))
+    ),
+
+    'fr_maj': (
+        (Key('À',c_evt='Agrave'), Key('Ç',c_evt='Ccedilla'), Key('É',c_evt='Eacute'), Key('È',c_evt='Egrave'), Key('Ù',c_evt='Ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde'), Key('ß')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('A'), Key('Z'), Key('E'), Key('R'), Key('T'), Key('Y'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
         (Key('Q'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key('M')),
@@ -52,8 +61,17 @@ KEYBOARD_MAPS = {
         (NoClKey('#+-',nb=2,evt='en_caract'), Key(' ',nb=8,c_evt='space'))
     ),
     
+    'de_min': (
+        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedilla'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde'), Key('ß')),
+        (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
+        (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('z'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
+        (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key(',',c_evt='comma')),
+        (NoClKey('⇧',nb=2,evt='de_maj'), Key('y'), Key('x'), Key('c'), Key('v'), Key('b'), Key('n'), Key('m'), Key('.',c_evt='period'), NoClKey('⇧',nb=3,evt='de_maj')),
+        (Key('#+-',nb=2,evt='de_caract'), Key(' ',nb=8,c_evt='space'))
+     ),
+
     'fr_min': (
-        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedilla'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedilla'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde'), ),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('a'), Key('z'), Key('e'), Key('r'), Key('t'), Key('y'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
         (Key('q'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key('m')),
@@ -69,6 +87,14 @@ KEYBOARD_MAPS = {
         (NoClKey('#+-',nb=2,evt='en_caract'), Key(' ',nb=8,c_evt='space'))
     ),
     
+    'de_caract': (
+        (Key('\'',c_evt='quoteright'), Key('.',c_evt='period'), Key(',',c_evt='comma'), Key(';',c_evt='semicolon'), Key(':',c_evt='colon'), Key('/',c_evt='slash'), Key('?',c_evt='question'), Key('!',c_evt='exclam'), Key('%',c_evt='percent'),),
+        (Key('*',c_evt='asterisk'), Key('+',c_evt='plus'), Key('-',c_evt='minus'), Key('=',c_evt='equal'), Key('#',c_evt='numbersign'), Key('~',c_evt='asciitilde'), Key('@',c_evt='at'), Key('\\',c_evt='backslash'), Key('_',c_evt='underscore')),
+        (Key('`',c_evt='quoteleft'), Key('|',c_evt='bar'), Key('(',c_evt='parenleft'), Key(')',c_evt='parenright'), Key('"',c_evt='quotedbl'), Key('&',c_evt='ampersand'), Key('[',c_evt='bracketleft'), Key(']',c_evt='bracketright')),
+        (NoClKey('ABC',nb=2,evt='de_maj'), Key('<',c_evt='less'), Key('$',c_evt='dollar'), Key('>',c_evt='greater'), Key('←',nb=2,c_evt='BackSpace')),
+        (NoClKey('abc',nb=2,evt='de_min'), Key(' ',nb=8,c_evt='space'))
+    ),
+
     'fr_caract': (
         (Key('\'',c_evt='quoteright'), Key('.',c_evt='period'), Key(',',c_evt='comma'), Key(';',c_evt='semicolon'), Key(':',c_evt='colon'), Key('/',c_evt='slash'), Key('?',c_evt='question'), Key('!',c_evt='exclam'), Key('%',c_evt='percent'),),
         (Key('*',c_evt='asterisk'), Key('+',c_evt='plus'), Key('-',c_evt='minus'), Key('=',c_evt='equal'), Key('#',c_evt='numbersign'), Key('~',c_evt='asciitilde'), Key('@',c_evt='at'), Key('\\',c_evt='backslash'), Key('_',c_evt='underscore')),
