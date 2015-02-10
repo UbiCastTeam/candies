@@ -368,7 +368,6 @@ class FileChooser(BaseContainer):
         if len(self._type_filters) < 2:
             self._type_filter_select.set_lock(True)
         self._add(self._type_filter_select)
-        
         directory = self._base_dir
         while directory != self._start_dir:
             if directory == os.sep:
@@ -490,7 +489,6 @@ class FileChooser(BaseContainer):
         self._files_list.clear()
         self._current_dir = None
         self.paths = list()
-        
         directory = self._base_dir
         while directory != self._start_dir:
             if directory == os.sep:
@@ -802,7 +800,23 @@ class FileChooser(BaseContainer):
         if self._buttons_flash_fct:
             self._buttons_flash_fct(source)
         self._return_to_index(source.index)
-    
+
+    def set_hide_path(self):
+        for element in self.paths:
+            try:
+                button = element[2]
+                button.set_opacity(0)
+            except Exception:
+                pass
+
+    def set_show_path(self):
+        for element in self.paths:
+            try:
+                button = element[2]
+                button.set_opacity(255)
+            except Exception:
+                pass
+
     def open_dir(self, path, selected=None):
         if self._current_dir != path:
             button = ClassicButton(os.path.basename(path))
