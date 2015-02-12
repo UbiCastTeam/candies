@@ -803,11 +803,8 @@ class FileChooser(BaseContainer):
             self._buttons_flash_fct(source)
         self._return_to_index(source.index)
 
-    def hide_path(self):
-        self._set_buttons_opacity(0)
-
-    def show_path(self):
-        self._set_buttons_opacity(255)
+    def set_hidden_path(self, hidden_path):
+        self._set_buttons_opacity(0 if hidden_path else 255)
 
     def _set_buttons_opacity(self, opacity=0):
         for element in self.paths:
