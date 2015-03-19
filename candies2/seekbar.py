@@ -65,6 +65,8 @@ class SeekBar(clutter.Actor, clutter.Container):
         # Time markers
         self._markers = list()
         self._markers_position = list()
+        self._new_markers = list()
+        self._new_markers_position = list()
         self._marker_width = 2
         # Sequences blocks
         self._trimming_points = list()
@@ -108,6 +110,13 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.cursor.set_color('Gray')
         self.cursor.set_parent(self)
     
+    def set_reactive(self, value):
+        self.background.set_reactive(value)
+
+    def set_lock(self, lock):
+        self.background.set_reactive(not lock)
+        self.set_opacity(128 if lock else 255)
+
     def set_limit_progress(self, limit):
         
         for limit_block in list(self._limit_blocks):
@@ -182,24 +191,24 @@ class SeekBar(clutter.Actor, clutter.Container):
         if new_position != self._progress:
             self._progress = new_position
             self.queue_relayout()
-    
+
     def set_seek_function(self, seek_function):
         self.seek_function = seek_function
-    
+
     def emit_seek_request(self):
         if self.seek_function is not None:
             self.seek_function(self._progress)
-    
+
     def set_trimming_points(self, trimming_points):
         self._clear_trimming_points()
         for point in trimming_points:
             self._add_trimming_point(point)
         self.queue_relayout()
-    
+
     def add_trimming_point(self, progression):
         self._add_trimming_point(progression)
         self.queue_relayout()
-    
+
     def _add_trimming_point(self, progression):
         trimming_point = progression
         progression = min(progression, 1.0)
@@ -227,7 +236,7 @@ class SeekBar(clutter.Actor, clutter.Container):
                 sequence.set_color(self._sequence_color)
                 sequence.set_parent(self)
                 self._sequence_blocks.append(sequence)
-    
+
     def clear_trimming_points(self):
         self._clear_trimming_points()
         self.queue_relayout()
@@ -240,10 +249,15 @@ class SeekBar(clutter.Actor, clutter.Container):
             sequence = None
         self.trimming_points = list()
         self._sequence_blocks = list()
-    
+
     def update_position(self, current_time, position, duration):
         if self._last_event_x is None:
             self.set_progress(position)
+
+    def update_markers_color(self, color, add_new_list=False):
+        markers = self._new_markers if add_new_list else self._markers
+        for marker in markers:
+            marker.set_color(color)
 
     def seek_at_progression(self, new_progression):
         print '******** seek_at_progression method of SeekBar class is deprecated ********'
@@ -255,58 +269,91 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def set_bar_color(self, color):
         self.bar.props.color = clutter.color_from_string(color)
-    
-    def set_markers(self, new_markers):
-        for marker in self._markers:
+
+    def update_old_markers(self):
+        self._markers = self._new_markers
+        self._new_markers = list()
+        self._markers_position = self._new_markers_position
+        self._new_markers_position = list()
+
+    def set_markers(self, new_markers, add_new_list=False):
+        markers = self._new_markers if add_new_list else self._markers
+        markers_position = self._new_markers_position if add_new_list else self._markers_position
+        while markers:
+            markers_position.pop()
+            marker = markers.pop()
             marker.unparent()
             marker.destroy()
-            marker = None
-        self._markers = list()
-        self._markers_position = list()
         for marker in new_markers:
             position = marker.get('position', 0)
             position = min(position, 1.0)
             position = max(position, 0.0)
-            self._markers_position.append(position)
+            markers_position.append(position)
             color = marker.get('color', '#ffffffaa')
             marker_obj = clutter.Rectangle()
             marker_obj.set_color(color)
             marker_obj.set_parent(self)
-            self._markers.append(marker_obj)
+            markers.append(marker_obj)
         self.queue_relayout()
-    
-    def set_marker(self, marker):
+
+    def set_marker(self, marker, add_new_list=False):
+        markers = self._new_markers if add_new_list else self._markers
+        markers_position = self._new_markers_position if add_new_list else self._markers_position
         position = marker.get('position', 0)
         position = min(position, 1.0)
         position = max(position, 0.0)
         color = marker.get('color', '#ffffffaa')
         # look for existing marker at that time
         index = 0
-        while index < len(self._markers_position):
-            pos = self._markers_position[index]
+        while index < len(markers_position):
+            pos = markers_position[index]
             if pos > position or abs(pos - position) < 0.000001:
                 break
             index += 1
-        if self._markers_position and abs(pos - position) < 0.000001:
+        if markers_position and abs(pos - position) < 0.000001:
             # assume this is the same pos
-            marker_obj = self._markers[index]
+            marker_obj = markers[index]
         else:
             # no marker at that position, create one
             marker_obj = clutter.Rectangle()
             marker_obj.set_color(color)
             marker_obj.set_parent(self)
-            self._markers_position.insert(index, position)
-            self._markers.insert(index, marker_obj)
+            markers_position.insert(index, position)
+            markers.insert(index, marker_obj)
         marker_obj.set_color(color)
         self.queue_relayout()
-    
-    def clear_markers(self):
-        for marker in self._markers:
+
+    def delete_marker(self, marker, delete_new_list=False):
+        markers = self._new_markers if delete_new_list else self._markers
+        markers_position = self._new_markers_position if delete_new_list else self._markers_position
+        position = marker.get('position', 0)
+        position = min(position, 1.0)
+        position = max(position, 0.0)
+        index = 0
+        while index < len(markers_position):
+            pos = markers_position[index]
+            if pos > position or abs(pos - position) < 0.000001:
+                break
+            index += 1
+        if markers_position and abs(pos - position) < 0.000001:
+            marker_obj = markers[index]
+            marker_obj.unparent()
+            marker_obj.destroy()
+            marker_obj = None
+        self.queue_relayout()
+
+    def clear_markers(self, clear_new_list=False):
+        markers = self._new_markers if clear_new_list else self._markers
+        markers_position = self._new_markers_position if clear_new_list else self._markers_position
+        # for marker in markers:
+        while markers:
+            markers_position.pop()
+            marker = markers.pop()
             marker.unparent()
             marker.destroy()
             marker = None
-        self._markers = list()
-        self._markers_position = list()
+        # markers = list()
+        # self._markers_position = list()
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'progression':
@@ -330,20 +377,20 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def do_get_preferred_height(self, for_width):
         return 40, 40
-    
+
     def do_get_preferred_width(self, for_height):
         return 200, 200
-    
+
     def do_allocate(self, box, flags):
         self._width = box.x2 - box.x1
         self._height = box.y2 - box.y1
-        self._inner_width = self._width - 2*self._margin.x
-        self._inner_height = self._height - 2*self._margin.y
-        
-        #background
+        self._inner_width = self._width - 2 * self._margin.x
+        self._inner_height = self._height - 2 * self._margin.y
+
+        # background
         background_box = clutter.ActorBox(self._margin.x, self._margin.y, self._width - self._margin.x, self._height - self._margin.y)
         self.background.allocate(background_box, flags)
-        
+
         # bar
         bar_box = clutter.ActorBox()
         bar_box.x1 = self._margin.x + self._padding.left
@@ -351,9 +398,9 @@ class SeekBar(clutter.Actor, clutter.Container):
         bar_box.x2 = self._inner_width - self._margin.x - self._padding.right
         bar_box.y2 = self._height - self._margin.y - self._padding.bottom
         self.bar.allocate(bar_box, flags)
-        
+
         # limits
-        for limit_index in range(len(self._limit_blocks)) :
+        for limit_index in range(len(self._limit_blocks)):
             limit = self._limit_blocks[limit_index]
             limit_box = clutter.ActorBox()
             limit_box.x1 = int(bar_box.x1 + int(self._limit[limit_index][0] * (bar_box.x2 - bar_box.x1)))
@@ -361,27 +408,36 @@ class SeekBar(clutter.Actor, clutter.Container):
             limit_box.x2 = int(bar_box.x1 + int(self._limit[limit_index][1] * (bar_box.x2 - bar_box.x1)))
             limit_box.y2 = bar_box.y2
             limit.allocate(limit_box, flags)
-        
+
         # sequences
         for sequence_index in range(len(self._sequence_blocks)):
             sequence = self._sequence_blocks[sequence_index]
             sequence_box = clutter.ActorBox()
-            sequence_box.x1 = int(bar_box.x1 + int(self.trimming_points[0 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.x1 = int(bar_box.x1 + int(self.trimming_points[0 + 2 * sequence_index] * (bar_box.x2 - bar_box.x1)))
             sequence_box.y1 = bar_box.y1
-            sequence_box.x2 = int(bar_box.x1 + int(self.trimming_points[1 + 2*sequence_index] * (bar_box.x2 - bar_box.x1)))
+            sequence_box.x2 = int(bar_box.x1 + int(self.trimming_points[1 + 2 * sequence_index] * (bar_box.x2 - bar_box.x1)))
             sequence_box.y2 = bar_box.y2
             sequence.allocate(sequence_box, flags)
-        
+
         # markers
         bar_width = bar_box.x2 - bar_box.x1
         for i in range(len(self._markers)):
             marker_box = clutter.ActorBox()
-            marker_box.x1 = int(bar_box.x1 - self._marker_width/2 + bar_width * self._markers_position[i])
+            marker_box.x1 = int(bar_box.x1 - self._marker_width / 2 + bar_width * self._markers_position[i])
             marker_box.y1 = bar_box.y1
             marker_box.x2 = marker_box.x1 + self._marker_width
             marker_box.y2 = bar_box.y2
             self._markers[i].allocate(marker_box, flags)
-        
+
+        bar_width = bar_box.x2 - bar_box.x1
+        for i in range(len(self._new_markers)):
+            marker_box = clutter.ActorBox()
+            marker_box.x1 = int(bar_box.x1 - self._marker_width / 2 + bar_width * self._new_markers_position[i])
+            marker_box.y1 = bar_box.y1
+            marker_box.x2 = marker_box.x1 + self._marker_width
+            marker_box.y2 = bar_box.y2
+            self._new_markers[i].allocate(marker_box, flags)
+
         # cursor
         cursor_width = self._inner_height
         cursor_height = self._inner_height
@@ -399,6 +455,7 @@ class SeekBar(clutter.Actor, clutter.Container):
         children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
         children.extend(self._markers)
+        children.extend(self._new_markers)
         children.append(self.cursor)
         for child in children:
             func(child, data)
@@ -408,13 +465,14 @@ class SeekBar(clutter.Actor, clutter.Container):
         children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
         children.extend(self._markers)
+        children.extend(self._new_markers)
         children.append(self.cursor)
         for child in children:
             child.paint()
 
     def do_pick(self, color):
         self.background.paint()
-    
+
     def do_destroy(self):
         self.unparent()
         if hasattr(self, 'background'):
@@ -439,6 +497,9 @@ class SeekBar(clutter.Actor, clutter.Container):
                 sequence_block.destroy()
         if hasattr(self, '_markers'):
             for marker in self._markers:
+                marker.unparent()
+                marker.destroy()
+            for marker in self._new_markers:
                 marker.unparent()
                 marker.destroy()
 
