@@ -345,15 +345,12 @@ class SeekBar(clutter.Actor, clutter.Container):
     def clear_markers(self, clear_new_list=False):
         markers = self._new_markers if clear_new_list else self._markers
         markers_position = self._new_markers_position if clear_new_list else self._markers_position
-        # for marker in markers:
         while markers:
             markers_position.pop()
             marker = markers.pop()
             marker.unparent()
             marker.destroy()
             marker = None
-        # markers = list()
-        # self._markers_position = list()
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'progression':
