@@ -270,12 +270,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_bar_color(self, color):
         self.bar.props.color = clutter.color_from_string(color)
 
-    def update_old_markers(self):
-        self._markers = self._new_markers
-        self._new_markers = list()
-        self._markers_position = self._new_markers_position
-        self._new_markers_position = list()
-
     def set_markers(self, new_markers, add_new_list=False):
         markers = self._new_markers if add_new_list else self._markers
         markers_position = self._new_markers_position if add_new_list else self._markers_position
