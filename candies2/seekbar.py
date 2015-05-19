@@ -6,6 +6,7 @@ import clutter
 import os
 import common
 
+
 class SeekBar(clutter.Actor, clutter.Container):
     '''
     SeekBar class :
@@ -54,7 +55,8 @@ class SeekBar(clutter.Actor, clutter.Container):
             0.0, 1.0, 0.0, gobject.PARAM_READWRITE
         ),
     }
-    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, seek_function=None, sequence_color_1='#00dd00ff', sequence_color_2='#00ff00ff'):
+
+    def __init__(self, margin=0, padding=0, bar_image_path=None, bar_color='#000000ff', cursor_image_path=None, sequence_markers_image_paths=None, seek_function=None, sequence_colors=None):
         clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
@@ -69,14 +71,25 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._new_markers_position = list()
         self._marker_width = 2
         # Sequences blocks
-        self._trimming_points = list()
+        self._sequences = list()
+        self._sequences_by_start = dict()
+        self._sequences_by_stop = dict()
+        self._sequence_markers = list()
+        self._sequence_markers_image_paths = None
+        if sequence_markers_image_paths:
+            if isinstance(sequence_markers_image_paths, (list, tuple)) and len(sequence_markers_image_paths) == 2:
+                self._sequence_markers_image_paths = tuple(sequence_markers_image_paths)
+            else:
+                raise ValueError("sequence_markers_image_paths argument must be a list or tuple containing 2 elements, not %s (type: %s)", sequence_markers_image_paths, type(sequence_markers_image_paths))
         self._sequence_blocks = list()
-        self.sequence_color_1 = sequence_color_1
-        self.sequence_color_2 = sequence_color_2
-        self._sequence_color = self.sequence_color_2
+        if sequence_colors:
+            self._sequence_colors = tuple(sequence_colors)
+        else:
+            self._sequence_colors = ('#00dd00ff', '#00ff00ff')
+        self._sequence_color = self._sequence_colors[-1]
         self._min = None
         self._max = None
-        
+
         # background
         self.background = clutter.Rectangle()
         self.background.set_color('#00000000')
@@ -86,23 +99,23 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.background.connect('scroll-event', self._on_mouse_scroll)
         self.background.set_parent(self)
         self.background.set_reactive(True)
-        
+
         # bar
-        if bar_image_path != None and os.path.exists(bar_image_path):
+        if bar_image_path and os.path.isfile(bar_image_path):
             self.bar = clutter.Texture()
             self.bar.set_from_file(bar_image_path)
         else:
             self.bar = clutter.Rectangle()
             self.bar.set_color(bar_color)
         self.bar.set_parent(self)
-        
-        #limit
+
+        # limit
         self._limit = list()
         self._limit_blocks = list()
         self._limit_color = '#000000ff'
-        
+
         # cursor
-        if cursor_image_path != None and os.path.exists(cursor_image_path):
+        if cursor_image_path and os.path.isfile(cursor_image_path):
             self.cursor = clutter.Texture()
             self.cursor.set_from_file(cursor_image_path)
         else:
@@ -118,16 +131,15 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.set_opacity(128 if lock else 255)
 
     def set_limit_progress(self, limit):
-        
         for limit_block in list(self._limit_blocks):
             limit_block.unparent()
             limit_block.destroy()
         self._limit_blocks = list()
-        
+
         if limit is not None:
             if isinstance(self.bar, clutter.Rectangle):
                 self.bar.set_color('#00000070')
-            for limit_index in range(len(limit)):
+            for l in limit:
                 block = clutter.Rectangle()
                 block.set_color(self._limit_color)
                 block.set_parent(self)
@@ -142,7 +154,7 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_min_progress(self, mini=None):
         self._limit = self._limit + (mini,)
         #self._min = mini
-    
+
     def set_max_progress(self, maxi=None):
         self._limit = self._limit[:-1] + (self._limit[-1][0],maxi)
         #self._max = maxi
@@ -159,7 +171,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def _on_move(self, source, event):
         self.set_progress_with_event(event)
-    
+
     def _on_mouse_scroll(self, source, event):
         current_pos = self._progress
         if event.direction == clutter.SCROLL_UP:
@@ -168,11 +180,12 @@ class SeekBar(clutter.Actor, clutter.Container):
             current_pos -= 0.1
         self.set_progress(current_pos)
         self.emit_seek_request()
-    
+
     def set_progress_with_event(self, event):
-        if self._last_event_x is None: return
-        self._last_event_x = event.x - self.get_transformed_position()[0] - self._margin.x - self.cursor_width/2
-        position = self._last_event_x/(self._inner_width - self.cursor_width)
+        if self._last_event_x is None:
+            return
+        self._last_event_x = event.x - self.get_transformed_position()[0] - self._margin.x - self.cursor_width / 2
+        position = self._last_event_x / (self._inner_width - self.cursor_width)
         self.set_progress(position)
         self.emit_seek_request()
 
@@ -180,13 +193,13 @@ class SeekBar(clutter.Actor, clutter.Container):
         new_position = max(position, 0.0)
         new_position = min(new_position, 1.0)
         if len(self._limit) > 0:
-            for i in range(len(self._limit)):
+            for i, limit in enumerate(self._limit):
                 if self._limit[0] is not None:
                     if new_position < self._limit[0][0]:
                         new_position = max(new_position, self._limit[0][0])
                     if new_position > self._limit[-1][1]:
                         new_position = min(new_position, self._limit[-1][1])
-                    if (i + 1) <= len(self._limit) - 1 and self._limit[i + 1][0] > new_position > self._limit[i][1]:
+                    if (i + 1) <= len(self._limit) - 1 and self._limit[i + 1][0] > new_position > limit[1]:
                         new_position = self._limit[i + 1][0]
         if new_position != self._progress:
             self._progress = new_position
@@ -199,56 +212,76 @@ class SeekBar(clutter.Actor, clutter.Container):
         if self.seek_function is not None:
             self.seek_function(self._progress)
 
-    def set_trimming_points(self, trimming_points):
-        self._clear_trimming_points()
-        for point in trimming_points:
-            self._add_trimming_point(point)
+    def set_sequences(self, sequences):
+        self._clear_sequences()
+        self._sequences = list()
+        self._sequences_by_start = dict()
+        self._sequences_by_stop = dict()
+        for sequence in sequences:
+            self._add_sequence(sequence)
         self.queue_relayout()
 
-    def add_trimming_point(self, progression):
-        self._add_trimming_point(progression)
+    def clear_sequences(self):
+        self._clear_sequences()
         self.queue_relayout()
 
-    def _add_trimming_point(self, progression):
-        trimming_point = progression
-        progression = min(progression, 1.0)
-        progression = max(progression, 0.0)
-        self.trimming_points.append(trimming_point)
-        self.trimming_points.sort()
-
-        for sequence_block in list(self._sequence_blocks):
-            sequence_block.unparent()
-            sequence_block.destroy()
-        self._sequence_blocks = list()
-
-        if len(self.trimming_points) > 1:
-            used_trimming_points = list(self.trimming_points)
-            if len(used_trimming_points) % 2 == 1:
-                used_trimming_points = used_trimming_points[:-1]
-            nb_sequences = int(len(used_trimming_points) / 2)
-            self._sequence_color = self.sequence_color_2
-            for sequence_index in range(nb_sequences):
-                sequence = clutter.Rectangle()
-                if self._sequence_color == self.sequence_color_2:
-                    self._sequence_color = self.sequence_color_1
-                else:
-                    self._sequence_color = self.sequence_color_2
-                sequence.set_color(self._sequence_color)
-                sequence.set_parent(self)
-                self._sequence_blocks.append(sequence)
-
-    def clear_trimming_points(self):
-        self._clear_trimming_points()
-        self.queue_relayout()
-
-    def _clear_trimming_points(self):
-        for sequence_index in range(len(self._sequence_blocks)):
-            sequence = self._sequence_blocks[sequence_index]
+    def _clear_sequences(self):
+        for sequence in self._sequence_blocks:
             sequence.unparent()
             sequence.destroy()
-            sequence = None
-        self.trimming_points = list()
+        for sequence_markers in self._sequence_markers:
+            for sequence_marker in sequence_markers:
+                if sequence_marker:
+                    sequence_marker.unparent()
+                    sequence_marker.destroy()
         self._sequence_blocks = list()
+        self._sequence_markers = list()
+
+    def add_sequence(self, sequence):
+        self._add_sequence(sequence)
+        self.queue_relayout()
+
+    def _add_sequence(self, sequence):
+        self._clear_sequences()
+        # look for a sequence with an identical point
+        existing_sequence = None
+        if sequence[0] is not None:
+            existing_sequence = self._sequences_by_start.get(sequence[0])
+        elif sequence[1] is not None:
+            existing_sequence = self._sequences_by_stop.get(sequence[1])
+        if existing_sequence:
+            existing_sequence[0] = sequence[0]
+            existing_sequence[1] = sequence[1]
+            sequence = existing_sequence
+        else:
+            self._sequences.append(sequence)
+        if sequence[0] is not None:
+            self._sequences_by_start[sequence[0]] = sequence
+        if sequence[1] is not None:
+            self._sequences_by_stop[sequence[1]] = sequence
+        self._sequences.sort(key=lambda s: s[1] if s[0] is None else s[0])
+
+        self._sequence_color = self._sequence_colors[-1]
+        for sequence in self._sequences:
+            sequence_block = clutter.Rectangle()
+            self._sequence_color = self._sequence_colors[(self._sequence_colors.index(self._sequence_color) + 1) % len(self._sequence_colors)]
+            sequence_block.set_color(self._sequence_color)
+            sequence_block.set_parent(self)
+            self._sequence_blocks.append(sequence_block)
+            if self._sequence_markers_image_paths:
+                if sequence[0] is None:
+                    start_marker = None
+                else:
+                    start_marker = clutter.Texture()
+                    start_marker.set_from_file(self._sequence_markers_image_paths[0])
+                    start_marker.set_parent(self)
+                if sequence[1] is None:
+                    stop_marker = None
+                else:
+                    stop_marker = clutter.Texture()
+                    stop_marker.set_from_file(self._sequence_markers_image_paths[1])
+                    stop_marker.set_parent(self)
+                self._sequence_markers.append((start_marker, stop_marker))
 
     def update_position(self, current_time, position, duration):
         if self._last_event_x is None:
@@ -273,11 +306,7 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_markers(self, new_markers, add_new_list=False):
         markers = self._new_markers if add_new_list else self._markers
         markers_position = self._new_markers_position if add_new_list else self._markers_position
-        while markers:
-            markers_position.pop()
-            marker = markers.pop()
-            marker.unparent()
-            marker.destroy()
+        self.clear_markers(add_new_list)
         for marker in new_markers:
             position = marker.get('position', 0)
             position = min(position, 1.0)
@@ -391,43 +420,55 @@ class SeekBar(clutter.Actor, clutter.Container):
         self.bar.allocate(bar_box, flags)
 
         # limits
-        for limit_index in range(len(self._limit_blocks)):
-            limit = self._limit_blocks[limit_index]
+        for i, limit in enumerate(self._limit_blocks):
             limit_box = clutter.ActorBox()
-            limit_box.x1 = int(bar_box.x1 + int(self._limit[limit_index][0] * (bar_box.x2 - bar_box.x1)))
+            limit_box.x1 = int(bar_box.x1 + int(self._limit[i][0] * (bar_box.x2 - bar_box.x1)))
             limit_box.y1 = bar_box.y1
-            limit_box.x2 = int(bar_box.x1 + int(self._limit[limit_index][1] * (bar_box.x2 - bar_box.x1)))
+            limit_box.x2 = int(bar_box.x1 + int(self._limit[i][1] * (bar_box.x2 - bar_box.x1)))
             limit_box.y2 = bar_box.y2
             limit.allocate(limit_box, flags)
 
         # sequences
-        for sequence_index in range(len(self._sequence_blocks)):
-            sequence = self._sequence_blocks[sequence_index]
-            sequence_box = clutter.ActorBox()
-            sequence_box.x1 = int(bar_box.x1 + int(self.trimming_points[0 + 2 * sequence_index] * (bar_box.x2 - bar_box.x1)))
-            sequence_box.y1 = bar_box.y1
-            sequence_box.x2 = int(bar_box.x1 + int(self.trimming_points[1 + 2 * sequence_index] * (bar_box.x2 - bar_box.x1)))
-            sequence_box.y2 = bar_box.y2
-            sequence.allocate(sequence_box, flags)
+        for i, sequence in enumerate(self._sequence_blocks):
+            if self._sequences[i][0] is not None and self._sequences[i][1] is not None:
+                sequence_box = clutter.ActorBox()
+                sequence_box.x1 = int(bar_box.x1 + int(self._sequences[i][0] * (bar_box.x2 - bar_box.x1)))
+                sequence_box.y1 = bar_box.y1
+                sequence_box.x2 = int(bar_box.x1 + int(self._sequences[i][1] * (bar_box.x2 - bar_box.x1)))
+                sequence_box.y2 = bar_box.y2
+                sequence.allocate(sequence_box, flags)
+
+        # sequence markers
+        trimming_marker_size = self._inner_height / 2
+        bar_height = bar_box.y2 - bar_box.y1
+        height_diff = trimming_marker_size - bar_height
+        for i, sequence_markers in enumerate(self._sequence_markers):
+            for j, trimming_point in enumerate(self._sequences[i]):
+                if trimming_point is not None:
+                    trimming_marker_box = clutter.ActorBox()
+                    trimming_marker_box.x1 = int(bar_box.x1 + int(trimming_point * (bar_box.x2 - bar_box.x1)) - trimming_marker_size / 2)
+                    trimming_marker_box.y1 = bar_box.y1 - height_diff / 2
+                    trimming_marker_box.x2 = int(bar_box.x1 + int(trimming_point * (bar_box.x2 - bar_box.x1)) + trimming_marker_size / 2)
+                    trimming_marker_box.y2 = bar_box.y2 + height_diff / 2
+                    sequence_markers[j].allocate(trimming_marker_box, flags)
 
         # markers
         bar_width = bar_box.x2 - bar_box.x1
-        for i in range(len(self._markers)):
+        for i, marker in enumerate(self._markers):
             marker_box = clutter.ActorBox()
             marker_box.x1 = int(bar_box.x1 - self._marker_width / 2 + bar_width * self._markers_position[i])
             marker_box.y1 = bar_box.y1
             marker_box.x2 = marker_box.x1 + self._marker_width
             marker_box.y2 = bar_box.y2
-            self._markers[i].allocate(marker_box, flags)
+            marker.allocate(marker_box, flags)
 
-        bar_width = bar_box.x2 - bar_box.x1
-        for i in range(len(self._new_markers)):
+        for i, new_marker in enumerate(self._new_markers):
             marker_box = clutter.ActorBox()
             marker_box.x1 = int(bar_box.x1 - self._marker_width / 2 + bar_width * self._new_markers_position[i])
             marker_box.y1 = bar_box.y1
             marker_box.x2 = marker_box.x1 + self._marker_width
             marker_box.y2 = bar_box.y2
-            self._new_markers[i].allocate(marker_box, flags)
+            new_marker.allocate(marker_box, flags)
 
         # cursor
         cursor_width = self._inner_height
@@ -445,6 +486,10 @@ class SeekBar(clutter.Actor, clutter.Container):
         children = [self.background, self.bar]
         children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
+        for sequence_markers in self._sequence_markers:
+            for sequence_marker in sequence_markers:
+                if sequence_marker:
+                    children.append(sequence_marker)
         children.extend(self._markers)
         children.extend(self._new_markers)
         children.append(self.cursor)
@@ -455,6 +500,10 @@ class SeekBar(clutter.Actor, clutter.Container):
         children = [self.background, self.bar]
         children.extend(self._limit_blocks)
         children.extend(self._sequence_blocks)
+        for sequence_markers in self._sequence_markers:
+            for sequence_marker in sequence_markers:
+                if sequence_marker:
+                    children.append(sequence_marker)
         children.extend(self._markers)
         children.extend(self._new_markers)
         children.append(self.cursor)
@@ -486,11 +535,17 @@ class SeekBar(clutter.Actor, clutter.Container):
             for sequence_block in self._sequence_blocks:
                 sequence_block.unparent()
                 sequence_block.destroy()
+        if hasattr(self, '_sequence_markers'):
+            for sequence_markers in self._sequence_markers:
+                for sequence_marker in sequence_markers:
+                    if sequence_marker:
+                        sequence_marker.unparent()
+                        sequence_marker.destroy()
         if hasattr(self, '_markers'):
             for marker in self._markers:
                 marker.unparent()
                 marker.destroy()
+        if hasattr(self, '_new_markers'):
             for marker in self._new_markers:
                 marker.unparent()
                 marker.destroy()
-
