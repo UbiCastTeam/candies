@@ -4,11 +4,11 @@
 import imp
 from distutils.core import setup
 
-from candies2.version import VERSION
+candies = imp.load_source("version", "candies2/version.py")
 
 setup(
     name="candies2",
-    version=VERSION,
+    version=candies.VERSION,
     description="candies is an opengl touch-oriented GUI toolkit",
     author="Damien Boucard, Florent Thiery",
     author_email="candies [AT] ubicast [DOT] eu",
