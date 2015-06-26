@@ -10,4 +10,4 @@ It features:
 * SVG skinning support with global SVG file caching (global color and font declaration)
 * python logging support
 
-It will hopefully evolve into a handy, developer-friendly, clutter-based GUI building toolkit. We use it at UbiCast to power our touch video mixing interfaces. See the projects page for more details.
+We use it at UbiCast to power our touch video mixing interfaces. 
