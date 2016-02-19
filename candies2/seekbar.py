@@ -72,8 +72,6 @@ class SeekBar(clutter.Actor, clutter.Container):
         self._marker_width = 2
         # Sequences blocks
         self._sequences = list()
-        self._sequences_by_start = dict()
-        self._sequences_by_stop = dict()
         self._sequence_markers = list()
         self._sequence_markers_image_paths = None
         if sequence_markers_image_paths:
@@ -122,7 +120,7 @@ class SeekBar(clutter.Actor, clutter.Container):
             self.cursor = clutter.Rectangle()
             self.cursor.set_color('Gray')
         self.cursor.set_parent(self)
-    
+
     def set_reactive(self, value):
         self.background.set_reactive(value)
 
@@ -215,8 +213,6 @@ class SeekBar(clutter.Actor, clutter.Container):
     def set_sequences(self, sequences):
         self._clear_sequences()
         self._sequences = list()
-        self._sequences_by_start = dict()
-        self._sequences_by_stop = dict()
         for sequence in sequences:
             self._add_sequence(sequence)
         self.queue_relayout()
@@ -243,22 +239,7 @@ class SeekBar(clutter.Actor, clutter.Container):
 
     def _add_sequence(self, sequence):
         self._clear_sequences()
-        # look for a sequence with an identical point
-        existing_sequence = None
-        if sequence[0] is not None:
-            existing_sequence = self._sequences_by_start.get(sequence[0])
-        elif sequence[1] is not None:
-            existing_sequence = self._sequences_by_stop.get(sequence[1])
-        if existing_sequence:
-            existing_sequence[0] = sequence[0]
-            existing_sequence[1] = sequence[1]
-            sequence = existing_sequence
-        else:
-            self._sequences.append(sequence)
-        if sequence[0] is not None:
-            self._sequences_by_start[sequence[0]] = sequence
-        if sequence[1] is not None:
-            self._sequences_by_stop[sequence[1]] = sequence
+        self._sequences.append(sequence)
         self._sequences.sort(key=lambda s: s[1] if s[0] is None else s[0])
 
         self._sequence_color = self._sequence_colors[-1]
