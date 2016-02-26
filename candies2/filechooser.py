@@ -144,7 +144,10 @@ class PreviewDisplayer(BaseContainer):
         self._add(self._image)
 
     def set_from_file(self, image_src):
-        self._image.set_from_file(image_src)
+        try:
+            self._image.set_from_file(image_src)
+        except Exception:
+            pass
 
     def do_allocate(self, box, flags):
         width = box.x2 - box.x1
