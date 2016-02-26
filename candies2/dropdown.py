@@ -24,6 +24,7 @@ class OptionLine(BaseContainer):
         self._spacing = common.Spacing(spacing)
         self.name = name
 
+        self._locked = False
         self.font = font
         self.font_color = font_color
         self.default_color = color
@@ -77,6 +78,10 @@ class OptionLine(BaseContainer):
     def set_lock(self, lock):
         self.set_reactive(not lock)
         self.set_opacity(128 if lock else 255)
+        self._locked = lock
+
+    def get_lock(self):
+        return self._locked
 
     def set_texture(self, texture):
         if self.rounded:
