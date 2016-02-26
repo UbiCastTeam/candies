@@ -36,7 +36,7 @@ class NoClKey(Key):
 # keyboard dictionnary
 KEYBOARD_MAPS = {
     'de_maj': (
-        (Key('À',c_evt='Agrave'), Key('Ç',c_evt='Ccedilla'), Key('É',c_evt='Eacute'), Key('È',c_evt='Egrave'), Key('Ù',c_evt='Ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
+        (Key('Ö',c_evt='Odiaeresis'), Key('Ä',c_evt='Adiaeresis'), Key('Ü',c_evt='Udiaeresis'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('Q'), Key('W'), Key('E'), Key('R'), Key('T'), Key('Z'), Key('U'), Key('I'), Key('O'), Key('P'), Key('\'',c_evt='quoteright')),
         (Key('A'), Key('S'), Key('D'), Key('F'), Key('G'), Key('H'), Key('J'), Key('K'), Key('L'), Key(',',c_evt='comma')),
@@ -62,7 +62,7 @@ KEYBOARD_MAPS = {
     ),
     
     'de_min': (
-        (Key('à',c_evt='agrave'), Key('ç',c_evt='ccedilla'), Key('é',c_evt='eacute'), Key('è',c_evt='egrave'), Key('ù',c_evt='ugrave'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde'), Key('ß')),
+        (Key('ö',c_evt='odiaeresis'), Key('ä',c_evt='adiaeresis'), Key('ü',c_evt='udiaeresis'), Key(u'^',c_evt='asciicircum'), Key(u'¨',c_evt='diaeresis'), Key(u'~',c_evt='asciitilde'), Key('ß')),
         (Key('1'), Key('2'), Key('3'), Key('4'), Key('5'), Key('6'), Key('7'), Key('8'), Key('9'), Key('0'), Key('←',nb=2,c_evt='BackSpace')),
         (Key('q'), Key('w'), Key('e'), Key('r'), Key('t'), Key('z'), Key('u'), Key('i'), Key('o'), Key('p'), Key('\'',c_evt='quoteright')),
         (Key('a'), Key('s'), Key('d'), Key('f'), Key('g'), Key('h'), Key('j'), Key('k'), Key('l'), Key(',',c_evt='comma')),
@@ -526,10 +526,16 @@ class Keyboard(clutter.Actor, clutter.Container):
             self.load_profile('en_min')
         elif source.kb_evt == 'en_maj':
             self.load_profile('en_maj')
+        elif source.kb_evt == 'de_min':
+            self.load_profile('de_min')
+        elif source.kb_evt == 'de_maj':
+            self.load_profile('de_maj')
         elif source.kb_evt == 'en_caract':
             self.load_profile('en_caract')
         elif source.kb_evt == 'fr_caract':
             self.load_profile('fr_caract')
+        elif source.kb_evt == 'de_caract':
+            self.load_profile('de_caract')
         elif source.kb_evt == 'num':
             self.load_profile('int')
     
