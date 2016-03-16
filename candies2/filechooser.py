@@ -212,7 +212,7 @@ class FileChooser(BaseContainer):
         "all": TypeFilter("all", None, "All")
     }
 
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, custom_image=None, padding=0, spacing=0, styles=None, icons=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, custom_image=None, padding=0, spacing=0, styles=None, icons=None, can_delete=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -229,6 +229,7 @@ class FileChooser(BaseContainer):
         self._allow_hidden_files = allow_hidden_files
         self._display_hidden_files = display_hidden_files_at_start
         self._delete_file_button = None
+        self._can_delete = can_delete
         if not self._allow_hidden_files:
             self._display_hidden_files = False
         self._directories_first = directories_first
@@ -658,6 +659,8 @@ class FileChooser(BaseContainer):
                     self.preview_block.show()
                 else:
                     self.preview_block.hide()
+                if self._delete_file_button:
+                    self._delete_file_button.set_lock(bool(self._can_delete and not self._can_delete(source.name)))
         elif event is None:
             if is_dir:
                 self.open_dir(self.path)
@@ -688,6 +691,9 @@ class FileChooser(BaseContainer):
         self._video_player.destroy()
         self._video_player = VideoPlayer()
         self._video_player.connect('button-release-event', self._on_click)
+
+    def can_delete(self, can_delete):
+        self._can_delete = can_delete
 
     def _files_comparator(self, file1, file2):
         abs_path1 = os.path.join(self._current_dir, file1)
