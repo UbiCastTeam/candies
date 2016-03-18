@@ -3,19 +3,22 @@
 
 import clutter
 
+
 class BaseContainer(clutter.Actor, clutter.Container):
-    '''
-    A container class wich implements all standard container functions.
-    '''
+    """A container class wich implements all standard container functions."""
+
     __gtype_name__ = 'BaseContainer'
-    
+
     def __init__(self, allow_add=False, allow_remove=False, pick_enabled=True):
         clutter.Actor.__init__(self)
         self._children = list()
         self.__allow_add = allow_add
         self.__allow_remove = allow_remove
         self.__pick_enabled = pick_enabled
-    
+
+    def has_child(self, obj):
+        return obj in self._children
+
     def do_add(self, *children):
         if self.__allow_add:
             for child in children:
@@ -26,7 +29,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
                 self.queue_relayout()
         else:
             raise Exception('adding actor to %s is not authorized' % self)
-    
+
     def do_remove(self, *children):
         if self.__allow_remove:
             for child in children:
@@ -38,32 +41,32 @@ class BaseContainer(clutter.Actor, clutter.Container):
                     raise Exception('Actor %s is not a child of %s' % (child, self))
         else:
             raise Exception('removing actor to %s is not authorized' % self)
-    
+
     def _add(self, child):
         if child not in self._children:
             child.set_parent(self)
             self._children.append(child)
-    
+
     def _remove(self, child):
         if child in self._children:
             self._children.remove(child)
             child.unparent()
-    
+
     def do_foreach(self, func, data=None):
         for child in self._children:
             func(child, data)
-        
+
     def do_paint(self):
         for actor in self._children:
             actor.paint()
-    
+
     def do_pick(self, color):
         if self.__pick_enabled:
             for actor in self._children:
                 actor.paint()
         else:
             clutter.Actor.do_pick(self, color)
-    
+
     def do_destroy(self):
         self.unparent()
         if hasattr(self, '_children'):
@@ -82,7 +85,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
             stage = self.get_stage()
             if stage and hasattr(self, '_old_key_focus'):
                 stage.set_key_focus(self._old_key_focus)
-    
+
     def get_stage(self):
         obj = self
         if obj.get_parent():
@@ -98,6 +101,3 @@ class BaseContainer(clutter.Actor, clutter.Container):
             return obj
         else:
             return None
-
-
-
