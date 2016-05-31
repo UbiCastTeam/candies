@@ -65,6 +65,12 @@ class Box(clutter.Actor, clutter.Container):
             if element['name'] == name:
                 return element
         return None
+
+    def get_object_by_name(self, name):
+        element = self.get_by_name(name)
+        if element:
+            return element["object"]
+        return None
     
     def set_horizontal(self, boolean):
         self._horizontal = boolean
