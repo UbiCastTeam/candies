@@ -11,7 +11,7 @@ for x in xrange(640/coef):
     print 'Generating line %d...' %(x)
     for y in xrange(480/coef):
         r = Clutter.Rectangle()
-        color = Clutter.Color(
+        color = Clutter.color_from_string(
             random.randint(0, 255), random.randint(0, 255),
             random.randint(0, 255), 255
         )

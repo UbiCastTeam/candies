@@ -29,8 +29,8 @@ class TextContainer(Clutter.Actor, Clutter.Container):
         ),
     }
 
-    default_color = 'LightGray'
-    default_border_color = 'Gray'
+    default_color = Clutter.color_from_string('LightGray')[1]
+    default_border_color = Clutter.color_from_string('Gray')[1]
 
     def __init__(self, text=' ', margin=0, padding=10, texture=None, rounded=True, crypted=False):
         Clutter.Actor.__init__(self)
@@ -232,21 +232,10 @@ class TextContainer(Clutter.Actor, Clutter.Container):
 
 
 if __name__ == '__main__':
+    Clutter.init()
     stage = Clutter.Stage()
     stage.set_size(700, 700)
     stage.connect('destroy', Clutter.main_quit)
-
-    t = StretchText()
-    t.set_text('Hello World')
-    t.set_size(250, 150)
-    t.set_position(400, 50)
-    stage.add(t)
-
-    t = StretchText()
-    t.set_text('Hello World')
-    t.set_size(150, 100)
-    t.set_position(400, 250)
-    stage.add(t)
 
     t = Clutter.Text()
     t.set_text('Lorem ipsum dolor sit amet.')
@@ -254,13 +243,13 @@ if __name__ == '__main__':
     t.set_editable(True)
     t.set_selectable(True)
     t.set_reactive(True)
-    t.set_selection_color('#123456ff')
+    t.set_selection_color(Clutter.color_from_string('#123456ff')[1])
     # t.set_selection(cursor_pos, cursor_pos)
     stage.set_key_focus(t)
     # t.set_line_alignment('center')
     # t.set_justify(True)
     t.set_font_name('20')
-    stage.add(t)
+    stage.add_child(t)
 
     t = TextContainer(
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 10))
@@ -270,7 +259,7 @@ if __name__ == '__main__':
     # t.set_line_alignment('center')
     # t.set_justify(True)
     t.set_font_name('20')
-    stage.add(t)
+    stage.add_child(t)
 
     t = TextContainer(
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=0, padding=10)
@@ -280,7 +269,7 @@ if __name__ == '__main__':
     # t.set_line_alignment('center')
     # t.set_justify(True)
     t.set_font_name('18')
-    stage.add(t)
+    stage.add_child(t)
 
     stage.show()
 

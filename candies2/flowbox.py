@@ -114,7 +114,7 @@ if __name__ == '__main__':
         box = FlowBox()
         for i in range(10):
             rect = Clutter.Rectangle()
-            color = Clutter.Color(
+            color = Clutter.color_from_string(
                 random.randint(0, 255), random.randint(0, 255),
                 random.randint(0, 255), 255
             )
