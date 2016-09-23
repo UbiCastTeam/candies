@@ -636,34 +636,39 @@ class VBox(Box):
         Box.__init__(self, horizontal=False, *args, **kw)
 
 if __name__ == '__main__':
+    Clutter.init()
     # stage
     stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
-    stage.set_color('#000000ff')
-    stage.connect('destroy', Clutter.main_quit)
+    stage.set_color(Clutter.color_from_string('#000000ff')[1])
+
+    def clutter_quit(*args):
+        Clutter.main_quit()
+    # stage.connect('destroy', Clutter.main_quit)
+    stage.connect('destroy', clutter_quit)
 
     rect_bg = Clutter.Rectangle()
-    rect_bg.set_color('#ffffffff')
+    rect_bg.set_color(Clutter.color_from_string('#ffffffff')[1])
     rect_bg2 = Clutter.Rectangle()
-    rect_bg2.set_color('#ccccccff')
+    rect_bg2.set_color(Clutter.color_from_string('#ccccccff')[1])
 
     rect1 = Clutter.Rectangle()
     rect1.set_size(200, 50)
-    rect1.set_color(Clutter.color_from_string('Black'))
+    rect1.set_color(Clutter.color_from_string('Black')[1])
 
     rect2 = Clutter.Rectangle()
     rect2.set_size(20, 10)
-    rect2.set_color(Clutter.color_from_string('Blue'))
+    rect2.set_color(Clutter.color_from_string('Blue')[1])
 
     rect3 = Clutter.Rectangle()
     rect3.set_size(20, 20)
-    rect3.set_color(Clutter.color_from_string('Yellow'))
+    rect3.set_color(Clutter.color_from_string('Yellow')[1])
 
     rect4 = Clutter.Rectangle()
     rect4.set_size(40, 40)
-    rect4.set_color(Clutter.color_from_string('Red'))
+    rect4.set_color(Clutter.color_from_string('Red')[1])
 
     col = Box(horizontal=False, margin=40, padding=0, spacing=10)
     col.set_background(rect_bg2)
@@ -696,7 +701,7 @@ if __name__ == '__main__':
     line.set_bg_ignore_allocation_box(False)
 
     line.set_position(30, 30)
-    stage.add(line)
+    stage.add_child(line)
 
     '''
     other_box = Box(horizontal=True, spacing=10, padding=20)
