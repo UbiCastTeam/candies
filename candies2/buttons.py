@@ -4,8 +4,7 @@
 from gi.repository import GObject
 from gi.repository import Clutter
 from text import TextContainer
-from roundrect import RoundRectangle, OutlinedRoundRectangle
-
+from roundrect import RoundRectangle
 
 
 class ClassicButton(TextContainer):
