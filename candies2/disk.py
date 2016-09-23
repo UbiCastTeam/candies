@@ -4,7 +4,7 @@
 from gi.repository import GObject
 from gi.repository import Clutter
 
-from gi.repository import Cogl
+
 
 
 class Disk(Clutter.Actor):

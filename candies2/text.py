@@ -231,12 +231,7 @@ class TextContainer(Clutter.Actor, Clutter.Container):
                 self.label.destroy()
 
 
-if __name__ == '__main__':
-    Clutter.init()
-    stage = Clutter.Stage()
-    stage.set_size(700, 700)
-    stage.connect('destroy', Clutter.main_quit)
-
+def tester(stage):
     t = Clutter.Text()
     t.set_text('Lorem ipsum dolor sit amet.')
     t.set_position(20, 600)
@@ -271,6 +266,7 @@ if __name__ == '__main__':
     t.set_font_name('18')
     stage.add_child(t)
 
-    stage.show()
 
-    Clutter.main()
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

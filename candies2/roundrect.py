@@ -250,28 +250,28 @@ class RoundRectangle(Clutter.Actor):
 
     def __paint_rectangle(self, width, height, color, border_color=None):
         if border_color is not None and self._border_width > 0 and self._paint_double_border_width < width and self._paint_double_border_width < height:
-            Cogl.path_round_rectangle(
-                0, 0, width, height, self._paint_radius, 1)
+            Cogl.rectangle(0, 0, width, height)
+            # Cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
             Cogl.path_close()
             Cogl.set_source_color(border_color)
             Cogl.path_fill()
 
-            Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width,
-                                      self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
+            Cogl.rectangle(0, 0, width, height)
+            # Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
             Cogl.path_close()
             Cogl.set_source_color(color)
             Cogl.path_fill()
 
             # texture
             if self._texture:
-                Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width,
-                                          self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
+                Cogl.rectangle(self._border_width, self._border_width, self._border_width + self._paint_width_minus_border_width, self._border_width + self._paint_height_minus_border_width)
+                # Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
                 Cogl.path_close()
                 Cogl.set_source_texture(self._texture)
                 Cogl.path_fill()
         else:
-            Cogl.path_round_rectangle(
-                0, 0, width, height, self._paint_radius, 1)
+            Cogl.rectangle(0, 0, width, height)
+            # Cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
             Cogl.path_close()
             Cogl.set_source_color(color)
             Cogl.path_fill()
@@ -355,7 +355,7 @@ def tester(stage):
     rect.set_position(480, 240)
     stage.add_child(rect)
 
-    test_memory_usage = True
+    test_memory_usage = False
     if test_memory_usage:
         import gc
         gc.set_debug(gc.DEBUG_LEAK)

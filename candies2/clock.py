@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*
 
 from gi.repository import Clutter
-from gi.repository import Cogl
+
 import math
 
 

@@ -5,7 +5,7 @@ from gi.repository import GObject
 from gi.repository import Clutter
 import os
 
-from gi.repository import Cogl
+
 
 
 class ProgressBar(Clutter.Actor):

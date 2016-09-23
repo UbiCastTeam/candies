@@ -46,7 +46,7 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
         self.box = None
         self.pointer_grabbed = False
 
-        if bar_image_path != None and os.path.exists(bar_image_path):
+        if bar_image_path is not None and os.path.exists(bar_image_path):
             self.scrollbar_background = Clutter.Texture()
             self.scrollbar_background.set_from_file(bar_image_path)
         else:
@@ -54,14 +54,14 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
             self.scrollbar_background.set_color(Clutter.color_from_string('LightBlue')[1])
         self.scrollbar_background.set_parent(self)
 
-        if label != None:
+        if label is not None:
             self.label = Clutter.Text()
             self.label.set_color(Clutter.color_from_string('#FFFFFFFF')[1])
             self.label.set_text(str(label))
             self.label.set_parent(self)
             self.show_label = True
 
-        if scroller_image_path != None and os.path.exists(scroller_image_path):
+        if scroller_image_path is not None and os.path.exists(scroller_image_path):
             self.scroller = Clutter.Texture()
             self.scroller.set_from_file(scroller_image_path)
             self.scroller_image_path = scroller_image_path
@@ -69,7 +69,7 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
             self.scroller = Clutter.Rectangle()
             self.scroller.set_color(Clutter.color_from_string('Gray')[1])
             self.scroller_image_path = None
-        if scroller_press_image_path != None and os.path.exists(scroller_press_image_path):
+        if scroller_press_image_path is not None and os.path.exists(scroller_press_image_path):
             self.scroller_press_image_path = scroller_press_image_path
         else:
             self.scroller_press_image_path = None
@@ -275,7 +275,7 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
             self.label.allocate(label_box, self.allocation_flags)
 
         scroller_box = Clutter.ActorBox()
-        if self.h == False:
+        if not self.h:
             scroller_box.x1 = self.padding
             scroller_box.x2 = scroller_box.x1 + scroller_width
         else:
@@ -289,7 +289,7 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
             scroller_position = box_height - 2 * self.padding - scroller_height
         if scroller_position <= 0:
             scroller_position = 0
-        if self.h == False:
+        if not self.h:
             scroller_box.y1 = self.padding + scroller_position
             scroller_box.y2 = scroller_box.y1 + scroller_height
         else:
@@ -417,7 +417,7 @@ class Clipper(Clutter.Actor, Clutter.Container):
         box_height = box.y2 - box.y1
 
         if self.actor is not None:
-            if self.expand == True:
+            if self.expand:
                 position = int(self.clipper_position * (
                     self.actor.get_preferred_size()[3] - box_height))
                 self.actor.set_anchor_point(0, position)
@@ -452,110 +452,26 @@ class Clipper(Clutter.Actor, Clutter.Container):
                 self.actor.destroy()
 
 
-class CoglClipper(BaseContainer):
-
-    '''
-    CoglClipper class
-        This class is a test. It has the same behaviour than clipper class.
-        This class will not be used because cogl is to slow for this case.
-    '''
-    __gtype_name__ = 'CoglClipper'
-
-    def __init__(self, actor=None, expand=False):
-        BaseContainer.__init__(self)
-        self._width = 0
-        self._height = 0
-        self.clipper_position = 0
-        self.expand = expand
-        self.actor = actor
-        if self.actor is not None:
-            self.set_actor(actor)
-
-    def set_actor(self, actor):
-        if self.actor is not None:
-            self.remove_actor()
-        self.actor = actor
-        self._add(actor)
-
-    def remove_actor(self):
-        if self.actor is not None:
-            self._remove(self.actor)
-        self.actor = None
-
-    def callback_position(self, source, position):
-        self.clipper_position = position
-        self.queue_relayout()
-
-    def do_get_preferred_width(self, for_height):
-        if self.actor is not None:
-            preferred_width = self.actor.get_preferred_width(for_height)[1]
-        else:
-            preferred_width = 0
-        return preferred_width, preferred_width
-
-    def do_get_preferred_height(self, for_width):
-        if self.actor is not None:
-            preferred_height = self.actor.get_preferred_height(for_width)[1]
-        else:
-            preferred_height = 0
-        return preferred_height, preferred_height
-
-    def do_allocate(self, box, flags):
-        self._width = box.x2 - box.x1
-        self._height = box.y2 - box.y1
-        if self.actor:
-            actor_width, actor_height = self.actor.get_preferred_size()[2:]
-            position = 0 - \
-                int(self.clipper_position * (actor_height - self._height))
-            if self.expand:
-                objbox = Clutter.ActorBox(
-                    0, position, self._width, position + actor_height)
-            else:
-                objbox = Clutter.ActorBox(
-                    0, position, actor_width, position + actor_height)
-            self.actor.allocate(objbox, flags)
-        Clutter.Actor.do_allocate(self, box, flags)
-
-    def do_paint(self):
-        # Draw a rectangle to cut animation
-        Clutter.cogl.path_rectangle(0, 0, self._width, self._height)
-        Clutter.cogl.path_close()
-        # Start the clip
-        Clutter.cogl.clip_push_from_path()
-
-        if self.actor:
-            self.actor.paint()
-
-        # Finish the clip
-        Clutter.cogl.clip_pop()
-
-
 # main to test scrollbar
-if __name__ == '__main__':
-    Clutter.init()
-
-
-    def clutter_quit(*args):
-        Clutter.main_quit()
-
-    stage = Clutter.Stage()
-    stage.connect('destroy', clutter_quit)
-
+def tester(stage):
     scrollbar = Scrollbar()
-    scrollbar.set_size(40, 480)
-    scrollbar.set_position(600, 0)
+    scrollbar.set_size(40, 500)
+    scrollbar.set_position(460, 0)
     stage.add_child(scrollbar)
 
     label = Clutter.Text()
     label.set_text('test')
 
-    image = Clutter.Texture.new_from_file('/home/ubicast/projects/candies/tests/candies.png')
+    image = Clutter.Texture.new_from_file('/sources/candies/tests/candies.png')
+    image.set_size(460, 1000)
 
     clipper = Clipper(image)
-    clipper.set_size(600, 480)
+    clipper.set_size(460, 500)
     clipper.set_position(0, 0)
     scrollbar.connect('scroll_position', clipper.callback_position)
     stage.add_child(clipper)
 
-    stage.show()
-    Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
