@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
+from gi.repository import Clutter
 from text import TextContainer
 from container import BaseContainer
 
 
-class CheckButton(clutter.Texture):
+class CheckButton(Clutter.Texture):
     __gtype_name__ = 'CheckButton'
     """
     A check button
     """
     
     def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False, callback=None, user_data=None):
-        clutter.Texture.__init__(self)
+        Clutter.Texture.__init__(self)
         self.name = name
         self.not_checked_image_path = not_checked_image_path
         self.checked_image_path = checked_image_path
@@ -96,7 +96,7 @@ class CheckBox(BaseContainer):
         self._label = TextContainer(label, padding=0, rounded=False)
         self._label.set_inner_color('#00000000')
         
-        self._image = clutter.Texture()
+        self._image = Clutter.Texture()
         
         self.set_reactive(True)
         self.connect('button-release-event', self._on_press)
@@ -183,11 +183,11 @@ class CheckBox(BaseContainer):
         else:
             image_base_y = 0
         
-        checkbox_box = clutter.ActorBox()
+        checkbox_box = Clutter.ActorBox()
         checkbox_box.y1 = image_base_y
         checkbox_box.y2 = image_base_y + checkbox_size
         
-        label_box = clutter.ActorBox()
+        label_box = Clutter.ActorBox()
         label_box.y1 = 0
         label_box.y2 = height
         
@@ -205,12 +205,12 @@ class CheckBox(BaseContainer):
         self._image.allocate(checkbox_box, flags)
         self._label.allocate(label_box, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 #main to test
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy',clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy',Clutter.main_quit)
     
     def callback(checked):
         print checked
@@ -221,4 +221,4 @@ if __name__ == '__main__':
     stage.add(checkbox)
 
     stage.show()
-    clutter.main()
+    Clutter.main()

@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
-import gobject
+from gi.repository import Clutter
+from gi.repository import GObject
 
-class SimpleClick(gobject.GObject):
+class SimpleClick(GObject.GObject):
     __gtype_name__ = 'SimpleClick'
     
     def __init__(self, actor):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
         self.actor = actor
-        #if 'simple-click-event' not in gobject.signal_list_names(actor):
-        if gobject.signal_lookup('simple-click-event', actor) == 0: #correction d'un warning d'enregistrement multiple
+        #if 'simple-click-event' not in GObject.signal_list_names(actor):
+        if GObject.signal_lookup('simple-click-event', actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
-                gobject.signal_new('simple-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+                GObject.signal_new('simple-click-event', actor, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ())
             except:
                 pass
         actor.connect('button-press-event', self.on_press)
@@ -39,16 +39,16 @@ class LongClick(SimpleClick):
     
     def __init__(self, actor, long_delay=None, long_msg=None):
         SimpleClick.__init__(self, actor)
-        #if 'long-press-event' not in gobject.signal_list_names(actor):
-        if gobject.signal_lookup('long-press-event', actor) == 0: #correction d'un warning d'enregistrement multiple
+        #if 'long-press-event' not in GObject.signal_list_names(actor):
+        if GObject.signal_lookup('long-press-event', actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
-                gobject.signal_new('long-press-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+                GObject.signal_new('long-press-event', actor, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ())
             except:
                 pass
-        #if 'long-click-event' not in gobject.signal_list_names(actor):
-        if gobject.signal_lookup('long-click-event', actor) == 0: #correction d'un warning d'enregistrement multiple
+        #if 'long-click-event' not in GObject.signal_list_names(actor):
+        if GObject.signal_lookup('long-click-event', actor) == 0: #correction d'un warning d'enregistrement multiple
             try:
-                gobject.signal_new('long-click-event', actor, gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+                GObject.signal_new('long-click-event', actor, GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ())
             except:
                 pass
         if long_delay is None:
@@ -60,11 +60,11 @@ class LongClick(SimpleClick):
 
     def on_press(self, source, event):
         if self._timeout_id:
-            gobject.source_remove(self._timeout_id)
-        clutter.grab_pointer(self.actor)
+            GObject.source_remove(self._timeout_id)
+        Clutter.grab_pointer(self.actor)
         self._is_long = False
         self._is_pressed = True
-        self._timeout_id = gobject.timeout_add(self.long_delay, self.on_long_press, source)
+        self._timeout_id = GObject.timeout_add(self.long_delay, self.on_long_press, source)
         #if self.long_msg is not None:
         #    self.launchEvent('info', 'Hold %s seconds to %s' %(self.long_delay_ms/1000, self.long_msg))
     
@@ -74,11 +74,11 @@ class LongClick(SimpleClick):
             self.actor.emit('long-press-event')
     
     def on_release(self, source, event):
-        clutter.ungrab_pointer()
+        Clutter.ungrab_pointer()
         if self._is_pressed == True:
             self._is_pressed = False
             if self._timeout_id:
-                gobject.source_remove(self._timeout_id)
+                GObject.source_remove(self._timeout_id)
                 self._timeout_id = None
             if self._is_long:
                 self.actor.emit('long-click-event')
@@ -89,26 +89,26 @@ class LongClick(SimpleClick):
         return self._is_long
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy', Clutter.main_quit)
     
-    lbl = clutter.Text()
+    lbl = Clutter.Text()
     
-    rect = clutter.Rectangle()
+    rect = Clutter.Rectangle()
     SimpleClick(rect)
-    rect.set_color(clutter.color_from_string('Green'))
+    rect.set_color(Clutter.color_from_string('Green'))
     rect.set_border_width(2)
-    rect.set_border_color(clutter.color_from_string('DarkGreen'))
+    rect.set_border_color(Clutter.color_from_string('DarkGreen'))
     rect.set_size(200, 75)
     rect.set_position(240, 75)
     rect.set_reactive(True)
     rect.connect('simple-click-event', lambda src: lbl.set_text('Clic on green!'))
     
-    rect2 = clutter.Rectangle()
+    rect2 = Clutter.Rectangle()
     LongClick(rect2)
-    rect2.set_color(clutter.color_from_string('Yellow'))
+    rect2.set_color(Clutter.color_from_string('Yellow'))
     rect2.set_border_width(2)
-    rect2.set_border_color(clutter.color_from_string('DarkGreen'))
+    rect2.set_border_color(Clutter.color_from_string('DarkGreen'))
     rect2.set_size(200, 75)
     rect2.set_position(240, 175)
     rect2.set_reactive(True)
@@ -119,4 +119,4 @@ if __name__ == '__main__':
     stage.add(lbl, rect, rect2)
     stage.show()
 
-    clutter.main()
+    Clutter.main()

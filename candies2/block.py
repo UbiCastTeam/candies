@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import gobject
-import clutter
-from clutter import cogl
+from gi.repository import GObject
+from gi.repository import Clutter
+from gi.repository import Cogl
 import common
 from container import BaseContainer
 from text import TextContainer
@@ -18,9 +18,9 @@ class TexturedBlock(BaseContainer):
         self._spacing = common.Spacing(spacing)
         
         self._highlighted = False
-        self._highlight_color = clutter.color_from_string('#ffffff44')
+        self._highlight_color = Clutter.color_from_string('#ffffff44')
         self._disabled = False
-        self._disabled_color = clutter.color_from_string('#00000044')
+        self._disabled_color = Clutter.color_from_string('#00000044')
         
         self.title_actor = title_actor
         if title_actor:
@@ -111,7 +111,7 @@ class TexturedBlock(BaseContainer):
         self.queue_redraw()
         
     def set_highlight_color(self, color):
-        self._highlight_color = clutter.color_from_string(color)
+        self._highlight_color = Clutter.color_from_string(color)
         if self._highlighted:
             self.queue_redraw()
     
@@ -127,7 +127,7 @@ class TexturedBlock(BaseContainer):
         self.queue_redraw()
         
     def set_disabled_color(self, color):
-        self._disabled_color = clutter.color_from_string(color)
+        self._disabled_color = Clutter.color_from_string(color)
         if self._disabled:
             self.queue_redraw()
     
@@ -261,7 +261,7 @@ class TexturedBlock(BaseContainer):
         
         if self._has_title:
             self._title_height = selected_title_actor.get_preferred_height(for_width=inner_width)[1]
-            title_box = clutter.ActorBox()
+            title_box = Clutter.ActorBox()
             title_box.x1 = self._margin.x + self._padding.x + self._title_padding.x
             title_box.y1 = self._margin.y + self._padding.y + self._title_padding.y
             title_box.x2 = self.width - self._margin.x - self._padding.x - self._title_padding.x
@@ -269,7 +269,7 @@ class TexturedBlock(BaseContainer):
             selected_title_actor.allocate(title_box, flags)
         
         if self.content_actor:
-            content_box = clutter.ActorBox()
+            content_box = Clutter.ActorBox()
             content_box.x1 = self._margin.x + self._padding.x
             if self._has_title:
                 content_box.y1 = self._margin.y + self._padding.y + 2*self._title_padding.y + self._title_height + self._spacing.y
@@ -279,7 +279,7 @@ class TexturedBlock(BaseContainer):
             content_box.y2 = self.height - self._margin.y - self._padding.y
             self.content_actor.allocate(content_box, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         if self.title_actor:
@@ -302,58 +302,58 @@ class TexturedBlock(BaseContainer):
             
             # top_left texture
             if self._top_left:
-                cogl.path_rectangle(x1, y1, x2, y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._top_left)
-                cogl.path_fill()
+                Cogl.path_rectangle(x1, y1, x2, y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._top_left)
+                Cogl.path_fill()
             # top texture
             if self._top:
-                cogl.path_rectangle(x2, y1, x3, y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._top)
-                cogl.path_fill()
+                Cogl.path_rectangle(x2, y1, x3, y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._top)
+                Cogl.path_fill()
             # top_right texture
             if self._top_right:
-                cogl.path_rectangle(x3, y1, x4, y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._top_right)
-                cogl.path_fill()
+                Cogl.path_rectangle(x3, y1, x4, y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._top_right)
+                Cogl.path_fill()
             # middle_left texture
             if self._middle_left:
-                cogl.path_rectangle(x1, y2, x2, y3)
-                cogl.path_close()
-                cogl.set_source_texture(self._middle_left)
-                cogl.path_fill()
+                Cogl.path_rectangle(x1, y2, x2, y3)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._middle_left)
+                Cogl.path_fill()
             # middle texture
             if self._middle:
-                cogl.path_rectangle(x2, y2, x3, y3)
-                cogl.path_close()
-                cogl.set_source_texture(self._middle)
-                cogl.path_fill()
+                Cogl.path_rectangle(x2, y2, x3, y3)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._middle)
+                Cogl.path_fill()
             # middle_right texture
             if self._middle_right:
-                cogl.path_rectangle(x3, y2, x4, y3)
-                cogl.path_close()
-                cogl.set_source_texture(self._middle_right)
-                cogl.path_fill()
+                Cogl.path_rectangle(x3, y2, x4, y3)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._middle_right)
+                Cogl.path_fill()
             # bottom_left texture
             if self._bottom_left:
-                cogl.path_rectangle(x1, y3, x2, y4)
-                cogl.path_close()
-                cogl.set_source_texture(self._bottom_left)
-                cogl.path_fill()
+                Cogl.path_rectangle(x1, y3, x2, y4)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._bottom_left)
+                Cogl.path_fill()
             # bottom texture
             if self._bottom:
-                cogl.path_rectangle(x2, y3, x3, y4)
-                cogl.path_close()
-                cogl.set_source_texture(self._bottom)
-                cogl.path_fill()
+                Cogl.path_rectangle(x2, y3, x3, y4)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._bottom)
+                Cogl.path_fill()
             # bottom_right texture
             if self._bottom_right:
-                cogl.path_rectangle(x3, y3, x4, y4)
-                cogl.path_close()
-                cogl.set_source_texture(self._bottom_right)
-                cogl.path_fill()
+                Cogl.path_rectangle(x3, y3, x4, y4)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._bottom_right)
+                Cogl.path_fill()
             
             title_x1 = self._margin.x + self._padding.x
             title_x2 = self._margin.y + self._padding.x + self._title_textures_size
@@ -363,22 +363,22 @@ class TexturedBlock(BaseContainer):
             title_y2 = self._margin.y + self._padding.y + 2*self._title_padding.y + self._title_height
             # title_left texture
             if self._title_left:
-                cogl.path_rectangle(title_x1, title_y1, title_x2, title_y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._title_left)
-                cogl.path_fill()
+                Cogl.path_rectangle(title_x1, title_y1, title_x2, title_y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._title_left)
+                Cogl.path_fill()
             # title texture
             if self._title_middle:
-                cogl.path_rectangle(title_x2, title_y1, title_x3, title_y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._title_middle)
-                cogl.path_fill()
+                Cogl.path_rectangle(title_x2, title_y1, title_x3, title_y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._title_middle)
+                Cogl.path_fill()
             # title_right texture
             if self._title_right:
-                cogl.path_rectangle(title_x3, title_y1, title_x4, title_y2)
-                cogl.path_close()
-                cogl.set_source_texture(self._title_right)
-                cogl.path_fill()
+                Cogl.path_rectangle(title_x3, title_y1, title_x4, title_y2)
+                Cogl.path_close()
+                Cogl.set_source_texture(self._title_right)
+                Cogl.path_fill()
     
     def _paint_light(self):
         x1 = self._margin.x + self._padding.x
@@ -386,10 +386,10 @@ class TexturedBlock(BaseContainer):
         x2 = self.width - self._margin.x - self._padding.x
         y2 = self.height - self._margin.y - self._padding.y
         
-        cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
-        cogl.path_close()
-        cogl.set_source_color(self._highlight_color)
-        cogl.path_fill()
+        Cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
+        Cogl.path_close()
+        Cogl.set_source_color(self._highlight_color)
+        Cogl.path_fill()
     
     def _paint_shadow(self):
         x1 = self._margin.x + self._padding.x
@@ -397,10 +397,10 @@ class TexturedBlock(BaseContainer):
         x2 = self.width - self._margin.x - self._padding.x
         y2 = self.height - self._margin.y - self._padding.y
         
-        cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
-        cogl.path_close()
-        cogl.set_source_color(self._disabled_color)
-        cogl.path_fill()
+        Cogl.path_round_rectangle(x1, y1, x2, y2, 8, 1)
+        Cogl.path_close()
+        Cogl.set_source_color(self._disabled_color)
+        Cogl.path_fill()
     
     def do_paint(self):
         self._paint_background()
@@ -419,7 +419,7 @@ class TexturedBlock(BaseContainer):
             self.content_actor.paint()
     
     def do_pick(self, color):
-        clutter.Actor.do_pick(self, color)
+        Clutter.Actor.do_pick(self, color)
         
         if self._has_title:
             if self.title_actor:
@@ -433,36 +433,36 @@ class TexturedBlock(BaseContainer):
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
     textures_path = '/home/sdiemer/Bureau/textures/'
     """
     textures_package = {
-        'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'top_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'top': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'top_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'middle_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'middle': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'middle_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'bottom_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'bottom': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'bottom_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
         
-        'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-        'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+        'title_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'title_middle': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+        'title_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
     }
     """
     textures_package = dict()
     
-    content = clutter.Rectangle()
+    content = Clutter.Rectangle()
     content.set_color('#00000088')
     
-    title = clutter.Rectangle()
+    title = Clutter.Rectangle()
     title.set_height(50)
     title.set_color('#ff000088')
     
@@ -481,24 +481,24 @@ if __name__ == '__main__':
         max_count = 20000
         
         textures_package = {
-            'top_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'top': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'top_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'middle_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'middle_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'bottom_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'bottom': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'bottom_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'top_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'top': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'top_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'top_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'middle_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'middle': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'middle_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'middle_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'bottom_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'bottom': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'bottom_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'bottom_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
             
-            'title_left': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'title_middle': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
-            'title_right': cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY),
+            'title_left': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_left', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'title_middle': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_middle', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
+            'title_right': Cogl.texture_new_from_file('%s%s%s' %(textures_path, 'title_right', '.png'), Clutter.Cogl.TEXTURE_NO_SLICING, Clutter.Cogl.PIXEL_FORMAT_ANY),
         }
         
         def create_test_object(textures_package):
             
-            content = clutter.Rectangle()
+            content = Clutter.Rectangle()
             content.set_color('#00000088')
             
             t = TexturedBlock('Nouveau block', content=content, textures_package=textures_package)
@@ -514,7 +514,7 @@ if __name__ == '__main__':
                 print counter
                 tested_object = create_test_object(textures_package)
                 stage.add(tested_object)
-                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter, textures_package)
+                GObject.timeout_add(2, remove_tested_object, tested_object, stage, counter, textures_package)
             return False
         
         def remove_tested_object(tested_object, stage, counter, textures_package):
@@ -523,13 +523,13 @@ if __name__ == '__main__':
             gc.collect()
             pprint(gc.garbage)
             
-            gobject.timeout_add(2, test_memory, stage, counter, max_count, textures_package)
+            GObject.timeout_add(2, test_memory, stage, counter, max_count, textures_package)
             return False
         
-        gobject.timeout_add(10, test_memory, stage, 0, max_count, textures_package)
+        GObject.timeout_add(10, test_memory, stage, 0, max_count, textures_package)
 
     
     stage.show()
-    clutter.main()
+    Clutter.main()
     
     

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 import common
 from container import BaseContainer
 
@@ -103,7 +103,7 @@ class LightList(BaseContainer):
         y = self._padding.y
         if self._horizontal:
             for child in self._children:
-                child_box = clutter.ActorBox()
+                child_box = Clutter.ActorBox()
                 child_box.x1 = x
                 child_box.y1 = y
                 child_box.x2 = x + self.element_size
@@ -112,14 +112,14 @@ class LightList(BaseContainer):
                 child.allocate(child_box, flags)
         else:
             for child in self._children:
-                child_box = clutter.ActorBox()
+                child_box = Clutter.ActorBox()
                 child_box.x1 = x
                 child_box.y1 = y
                 child_box.x2 = width - self._padding.x
                 child_box.y2 = y + self.element_size
                 y += self.element_size + self._spacing.y
                 child.allocate(child_box, flags)
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def set_clip(self, x_offset, y_offset, width, height):
         if self._horizontal:
@@ -146,23 +146,23 @@ class LightList(BaseContainer):
                 else:
                     child.hide()
                 y = y2 + self._spacing.y
-        clutter.Actor.set_clip(self, x_offset, y_offset, width, height)
+        Clutter.Actor.set_clip(self, x_offset, y_offset, width, height)
     
     def remove_clip(self):
         for child in self._children:
             child.show()
-        clutter.Actor.remove_clip(self)
+        Clutter.Actor.remove_clip(self)
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy', Clutter.main_quit)
     stage.set_size(700, 700)
     stage.set_color('#000000ff')
     
     color = 0
     elements = list()
     for i in range(5):
-        r = clutter.Rectangle()
+        r = Clutter.Rectangle()
         color += 30
         r.set_color((color, color, color, 255))
         elements.append(r)
@@ -175,6 +175,6 @@ if __name__ == '__main__':
     stage.add(lst)
     stage.show()
 
-    clutter.main()
+    Clutter.main()
 
 

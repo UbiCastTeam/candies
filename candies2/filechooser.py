@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import clutter
+from gi.repository import Clutter
 import common
-import gobject
+from gi.repository import GObject
 import magic
 import unicodedata
 
@@ -44,16 +44,16 @@ class FileEntry(BaseContainer):
         self._selected_bg_color = '#ffff8844'
 
         # actors
-        self._bg = clutter.Rectangle()
+        self._bg = Clutter.Rectangle()
         self._bg.set_color(self._bg_color)
         self._add(self._bg)
 
-        self._icon = clutter.Texture()
+        self._icon = Clutter.Texture()
         if self._icon_src:
             self._icon.set_from_file(self._icon_src)
         self._add(self._icon)
 
-        self._label = clutter.Text()
+        self._label = Clutter.Text()
         self._label.set_color('#ffffffff')
         self._label.set_font_name('14')
         self._label.set_line_wrap(False)
@@ -103,14 +103,14 @@ class FileEntry(BaseContainer):
         inner_width = width - 2 * self._padding.x
         inner_height = height - 2 * self._padding.y
 
-        bg_box = clutter.ActorBox(0, 0, width, height)
+        bg_box = Clutter.ActorBox(0, 0, width, height)
 
         if self.icon_size == inner_height:
             icon_base_y = self._padding.y
         else:
             icon_base_y = self._padding.y + int((inner_height - self.icon_size) / 2.0)
 
-        icon_box = clutter.ActorBox()
+        icon_box = Clutter.ActorBox()
         icon_box.x1 = self._padding.x
         icon_box.y1 = icon_base_y
         icon_box.x2 = self._padding.x + self.icon_size
@@ -120,7 +120,7 @@ class FileEntry(BaseContainer):
         label_height = self._label.get_preferred_height(for_width=label_width)[1]
         label_base_y = self._padding.y + int((inner_height - label_height) / 2.0)
 
-        label_box = clutter.ActorBox()
+        label_box = Clutter.ActorBox()
         label_box.x1 = self._padding.x + self.icon_size + self._spacing.x
         label_box.y1 = label_base_y
         label_box.x2 = width - self._padding.x
@@ -130,7 +130,7 @@ class FileEntry(BaseContainer):
         self._icon.allocate(icon_box, flags)
         self._label.allocate(label_box, flags)
 
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 
 class PreviewDisplayer(BaseContainer):
@@ -140,7 +140,7 @@ class PreviewDisplayer(BaseContainer):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False, pick_enabled=False)
         self._padding = common.Padding(padding)
 
-        self._image = clutter.Texture()
+        self._image = Clutter.Texture()
         self._add(self._image)
 
     def set_from_file(self, image_src):
@@ -166,14 +166,14 @@ class PreviewDisplayer(BaseContainer):
         x_padding = round((inner_width - image_width) / 2.0)
         y_padding = round((inner_height - image_height) / 2.0)
 
-        image_box = clutter.ActorBox()
+        image_box = Clutter.ActorBox()
         image_box.x1 = self._padding.x + x_padding
         image_box.y1 = self._padding.y + y_padding
         image_box.x2 = image_box.x1 + image_width
         image_box.y2 = image_box.y1 + image_height
         self._image.allocate(image_box, flags)
 
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 
 class TypeFilter(object):
@@ -285,11 +285,11 @@ class FileChooser(BaseContainer):
         self.paths = list()  # list of tuples with path and current selection name
 
         # actors
-        self._bg = clutter.Rectangle()
+        self._bg = Clutter.Rectangle()
         self._bg.set_color(self.styles['bg_color'])
         self._add(self._bg)
 
-        self._panel_bg = clutter.Rectangle()
+        self._panel_bg = Clutter.Rectangle()
         self._panel_bg.set_color(self.styles['panel_bg_color'])
         self._add(self._panel_bg)
 
@@ -325,7 +325,7 @@ class FileChooser(BaseContainer):
         self._texture = None
         if self.custom_image:
             # TODO check path
-            self._texture = clutter.Texture()
+            self._texture = Clutter.Texture()
             self._texture.set_from_file(self.custom_image)
             self._texture.set_opacity(255)
             self.playbutton.set_element(self._texture)
@@ -396,15 +396,15 @@ class FileChooser(BaseContainer):
         self.open_dir(self._start_dir)
 
         # key bindings
-        self.pool = clutter.BindingPool('%s_%s' % (self.__gtype_name__, id(self)))
-        self.pool.install_action('move-down', clutter.keysyms.Down, None, self.select_next)
-        self.pool.install_action('move-up', clutter.keysyms.Up, None, self.select_previous)
-        self.pool.install_action('parent', clutter.keysyms.BackSpace, None, self.parent_dir)
-        self.pool.install_action('select', clutter.keysyms.Return, None, self._on_validate)
-        self.pool.install_action('select', clutter.keysyms.KP_Enter, None, self._on_validate)
-        self.pool.install_action('escape', clutter.keysyms.Escape, None, self._on_cancel)
-        self.pool.install_action('display_hidden_files', clutter.keysyms.h, clutter.CONTROL_MASK, self._on_display_hidden_files)
-        self.pool.install_action('refresh', clutter.keysyms.F5, None, self._on_refresh)
+        self.pool = Clutter.BindingPool('%s_%s' % (self.__gtype_name__, id(self)))
+        self.pool.install_action('move-down', Clutter.keysyms.Down, None, self.select_next)
+        self.pool.install_action('move-up', Clutter.keysyms.Up, None, self.select_previous)
+        self.pool.install_action('parent', Clutter.keysyms.BackSpace, None, self.parent_dir)
+        self.pool.install_action('select', Clutter.keysyms.Return, None, self._on_validate)
+        self.pool.install_action('select', Clutter.keysyms.KP_Enter, None, self._on_validate)
+        self.pool.install_action('escape', Clutter.keysyms.Escape, None, self._on_cancel)
+        self.pool.install_action('display_hidden_files', Clutter.keysyms.h, Clutter.CONTROL_MASK, self._on_display_hidden_files)
+        self.pool.install_action('refresh', Clutter.keysyms.F5, None, self._on_refresh)
         self.connect('key-press-event', self._on_key_press_event)
 
     def _on_key_press_event(self, source, event):
@@ -461,7 +461,7 @@ class FileChooser(BaseContainer):
     def set_custom_image(self, custom_image=None):
         self.playbutton.remove_element()
         if custom_image:
-            self._texture = clutter.Texture()
+            self._texture = Clutter.Texture()
             self._texture.set_from_file(custom_image)
             self._texture.set_opacity(255)
             self.playbutton.set_element(self._texture)
@@ -650,7 +650,7 @@ class FileChooser(BaseContainer):
                     self._video_player.set_reactive(True)
                     self._video_player.set_audio_volume(0)
                     self._video_player.play()
-                    gobject.timeout_add(40, self._video_player.pause)
+                    GObject.timeout_add(40, self._video_player.pause)
                     self._aligner.set_element(self._video_player)
                     self._texture.show()
                     self._video_container.add(self._aligner)
@@ -874,47 +874,47 @@ class FileChooser(BaseContainer):
 
         inner_width = width - 2 * self._padding.x
 
-        bg_box = clutter.ActorBox(0, 0, width, height)
+        bg_box = Clutter.ActorBox(0, 0, width, height)
 
-        top_container_box = clutter.ActorBox()
+        top_container_box = Clutter.ActorBox()
         top_container_box.x1 = self._padding.x
         top_container_box.y1 = self._padding.y
         top_container_box.x2 = self._padding.x + inner_width
         top_container_box.y2 = self._padding.y + self.styles['top_bar_height']
 
-        panel_bg_box = clutter.ActorBox()
+        panel_bg_box = Clutter.ActorBox()
         panel_bg_box.x1 = self._padding.x
         panel_bg_box.y1 = top_container_box.y2
         panel_bg_box.x2 = width - self._padding.x
         panel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
 
-        panel_box = clutter.ActorBox()
+        panel_box = Clutter.ActorBox()
         panel_box.x1 = panel_bg_box.x1
         panel_box.y1 = panel_bg_box.y1
         panel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
         panel_box.y2 = panel_bg_box.y2
 
-        right_box = clutter.ActorBox()
+        right_box = Clutter.ActorBox()
         right_box.x1 = panel_box.x2 + self._spacing.x
         right_box.y1 = panel_bg_box.y1
         right_box.x2 = panel_bg_box.x2
         right_box.y2 = panel_bg_box.y2
 
-        type_filter_box = clutter.ActorBox()
+        type_filter_box = Clutter.ActorBox()
         type_filter_box.y1 = panel_bg_box.y2 + self.components_padding
         type_filter_box.y2 = height - self._padding.y - self.components_padding
         type_filter_width = self._type_filter_select.get_preferred_width(for_height=type_filter_box.y2 - type_filter_box.y1)[1]
         type_filter_box.x1 = width - self._spacing.x - self.components_padding - type_filter_width
         type_filter_box.x2 = type_filter_box.x1 + type_filter_width
 
-        cancel_box = clutter.ActorBox()
+        cancel_box = Clutter.ActorBox()
         cancel_box.y1 = type_filter_box.y1
         cancel_box.y2 = type_filter_box.y2
         cancel_width = self._cancel.get_preferred_width(for_height=cancel_box.y2 - cancel_box.y1)[1]
         cancel_box.x1 = self._spacing.x + self.components_padding
         cancel_box.x2 = cancel_box.x1 + cancel_width
 
-        validate_box = clutter.ActorBox()
+        validate_box = Clutter.ActorBox()
         validate_box.y1 = type_filter_box.y1
         validate_box.y2 = type_filter_box.y2
         validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
@@ -930,21 +930,21 @@ class FileChooser(BaseContainer):
         self._type_filter_select.allocate(type_filter_box, flags)
         self._cancel.allocate(cancel_box, flags)
 
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 700
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     def cb(result):
         print result
-        # clutter.main_quit()
+        # Clutter.main_quit()
 
     icons = dict(
         default='/data/sdiemer/storage/images/iconset musthave/New.png',
@@ -986,4 +986,4 @@ if __name__ == '__main__':
     fc.set_focused(True)
 
     stage.show()
-    clutter.main()
+    Clutter.main()

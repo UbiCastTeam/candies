@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
+from gi.repository import Clutter
 import common
 from container import BaseContainer
 from roundrect import RoundRectangle
@@ -40,7 +40,7 @@ class OptionLine(BaseContainer):
             self.background.set_border_width(3)
             self.background.set_radius(10)
         else:
-            self.background = clutter.Rectangle()
+            self.background = Clutter.Rectangle()
             self.background.set_color(self.default_color)
         if enable_background:
             self.enable_background = True
@@ -52,14 +52,14 @@ class OptionLine(BaseContainer):
         self.icon_height = icon_height
         self.icon_path = icon_path
         self._icon_allocate = True
-        self.icon = clutter.Texture()
+        self.icon = Clutter.Texture()
         if icon_path:
             self.icon.set_from_file(icon_path)
         else:
             self.icon.hide()
         self._add(self.icon)
         # spacer (for indentation)
-        self.spacer = clutter.Rectangle()
+        self.spacer = Clutter.Rectangle()
         self.spacer.set_width(indent_level * self.INDENT_WIDTH)
         self.spacer.hide()
         self._add(self.spacer)
@@ -180,7 +180,7 @@ class OptionLine(BaseContainer):
         main_height = box.y2 - box.y1
 
         # background
-        background_box = clutter.ActorBox()
+        background_box = Clutter.ActorBox()
         background_box.x1 = 0
         background_box.y1 = 0
         background_box.x2 = main_width
@@ -191,7 +191,7 @@ class OptionLine(BaseContainer):
             # icon
             icon_height = min(self.icon_height, main_height)
             icon_y_padding = int(float(main_height - icon_height) / 2.)
-            icon_box = clutter.ActorBox()
+            icon_box = Clutter.ActorBox()
             icon_box.x1 = self._padding.x
             icon_box.y1 = icon_y_padding
             icon_box.x2 = self._padding.x + icon_height
@@ -200,7 +200,7 @@ class OptionLine(BaseContainer):
 
             # spacer
             spacer_width = self.indent_level * self.INDENT_WIDTH
-            spacer_box = clutter.ActorBox()
+            spacer_box = Clutter.ActorBox()
             spacer_box.x1 = icon_box.x2 + self._spacing.x
             spacer_box.y1 = self._padding.y
             spacer_box.x2 = spacer_box.x1 + spacer_width
@@ -208,12 +208,12 @@ class OptionLine(BaseContainer):
             self.spacer.allocate(spacer_box, flags)
         else:
             # icon
-            icon_box = clutter.ActorBox(0, 0, 0, 0)
+            icon_box = Clutter.ActorBox(0, 0, 0, 0)
             self.icon.allocate(icon_box, flags)
 
             # spacer
             spacer_width = self.indent_level * self.INDENT_WIDTH
-            spacer_box = clutter.ActorBox()
+            spacer_box = Clutter.ActorBox()
             spacer_box.x1 = self._spacing.x
             spacer_box.y1 = self._padding.y
             spacer_box.x2 = spacer_box.x1 + spacer_width
@@ -221,27 +221,27 @@ class OptionLine(BaseContainer):
             self.spacer.allocate(spacer_box, flags)
 
         # label
-        label_box = clutter.ActorBox()
+        label_box = Clutter.ActorBox()
         label_box.x1 = spacer_box.x2
         label_box.y1 = self._padding.y
         label_box.x2 = main_width - self._padding.x
         label_box.y2 = main_height - self._padding.y
         self.label.allocate(label_box, flags)
 
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
     def do_pick(self, color):
-        clutter.Actor.do_pick(self, color)
+        Clutter.Actor.do_pick(self, color)
 
 
-class Select(clutter.Actor, clutter.Container):
+class Select(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'Select'
     """
     A select input.
     """
 
     def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offsets=None, alignment="center"):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self.stage_padding = 10
@@ -278,7 +278,7 @@ class Select(clutter.Actor, clutter.Container):
         self.texture = texture
 
         # hidder is to catch click event on all stage when the select input is opened
-        self._hidder = clutter.Rectangle()
+        self._hidder = Clutter.Rectangle()
         self._hidder.set_color('#00000000')
         self._hidder.connect('button-release-event', self._on_hidder_click)
         self._hidder.set_reactive(True)
@@ -330,7 +330,7 @@ class Select(clutter.Actor, clutter.Container):
                     obj = obj.get_parent()
                 else:
                     has_parent = False
-        if isinstance(obj, clutter.Stage):
+        if isinstance(obj, Clutter.Stage):
             return obj
         else:
             return None
@@ -512,7 +512,7 @@ class Select(clutter.Actor, clutter.Container):
         main_height = box.y2 - box.y1
 
         if self._opened:
-            option_box = clutter.ActorBox(0, 0, main_width, main_height)
+            option_box = Clutter.ActorBox(0, 0, main_width, main_height)
             self._selected_option.allocate(option_box, flags)
 
             box_x, box_y = self.get_transformed_position()
@@ -520,9 +520,9 @@ class Select(clutter.Actor, clutter.Container):
             box_y = int(box_y)
 
             if self._stage_height > 0 and self._stage_width > 0:
-                hidder_box = clutter.ActorBox(-box_x, -box_y, self._stage_width - box_x, self._stage_height - box_y)
+                hidder_box = Clutter.ActorBox(-box_x, -box_y, self._stage_width - box_x, self._stage_height - box_y)
             else:
-                hidder_box = clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
+                hidder_box = Clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
             self._hidder.allocate(hidder_box, flags)
 
             option_height = self.icon_height + 2 * self._padding.y
@@ -548,21 +548,21 @@ class Select(clutter.Actor, clutter.Container):
             else:  # down, default
                 y1 = base_y
                 y2 = base_y + total_height
-            self._background_box = clutter.ActorBox(x1, y1, x2, y2)
+            self._background_box = Clutter.ActorBox(x1, y1, x2, y2)
             self._background.allocate(self._background_box, flags)
-            list_box = clutter.ActorBox(x1, y1, x2, y2)
+            list_box = Clutter.ActorBox(x1, y1, x2, y2)
             self._auto_scroll.allocate(list_box, flags)
         else:
-            hidder_box = clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
+            hidder_box = Clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
             self._hidder.allocate(hidder_box, flags)
-            self._background_box = clutter.ActorBox(0, 0, main_width, main_height)
+            self._background_box = Clutter.ActorBox(0, 0, main_width, main_height)
             self._background.allocate(self._background_box, flags)
-            option_box = clutter.ActorBox(0, 0, main_width, main_height)
+            option_box = Clutter.ActorBox(0, 0, main_width, main_height)
             self._selected_option.allocate(option_box, flags)
-            list_box = clutter.ActorBox(0, 0, main_width, main_height)
+            list_box = Clutter.ActorBox(0, 0, main_width, main_height)
             self._auto_scroll.allocate(list_box, flags)
 
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
     def do_foreach(self, func, data=None):
         func(self._hidder, data)
@@ -578,7 +578,7 @@ class Select(clutter.Actor, clutter.Container):
         # Clip auto scroll panel
         if self._background_box is not None:
             # Draw a rectangle to cut scroller
-            clutter.cogl.path_round_rectangle(
+            Clutter.cogl.path_round_rectangle(
                 self._background_box.x1 + 3,
                 self._background_box.y1 + 3,
                 self._background_box.x2 - 3,
@@ -586,14 +586,14 @@ class Select(clutter.Actor, clutter.Container):
                 7,
                 1
             )
-            clutter.cogl.path_close()
+            Clutter.cogl.path_close()
             # Start the clip
-            clutter.cogl.clip_push_from_path()
+            Clutter.cogl.clip_push_from_path()
 
             self._auto_scroll.paint()
 
             # Finish the clip
-            clutter.cogl.clip_pop()
+            Clutter.cogl.clip_pop()
         else:
             self._auto_scroll.paint()
 
@@ -623,9 +623,9 @@ class Select(clutter.Actor, clutter.Container):
 if __name__ == '__main__':
     stage_width = 640
     stage_height = 480
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(stage_width, stage_height)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     test_line = OptionLine('test', 'displayed fezfzefezfzef', icon_height=32, padding=8)
     test_line.label.set_font_name('22')
@@ -651,4 +651,4 @@ if __name__ == '__main__':
     test_select.selected.connect('button-press-event', on_click)"""
 
     stage.show()
-    clutter.main()
+    Clutter.main()

@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import gobject
-import clutter
-from clutter import cogl
+from gi.repository import GObject
+from gi.repository import Clutter
+from gi.repository import Cogl
 import math
 
-class PercentRound(clutter.Actor):
+class PercentRound(Clutter.Actor):
     """
-    Test (clutter.Actor)
+    Test (Clutter.Actor)
 
     """
     __gtype_name__ = 'PercentRound'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, gobject.PARAM_READWRITE),
+        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self, color='Black', percent=0, init_percent=0, color2='Gray'):
-        clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string(color)
-        self._color2 = clutter.color_from_string(color2)
+        Clutter.Actor.__init__(self)
+        self._color = Clutter.color_from_string(color)
+        self._color2 = Clutter.color_from_string(color2)
         self.percent = percent
         self.init_percent = 0
 
@@ -32,11 +32,11 @@ class PercentRound(clutter.Actor):
         self.queue_redraw()
 
     def set_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
         self.queue_redraw()
 
     def set_color2(self, color):
-        self._color2 = clutter.color_from_string(color)
+        self._color2 = Clutter.color_from_string(color)
         self.queue_redraw()
 
     def do_set_property(self, pspec, value):
@@ -97,12 +97,12 @@ class PercentRound(clutter.Actor):
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__paint_circle(x2 - x1, y2 - y1, pick_color)
 
-gobject.type_register(PercentRound)
+GObject.type_register(PercentRound)
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(640, 480)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     circle = PercentRound(percent=90)
     circle.set_color('Red')
@@ -112,5 +112,5 @@ if __name__ == '__main__':
     stage.add(circle)
 
     stage.show()
-    clutter.main()
+    Clutter.main()
 

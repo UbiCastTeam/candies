@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import operator
-import clutter
+from gi.repository import Clutter
 from container import BaseContainer
 
 class FlowBox(BaseContainer):
@@ -94,7 +94,7 @@ class FlowBox(BaseContainer):
             x = 0
             for child in line_dict['actors']:
                 w, h = child.get_preferred_size()[2:]
-                child_box = clutter.ActorBox()
+                child_box = Clutter.ActorBox()
                 child_box.x1 = x
                 child_box.y1 = y
                 child_box.x2 = child_box.x1 + w
@@ -103,15 +103,15 @@ class FlowBox(BaseContainer):
                 x += w + hspacing
             y += line_dict['height'] + vspacing
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 if __name__ == '__main__':
     def create_box():
         import random
         box = FlowBox()
         for i in range(10):
-            rect = clutter.Rectangle()
-            color = clutter.Color(
+            rect = Clutter.Rectangle()
+            color = Clutter.Color(
                 random.randint(0, 255), random.randint(0, 255),
                 random.randint(0, 255), 255
             )
@@ -120,8 +120,8 @@ if __name__ == '__main__':
             box.add(rect)
         return box
 
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy', Clutter.main_quit)
 
     box1 = create_box()
     box1.set_width(640)
@@ -134,4 +134,4 @@ if __name__ == '__main__':
     stage.add(box1, box2, box3)
     
     stage.show()
-    clutter.main()
+    Clutter.main()

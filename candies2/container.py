@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
+from gi.repository import Clutter
 
 
-class BaseContainer(clutter.Actor, clutter.Container):
+class BaseContainer(Clutter.Actor, Clutter.Container):
     """A container class wich implements all standard container functions."""
 
     __gtype_name__ = 'BaseContainer'
 
     def __init__(self, allow_add=False, allow_remove=False, pick_enabled=True):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._children = list()
         self.__allow_add = allow_add
         self.__allow_remove = allow_remove
@@ -65,7 +65,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
             for actor in self._children:
                 actor.paint()
         else:
-            clutter.Actor.do_pick(self, color)
+            Clutter.Actor.do_pick(self, color)
 
     def do_destroy(self):
         self.unparent()
@@ -97,7 +97,7 @@ class BaseContainer(clutter.Actor, clutter.Container):
                     obj = obj.get_parent()
                 else:
                     has_parent = False
-        if isinstance(obj, clutter.Stage):
+        if isinstance(obj, Clutter.Stage):
             return obj
         else:
             return None

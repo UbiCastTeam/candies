@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import gobject
-import clutter
+from gi.repository import GObject
 import common
+from gi.repository import Clutter
 from roundrect import RoundRectangle
 
-class StretchText(clutter.Text):
+class StretchText(Clutter.Text):
     """
-    StretchText (clutter.Text)
+    StretchText (Clutter.Text)
 
     An enhanced Text actor which resize its font according to the available
     space.
@@ -20,7 +20,7 @@ class StretchText(clutter.Text):
     def do_get_preferred_width(self, for_height):
         fontface = self.get_font_name()
         fontface = fontface[:fontface.rindex(' ')]
-        lbl = clutter.Text()
+        lbl = Clutter.Text()
         text = self.get_text()
         lbl.set_text(text)
         lbl.set_font_name('%s %s' %(fontface, self.minimal_fontsize))
@@ -30,13 +30,13 @@ class StretchText(clutter.Text):
             lbl.set_font_name('%s %s' %(fontface, fontsize))
             min, nat = lbl.get_preferred_width(-1)
         else:
-            min, nat = clutter.Text.do_get_preferred_width(self, for_height)
+            min, nat = Clutter.Text.do_get_preferred_width(self, for_height)
         return max(min, min_width), nat
     
     def do_get_preferred_height(self, for_width):
         fontface = self.get_font_name()
         fontface = fontface[:fontface.rindex(' ')]
-        lbl = clutter.Text()
+        lbl = Clutter.Text()
         text = self.get_text()
         lbl.set_text(text)
         lbl.set_font_name('%s %s' %(fontface, self.minimal_fontsize))
@@ -46,14 +46,14 @@ class StretchText(clutter.Text):
             lbl.set_font_name('%s %s' %(fontface, fontsize))
             min, nat_height = lbl.get_preferred_height(-1)
         else:
-            min, nat_height = clutter.Text.do_get_preferred_height(self, for_width)
+            min, nat_height = Clutter.Text.do_get_preferred_height(self, for_width)
         return min_height, nat_height
     
     def get_preferred_fontsize(self, for_width=None, for_height=None):
         """ Compute the nearest fontsize according to the for_* statements.
         """
         # Build offscreen label
-        lbl = clutter.Text()
+        lbl = Clutter.Text()
         text = self.get_text()
         lbl.set_text(text)
         fontface = self.get_font_name()
@@ -89,27 +89,27 @@ class StretchText(clutter.Text):
         fontsize = self.get_preferred_fontsize(width, height)
         self.set_font_name('%s %s' %(fontface, fontsize))
         
-        clutter.Text.do_allocate(self, box, flags)
+        Clutter.Text.do_allocate(self, box, flags)
 
 
-class TextContainer(clutter.Actor, clutter.Container):
+class TextContainer(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'TextContainer'
     __gproperties__ = {
         'text' : (
-            str, 'text', 'Text', None, gobject.PARAM_READWRITE
+            str, 'text', 'Text', None, GObject.PARAM_READWRITE
         ),
         'color' : (
-            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+            str, 'color', 'Color', None, GObject.PARAM_READWRITE
         ),
         'font_color' : (
-            str, 'font color', 'Font color', None, gobject.PARAM_READWRITE
+            str, 'font color', 'Font color', None, GObject.PARAM_READWRITE
         ),
         'border_color': (
-            str, 'border color', 'Border color', None, gobject.PARAM_READWRITE
+            str, 'border color', 'Border color', None, GObject.PARAM_READWRITE
         ),
         'border_width' : (
-            gobject.TYPE_FLOAT, 'border width', 'Border width',
-            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
+            GObject.TYPE_FLOAT, 'border width', 'Border width',
+            0.0, sys.maxint, 0.0, GObject.PARAM_READWRITE
         ),
     }
     
@@ -117,7 +117,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     default_border_color = 'Gray'
     
     def __init__(self, text=' ', margin=0, padding=10, texture=None, rounded=True, crypted=False):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         self._line_wrap = False
@@ -128,7 +128,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self._width = 0
         self._height = 0
         
-        self.label = clutter.Text()
+        self.label = Clutter.Text()
         self.label.set_parent(self)
         self.label.set_line_wrap(True)
         self.label.set_ellipsize(2) # let 2 words after "..."
@@ -146,7 +146,7 @@ class TextContainer(clutter.Actor, clutter.Container):
             self.rect.set_radius(10)
         else:
             self._rounded = False
-            self.rect = clutter.Rectangle()
+            self.rect = Clutter.Rectangle()
         self.rect.set_color(self.default_color)
         self.rect.set_parent(self)
     
@@ -262,7 +262,7 @@ class TextContainer(clutter.Actor, clutter.Container):
     def _allocate_label(self, base_x, base_y, width, height, flags):
         lbl_height = self.label.get_preferred_height(width)[1]
         
-        lbl_box = clutter.ActorBox()
+        lbl_box = Clutter.ActorBox()
         lbl_box.x1 = base_x
         lbl_box.x2 = lbl_box.x1 + width
         if lbl_height < height:
@@ -274,7 +274,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         self.label.allocate(lbl_box, flags)
     
     def _allocate_rect(self, base_x, base_y, width, height, flags):
-        rect_box = clutter.ActorBox()
+        rect_box = Clutter.ActorBox()
         rect_box.x1 = base_x
         rect_box.y1 = base_y
         rect_box.x2 = base_x + width
@@ -291,7 +291,7 @@ class TextContainer(clutter.Actor, clutter.Container):
         inner_height = height - 2*self._padding.y - 2*self._margin.y
         self._allocate_label(self._margin.left + self._padding.left, self._margin.top + self._padding.top, inner_width, inner_height, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         func(self.rect, data)
@@ -314,9 +314,9 @@ class TextContainer(clutter.Actor, clutter.Container):
 
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(700, 700)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
     t = StretchText()
     t.set_text('Hello World')
@@ -330,7 +330,7 @@ if __name__ == '__main__':
     t.set_position(400, 250)
     stage.add(t)
     
-    t = clutter.Text()
+    t = Clutter.Text()
     t.set_text('Lorem ipsum dolor sit amet.')
     t.set_position(20, 600)
     t.set_editable(True)
@@ -364,4 +364,4 @@ if __name__ == '__main__':
 
     stage.show()
 
-    clutter.main()
+    Clutter.main()

@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
 import common
 
-class Aligner(clutter.Actor, clutter.Container):
+class Aligner(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'Aligner'
     
     ALIGNMENT = ('top_left', 'top', 'top_right', 'left', 'center', 'right', 'bottom_left', 'bottom', 'bottom_right')
 
     def __init__(self, align='center', margin=0, padding=0, expand=False, keep_ratio=True, pick_enabled=True):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         if align in self.ALIGNMENT:
@@ -122,7 +122,7 @@ class Aligner(clutter.Actor, clutter.Container):
         
         # allocate background
         if self.background:
-            bgbox = clutter.ActorBox()
+            bgbox = Clutter.ActorBox()
             bgbox.x1 = self._margin.x
             bgbox.y1 = self._margin.y
             bgbox.x2 = width - self._margin.x
@@ -178,7 +178,7 @@ class Aligner(clutter.Actor, clutter.Container):
                     base_y = (inner_height - element_height) / 2.0
             
             # allocate element
-            elebox = clutter.ActorBox()
+            elebox = Clutter.ActorBox()
             elebox.x1 = int(self._padding.x + self._margin.x + base_x)
             elebox.y1 = int(self._padding.y + self._margin.y + base_y)
             elebox.x2 = int(elebox.x1 + element_width)
@@ -186,7 +186,7 @@ class Aligner(clutter.Actor, clutter.Container):
             #print elebox.x1, elebox.y1, elebox.x2, elebox.y2, '--------', width, height
             self.element.allocate(elebox, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         if self.background is not None:
@@ -204,7 +204,7 @@ class Aligner(clutter.Actor, clutter.Container):
         if self.pick_enabled:
             self.do_paint()
         else:
-            clutter.Actor.do_pick(self, color)
+            Clutter.Actor.do_pick(self, color)
     
     def do_destroy(self):
         self.unparent()
@@ -220,12 +220,12 @@ class Aligner(clutter.Actor, clutter.Container):
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
     def on_click(source, event):
         color_a = '#880000ff'
@@ -237,10 +237,10 @@ if __name__ == '__main__':
         else:
             bg.set_color(color_a)
     
-    bg = clutter.Rectangle()
+    bg = Clutter.Rectangle()
     bg.set_color('#ff0000ff')
     
-    ele = clutter.Rectangle()
+    ele = Clutter.Rectangle()
     ele.set_color('#00ff00ff')
     ele.set_size(50, 100)
     
@@ -254,6 +254,6 @@ if __name__ == '__main__':
     stage.add(aligner)
     
     stage.show()
-    clutter.main()
+    Clutter.main()
 
 

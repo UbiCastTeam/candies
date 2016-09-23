@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 import common
 from aligner import Aligner
 
@@ -12,7 +12,7 @@ class TableCellAligner(Aligner):
     def __init__(self, **args):
         Aligner.__init__(self, **args)
 
-class Table(clutter.Actor, clutter.Container):
+class Table(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'Table'
     """
     A container which presents actors in a table layout
@@ -24,7 +24,7 @@ class Table(clutter.Actor, clutter.Container):
         then the actor's parent is not always the table
     """
     def __init__(self, rows=0, columns=0, margin=0, padding=0, spacing=0, pick_enabled=True):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -304,12 +304,12 @@ class Table(clutter.Actor, clutter.Container):
             for j in range(len(self._columns)):
                 actor = self._matrix[i][j]
                 if actor is not None:
-                    actor_box = clutter.ActorBox(x, y, x + columns_widths[j], y + rows_heights[i])
+                    actor_box = Clutter.ActorBox(x, y, x + columns_widths[j], y + rows_heights[i])
                     actor.allocate(actor_box, flags)
                     #print x, y, x + columns_widths[j], y + rows_heights[i]
                 x += columns_widths[j] + self._spacing.x
             y += rows_heights[i] + self._spacing.y
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         for i in range(len(self._rows)):
@@ -326,7 +326,7 @@ class Table(clutter.Actor, clutter.Container):
         if self.pick_enabled:
             self.do_paint()
         else:
-            clutter.Actor.do_pick(self, color)
+            Clutter.Actor.do_pick(self, color)
     
     def do_destroy(self):
         self.unparent()
@@ -340,8 +340,8 @@ class Table(clutter.Actor, clutter.Container):
 
 #main to test
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy',clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy',Clutter.main_quit)
     stage.set_size(600, 600)
     stage.set_color((0, 0, 0, 0))
     
@@ -351,7 +351,7 @@ if __name__ == '__main__':
     table.set_size(600, 600)
     
     for k in range(rows * columns):
-        actor = clutter.Rectangle()
+        actor = Clutter.Rectangle()
         actor.set_size(100, 100)
         actor.set_color((255, 0, 0, 255))
         if k == 0:
@@ -371,7 +371,7 @@ if __name__ == '__main__':
     #table.destroy()
 
     stage.show()
-    clutter.main()
+    Clutter.main()
 
 
 

@@ -1,9 +1,9 @@
-import clutter
+from gi.repository import Clutter
 import candies2
 
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
 
     class Tester:
         def __init__(self):
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     t = Tester()
 
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     texture = candies2.RoundRectangle()
     texture.set_size(200, 200)
@@ -38,4 +38,4 @@ if __name__ == '__main__':
     gobject.timeout_add(200, t.toggle_show, texture)
 
     stage.show()
-    clutter.main()
+    Clutter.main()

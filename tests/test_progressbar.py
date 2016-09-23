@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
 import os
 import gobject
 from candies2.progressbar import SkinnedProgressBar as ProgressBar
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
 
-stage = clutter.Stage()
-stage.connect('destroy', clutter.main_quit)
+stage = Clutter.Stage()
+stage.connect('destroy', Clutter.main_quit)
 
 # Animated progress bar
-label = clutter.Text()
+label = Clutter.Text()
 label.set_position(5, 5)
 label.set_text('Click on the progress bar bellow...')
 stage.add(label)
@@ -35,7 +35,7 @@ bar.connect('notify::progression', update_label, label)
 stage.add(bar)
 
 # Static 0%
-label = clutter.Text()
+label = Clutter.Text()
 label.set_position(5, 100)
 label.set_text('0 %')
 stage.add(label)
@@ -47,7 +47,7 @@ bar.set_size(630, 50)
 stage.add(bar)
 
 # Static 67%
-label = clutter.Text()
+label = Clutter.Text()
 label.set_position(5, 200)
 label.set_text('67 %')
 stage.add(label)
@@ -59,7 +59,7 @@ bar.set_size(630, 50)
 stage.add(bar)
 
 # Static 100%
-label = clutter.Text()
+label = Clutter.Text()
 label.set_position(5, 300)
 label.set_text('100 %')
 stage.add(label)
@@ -71,4 +71,4 @@ bar.set_size(630, 50)
 stage.add(bar)
 
 stage.show()
-clutter.main()
+Clutter.main()

@@ -1,9 +1,10 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
+# gi.require_version('Clutter', '1.0')
 import common
-import gobject
+from gi.repository import GObject
 import os
 import string
 from buttons import ClassicButton
@@ -17,16 +18,20 @@ class Key(object):
         self.width = nb
         self.event = evt
         if no_c_evt:
-            self.clutter_event = None
+            self.Clutter_event = None
         elif not c_evt:
+            '''
             if k in string.letters:
-                self.clutter_event = getattr(clutter.keysyms, k, None)
+                self.Clutter_event = getattr(Clutter, KEY_%s %k, None)
             elif k in string.digits:
-                self.clutter_event = getattr(clutter.keysyms, '_%s' % k, None)
-            else:
-                self.clutter_event = None
+                self.Clutter_event = getattr(Clutter.keysyms, '_%s' % k, None)
+                '''
+            self.Clutter_event = getattr(Clutter, "KEY_%s" %k, None)
+            #else:
+                #self.Clutter_event = None
         else:
-            self.clutter_event = getattr(clutter.keysyms, c_evt, None)
+            #self.Clutter_event = getattr(Clutter.keysyms, c_evt, None)
+            self.Clutter_event = getattr(Clutter, "KEY_%s" %c_evt, None)
 
 class NoClKey(Key):
     def __init__(self, *args, **kwargs):
@@ -177,13 +182,15 @@ DEAD_KEYS = {
     #65120: "belowdot" # 65120
 }
 
+'''
 CODE_POINTS = dict()
-for keysym in dir(clutter.keysyms):
-    value = getattr(clutter.keysyms, keysym)
+for keysym in dir(Clutter.keysyms):
+    value = getattr(Clutter.keysyms, keysym)
     try:
-        CODE_POINTS[clutter.keysym_to_unicode(value)] = keysym
+        CODE_POINTS[Clutter.keysym_to_unicode(value)] = keysym
     except (TypeError, ValueError):
         pass
+        '''
 
 
 class ButtonLine(object):
@@ -199,20 +206,20 @@ class ButtonLine(object):
         self.buttons.append(button)
         self.width += width
 
-class Keyboard(clutter.Actor, clutter.Container):
+class Keyboard(Clutter.Actor, Clutter.Container):
     '''
     Keyboard Class
         .load_profile = load a keyboard mapping dictionnary
         .clear_keyboard = delete current keyboard mapping dictionnary
     '''
     __gtype_name__ = 'Keyboard'
-    __gsignals__ = {'keyboard' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_STRING])}
+    __gsignals__ = {'keyboard' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, [GObject.TYPE_STRING])}
     
     REPEAT_DELAY_MS = 400
     REPEAT_RATE_MS = 60
     
     def __init__(self, map_name='', spacing=15):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._spacing = common.Spacing(spacing)
         
         self.font_name = 'Sans 18'
@@ -255,7 +262,7 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def _key_press_event(self, event):
         # for specific keys handling (num lock problem, dead keys, invalid keys mapping, copy/cut/paste)
-        #print 'Char:', unichr(clutter.keysym_to_unicode(event.keyval))
+        #print 'Char:', unichr(Clutter.keysym_to_unicode(event.keyval))
         #print "CODE:", event.get_key_code()
         #print "SYMBOL:", event.get_key_symbol()
         #print "UNICODE:", event.get_key_unicode()
@@ -281,8 +288,8 @@ class Keyboard(clutter.Actor, clutter.Container):
         RIGHT_ARROW = 114
         arrow_keys = (LEFT_ARROW, RIGHT_ARROW)
         # Alt Backspace or Escape Backspace: delete previous word (bounded by a non-alphanumeric character))
-        ignored_masks = clutter.HYPER_MASK | clutter.META_MASK | clutter.MOD1_MASK | clutter.MOD4_MASK | clutter.MOD5_MASK | clutter.SUPER_MASK
-        if not ignored_masks & event.modifier_state and (event.unicode_value in ctrl_keys or (clutter.CONTROL_MASK & event.modifier_state and event.hardware_keycode in arrow_keys)):
+        ignored_masks = Clutter.HYPER_MASK | Clutter.META_MASK | Clutter.MOD1_MASK | Clutter.MOD4_MASK | Clutter.MOD5_MASK | Clutter.SUPER_MASK
+        if not ignored_masks & event.modifier_state and (event.unicode_value in ctrl_keys or (Clutter.CONTROL_MASK & event.modifier_state and event.hardware_keycode in arrow_keys)):
             if event.unicode_value == CTRL_C:
                 self.copy()
             elif event.unicode_value == CTRL_K:
@@ -298,30 +305,33 @@ class Keyboard(clutter.Actor, clutter.Container):
             elif event.unicode_value == CTRL_W:
                 self.delete_previous_word(bound="whitespace")
             elif event.hardware_keycode == LEFT_ARROW:
-                self.move_cursor_left(type_="word", select=bool(clutter.SHIFT_MASK & event.modifier_state))
+                self.move_cursor_left(type_="word", select=bool(Clutter.SHIFT_MASK & event.modifier_state))
             elif event.hardware_keycode == RIGHT_ARROW:
-                self.move_cursor_right(type_="word", select=bool(clutter.SHIFT_MASK & event.modifier_state))
-        elif clutter.MOD1_MASK & event.modifier_state and event.hardware_keycode == BACKSPACE:
+                self.move_cursor_right(type_="word", select=bool(Clutter.SHIFT_MASK & event.modifier_state))
+        elif Clutter.MOD1_MASK & event.modifier_state and event.hardware_keycode == BACKSPACE:
             self.delete_previous_word(bound="alphanumeric")
         elif self._dead_key:
             if event.unicode_value:
-                keysym = CODE_POINTS.get(event.unicode_value)
-                new_key = getattr(clutter.keysyms, "%s%s" % (keysym, self._dead_key[2]), None)
-                if event.unicode_value == clutter.keysyms.space:
+                print(event.unicode_value)
+                # keysym = CODE_POINTS.get(event.unicode_value)
+                '''
+                new_key = getattr(Clutter.keysyms, "%s%s" % (keysym, self._dead_key[2]), None)
+                if event.unicode_value == Clutter.keysyms.space:
                     event.keyval = self._dead_key[0]
                     event.unicode_value = self._dead_key[1]
                     emit_key = True
                 elif new_key:
                     event.keyval = new_key
-                    event.unicode_value = int(clutter.keysym_to_unicode(event.keyval))
+                    event.unicode_value = int(Clutter.keysym_to_unicode(event.keyval))
                     emit_key = True
+                    '''
                 # else: both keys ignored
                 self._dead_key = None
         elif event.hardware_keycode in (LEFT_ARROW, RIGHT_ARROW): # arrow keys
             if event.hardware_keycode == LEFT_ARROW: # left arrow
-                self.move_cursor_left(select=bool(clutter.SHIFT_MASK & event.modifier_state))
+                self.move_cursor_left(select=bool(Clutter.SHIFT_MASK & event.modifier_state))
             else: # right arrow
-                self.move_cursor_right(select=bool(clutter.SHIFT_MASK & event.modifier_state))
+                self.move_cursor_right(select=bool(Clutter.SHIFT_MASK & event.modifier_state))
         else:
             if event.unicode_value in DEAD_KEYS:
                 self._dead_key = event.keyval, event.unicode_value, DEAD_KEYS[event.unicode_value]
@@ -375,7 +385,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 button.kb_text = key.text
                 button.kb_width = key.width
                 button.kb_evt = key.event
-                button.kb_c_evt = key.clutter_event
+                button.kb_c_evt = key.Clutter_event
                 # add button to line
                 line.add(button, key.width)
             self._lines.append(line)
@@ -407,7 +417,7 @@ class Keyboard(clutter.Actor, clutter.Container):
         self._text_actor.set_cursor_position(0)
         self._text_actor.set_selection_bound(-1)
     
-    def connect_clutter_text(self, text_actor):
+    def connect_Clutter_text(self, text_actor):
         self._text_actor = text_actor
         self._text_actor.connect("notify::position", self._on_text_actor_position_changed)
         self._text_actor.connect("notify::selection-bound", self._on_text_actor_selection_bound_changed)
@@ -464,38 +474,38 @@ class Keyboard(clutter.Actor, clutter.Container):
     
     def _emit_key_press(self, keyval, unival=None):
         if self._text_actor:
-            event = clutter.Event(clutter.KEY_PRESS)
+            event = Clutter.Event(Clutter.KEY_PRESS)
             event.keyval = keyval
-            event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
+            event.unicode_value = unival or int(Clutter.keysym_to_unicode(event.keyval))
             #self._text_actor.emit('key-press-event', event)
             if self._keyboard_delay_id:
-                gobject.source_remove(self._keyboard_delay_id)
+                GObject.source_remove(self._keyboard_delay_id)
             if self._keyboard_repeat_id:
-                gobject.source_remove(self._keyboard_repeat_id)
+                GObject.source_remove(self._keyboard_repeat_id)
                 self._keyboard_repeat_id = None
-            self._keyboard_delay_id = gobject.timeout_add(self.REPEAT_DELAY_MS, self._key_delay, event)
+            self._keyboard_delay_id = GObject.timeout_add(self.REPEAT_DELAY_MS, self._key_delay, event)
             self._key_press_event(event)
         self.emit('keyboard', keyval)
     
     def _emit_key_release(self, keyval, unival=None):
         if self._keyboard_repeat_id:
-            gobject.source_remove(self._keyboard_repeat_id)
+            GObject.source_remove(self._keyboard_repeat_id)
             self._keyboard_repeat_id = None
         if self._keyboard_delay_id:
-            gobject.source_remove(self._keyboard_delay_id)
+            GObject.source_remove(self._keyboard_delay_id)
             self._keyboard_delay_id = None
         if self._text_actor:
-            event = clutter.Event(clutter.KEY_RELEASE)
+            event = Clutter.Event(Clutter.KEY_RELEASE)
             event.keyval = keyval
-            event.unicode_value = unival or int(clutter.keysym_to_unicode(event.keyval))
+            event.unicode_value = unival or int(Clutter.keysym_to_unicode(event.keyval))
             #self._text_actor.emit('key-release-event', event)
             self._key_release_event(event)
     
     def _key_delay(self, event):
         self._key_press_event(event)
         if self._keyboard_repeat_id:
-            gobject.source_remove(self._keyboard_repeat_id)
-        self._keyboard_repeat_id = gobject.timeout_add(self.REPEAT_RATE_MS, self._key_repeat, event)
+            GObject.source_remove(self._keyboard_repeat_id)
+        self._keyboard_repeat_id = GObject.timeout_add(self.REPEAT_RATE_MS, self._key_repeat, event)
         return False
     
     def _key_repeat(self, event):
@@ -505,14 +515,14 @@ class Keyboard(clutter.Actor, clutter.Container):
     def _on_button_press(self, source, event):
         # highlight button
         source.set_inner_color(self.highlight_color)
-        clutter.grab_pointer(source)
+        Clutter.grab_pointer(source)
         # press button
         if source.kb_evt == 'car':
             if source.kb_c_evt:
                 self._emit_key_press(source.kb_c_evt)
     
     def _on_button_release(self, source, event):
-        clutter.ungrab_pointer()
+        Clutter.ungrab_pointer()
         source.set_inner_color(self.inner_color)
         # release button
         if source.kb_evt == 'car':
@@ -740,7 +750,7 @@ class Keyboard(clutter.Actor, clutter.Container):
             x = line.padding_x
             y = line.padding_y
             for button in line.buttons:
-                btn_box = clutter.ActorBox()
+                btn_box = Clutter.ActorBox()
                 btn_box.x1 = x
                 btn_box.y1 = y
                 if button.kb_width < 1:
@@ -751,7 +761,7 @@ class Keyboard(clutter.Actor, clutter.Container):
                 button.allocate(btn_box, flags)
                 x = btn_box.x2 + self._spacing.x
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         for line in self._lines:
@@ -783,13 +793,13 @@ if __name__ == '__main__':
     from flowbox import FlowBox
 
     # create window
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(1000, 600)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     stage.set_color('#000000ff')
     
     # create text wich will show keyboard entries results
-    text = clutter.Text()
+    text = Clutter.Text()
     text.set_color('#ffffffff')
     text.set_selection_color('#8888ffff')
     text.set_font_name('22')
@@ -802,7 +812,7 @@ if __name__ == '__main__':
     #text.set_reactive(False)
     stage.add(text)
     
-    kb_bg = clutter.Rectangle()
+    kb_bg = Clutter.Rectangle()
     kb_bg.set_color('#ffffff22')
     kb_bg.set_size(1000, 500)
     kb_bg.set_position(0, 50)
@@ -835,7 +845,7 @@ if __name__ == '__main__':
     num.set_size(150, 50)
     box.add(num)
     
-    keys_btn = ClassicButton('print clutter keys names')
+    keys_btn = ClassicButton('print Clutter keys names')
     keys_btn.set_size(150, 50)
     box.add(keys_btn)
     
@@ -902,13 +912,15 @@ if __name__ == '__main__':
         cursor_pos += 1
         text.set_selection(cursor_pos, cursor_pos)
     
-    # function to get clutter keys names
-    def print_clutter_key_map(button, event):
-        for k in dir(clutter.keysyms):
-            if hasattr(clutter.keysyms, k):
-                attr = getattr(clutter.keysyms, k)
+    # function to get Clutter keys names
+    '''
+    def print_Clutter_key_map(button, event):
+        for k in dir(Clutter.keysyms):
+            if hasattr(Clutter.keysyms, k):
+                attr = getattr(Clutter.keysyms, k)
                 if isinstance(attr, (int, long)):
-                    print '%s\t%s\t%s' % (attr, k, unichr(clutter.keysym_to_unicode(attr)))
+                    print '%s\t%s\t%s' % (attr, k, unichr(Clutter.keysym_to_unicode(attr)))
+                    '''
 
     # connect signals
     #left.connect('button-press-event', left_callback, text)
@@ -918,10 +930,10 @@ if __name__ == '__main__':
     num.connect('button-press-event', num_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
     lan.connect('button-press-event', lang_callback, keyboard)
-    keys_btn.connect('button-press-event', print_clutter_key_map)
-    keyboard.connect_clutter_text(text)
+    keys_btn.connect('button-press-event', print_Clutter_key_map)
+    keyboard.connect_Clutter_text(text)
     
     stage.set_key_focus(keyboard)
     
-    clutter.main()
+    Clutter.main()
 

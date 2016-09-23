@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 from clicking import LongClick
 from text import TextContainer
 
-class ToolTipManager(clutter.Actor, clutter.Container):
+class ToolTipManager(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'ToolTipManager'
     
     def __init__(self, content_actor=None, tooltip_actor=None, h_direction='middle', v_direction='top', clickable=True, long_click=True, tooltip_duration=0, animation_duration=500, tooltip_x_padding=0, tooltip_y_padding=0):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         
         self.h_direction = h_direction
         self.v_direction = v_direction
@@ -31,7 +31,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         self._tooltip_displayed = False
         self.tooltip_x_padding = tooltip_x_padding
         self.tooltip_y_padding = tooltip_y_padding
-        self.tooltip_pointer = clutter.Texture()
+        self.tooltip_pointer = Clutter.Texture()
         self.tooltip_pointer.hide()
         self.tooltip_pointer.set_parent(self)
         self.tooltip_show_animation.apply(self.tooltip_pointer)
@@ -43,13 +43,13 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.set_tooltip(tooltip_actor)
     
     def build_animations(self):
-        self.tooltip_show_timeline = clutter.Timeline(self.animation_duration)
-        alpha = clutter.Alpha(self.tooltip_show_timeline, clutter.EASE_IN_EXPO)
-        self.tooltip_show_animation = clutter.BehaviourOpacity(0, 255, alpha=alpha)
+        self.tooltip_show_timeline = Clutter.Timeline(self.animation_duration)
+        alpha = Clutter.Alpha(self.tooltip_show_timeline, Clutter.EASE_IN_EXPO)
+        self.tooltip_show_animation = Clutter.BehaviourOpacity(0, 255, alpha=alpha)
         
-        self.tooltip_hide_timeline = clutter.Timeline(self.animation_duration)
-        alpha = clutter.Alpha(self.tooltip_hide_timeline, clutter.EASE_IN_EXPO)
-        self.tooltip_hide_animation = clutter.BehaviourOpacity(255, 0, alpha=alpha)
+        self.tooltip_hide_timeline = Clutter.Timeline(self.animation_duration)
+        alpha = Clutter.Alpha(self.tooltip_hide_timeline, Clutter.EASE_IN_EXPO)
+        self.tooltip_hide_animation = Clutter.BehaviourOpacity(255, 0, alpha=alpha)
     
     def set_pointer_texture(self, texture_src):
         self.tooltip_pointer.set_from_file(texture_src)
@@ -144,16 +144,16 @@ class ToolTipManager(clutter.Actor, clutter.Container):
             self.tooltip_show_timeline.start()
             if self.tooltip_duration > 0:
                 if self._hide_timeout_id is not None:
-                    gobject.source_remove(self._hide_timeout_id)
-                self._hide_timeout_id = gobject.timeout_add(self.tooltip_duration, self._hide_tooltip)
+                    GObject.source_remove(self._hide_timeout_id)
+                self._hide_timeout_id = GObject.timeout_add(self.tooltip_duration, self._hide_tooltip)
         return False
     
     def _hide_tooltip(self):
         if self.tooltip_actor and self._tooltip_displayed:
             self.tooltip_hide_timeline.start()
             if self._animation_timeout_id is not None:
-                gobject.source_remove(self._animation_timeout_id)
-            self._animation_timeout_id = gobject.timeout_add(self.animation_duration, self._hide_tooltip_finish)
+                GObject.source_remove(self._animation_timeout_id)
+            self._animation_timeout_id = GObject.timeout_add(self.animation_duration, self._hide_tooltip_finish)
         return False
     
     def _hide_tooltip_finish(self):
@@ -182,7 +182,7 @@ class ToolTipManager(clutter.Actor, clutter.Container):
         box_height = box.y2 - box.y1
         
         if self.content_actor:
-            content_box = clutter.ActorBox()
+            content_box = Clutter.ActorBox()
             content_box.x1 = 0
             content_box.y1 = 0
             content_box.x2 = box_width
@@ -229,21 +229,21 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 if box_x + tooltip_x_pos < 10:
                     tooltip_x_pos = 0 - box_x + 10
                 
-                pointer_box = clutter.ActorBox()
+                pointer_box = Clutter.ActorBox()
                 pointer_box.x1 = pointer_x_pos
                 pointer_box.y1 = pointer_y_pos
                 pointer_box.x2 = pointer_x_pos + pointer_width
                 pointer_box.y2 = pointer_y_pos + pointer_height
                 self.tooltip_pointer.allocate(pointer_box, flags)
                 
-                tooltip_box = clutter.ActorBox()
+                tooltip_box = Clutter.ActorBox()
                 tooltip_box.x1 = tooltip_x_pos
                 tooltip_box.y1 = tooltip_y_pos
                 tooltip_box.x2 = tooltip_x_pos + tooltip_width
                 tooltip_box.y2 = tooltip_y_pos + tooltip_height
                 self.tooltip_actor.allocate(tooltip_box, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_foreach(self, func, data=None):
         if self.tooltip_pointer:
@@ -285,16 +285,16 @@ class ToolTipManager(clutter.Actor, clutter.Container):
                 self.tooltip_pointer.destroy()
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(1280, 800)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
-    rect = clutter.Rectangle()
+    rect = Clutter.Rectangle()
     rect.set_size(100, 100)
     rect.set_color('#0000ffff')
     
-    rect2 = clutter.Rectangle()
+    rect2 = Clutter.Rectangle()
     rect2.set_size(800, 60)
     rect2.set_position(200, 200)
     rect2.set_color('#00ff00ff')
@@ -303,10 +303,10 @@ if __name__ == '__main__':
     #test.set_content(rect)
     test.h_direction = 'left'
     test.v_direction = 'top'
-    gobject.timeout_add(1000, test.display_tooltip, True)
+    GObject.timeout_add(1000, test.display_tooltip, True)
     test.set_size(200, 100)
     test.set_position(400, 200)
     stage.add(test)
     
     stage.show()
-    clutter.main()
+    Clutter.main()

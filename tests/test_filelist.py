@@ -6,7 +6,7 @@ Lightweight file system browser.
 
 python test_filelist.py /mnt/recordings
 """
-import clutter
+from gi.repository import Clutter
 import os
 import sys
 import gobject
@@ -16,17 +16,17 @@ import re
 image_pattern = re.compile(r'.+\.(jpe?g|png|gif|svg)$')
 video_pattern = re.compile(r'.+\.(mpe?g?4|dv|ogg)$')
 
-stage = clutter.Stage()
-stage.connect('destroy', clutter.main_quit)
+stage = Clutter.Stage()
+stage.connect('destroy', Clutter.main_quit)
 
-info = clutter.Text()
-info.set_color(clutter.color_from_string('Black'))
+info = Clutter.Text()
+info.set_color(Clutter.color_from_string('Black'))
 info.set_position(245, 5)
 info.set_width(640 - 250)
 info.set_line_wrap(True)
 info.hide()
 
-texture = clutter.Texture()
+texture = Clutter.Texture()
 texture.set_x(245)
 texture.hide()
 
@@ -98,4 +98,4 @@ btn.connect('button-press-event', on_button_press)
 
 stage.add(lst, btn, texture, info, player)
 stage.show()
-clutter.main()
+Clutter.main()

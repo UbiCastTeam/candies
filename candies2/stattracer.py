@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import gobject
-import clutter
-from clutter import cogl
+from gi.repository import GObject
+from gi.repository import Clutter
+from gi.repository import Cogl
 import math
 
-class Tracer(clutter.Actor):
+class Tracer(Clutter.Actor):
     """
-    Tracer (clutter.Actor)
+    Tracer (Clutter.Actor)
 
     """
     __gtype_name__ = 'test'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, gobject.PARAM_READWRITE),
+        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self, color='Green', n=50, stroke_width=3, with_scale=False):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._stroke_width = stroke_width
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
         self.percent = list()
         self.n = n
         self.with_scale = with_scale
@@ -31,7 +31,7 @@ class Tracer(clutter.Actor):
         self.queue_redraw()
 
     def set_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
         self.queue_redraw()
 
     def set_stroke_width(self, width):
@@ -52,7 +52,7 @@ class Tracer(clutter.Actor):
     def __cogl_path(self, width, height, color):
         
         if self.with_scale :
-            cogl.set_source_color(clutter.color_from_string('#ffffffff'))
+            cogl.set_source_color(Clutter.color_from_string('#ffffffff'))
             #rect
             cogl.path_move_to(0,0)
             cogl.path_line_to(0,height)
@@ -137,12 +137,12 @@ class Tracer(clutter.Actor):
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__cogl_path(x2 - x1, y2 - y1, pick_color)
 
-gobject.type_register(Tracer)
+GObject.type_register(Tracer)
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(640, 480)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     percent = [1,10,20,100,50,40,45,40,50,42]
     percent = [1,50,100,40,1]
@@ -155,5 +155,5 @@ if __name__ == '__main__':
     stage.add(test)
 
     stage.show()
-    clutter.main()
+    Clutter.main()
 

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*
 
 import sys
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 from text import TextContainer
 from buttons import ClassicButton
 from box import Box
@@ -12,11 +12,11 @@ class NumberAdjuster(Box):
     __gtype_name__ = 'NumberAdjuster'
     __gproperties__ = {
         'increment' : (
-            gobject.TYPE_FLOAT, 'increment', 'Increment amount when adjusting the value',
-            0.0, sys.maxint, 0.0, gobject.PARAM_READWRITE
+            GObject.TYPE_FLOAT, 'increment', 'Increment amount when adjusting the value',
+            0.0, sys.maxint, 0.0, GObject.PARAM_READWRITE
         ),
     }
-    __gsignals__ = {'value_updated' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT]),
+    __gsignals__ = {'value_updated' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, [GObject.TYPE_FLOAT]),
     }
     
     # skin
@@ -109,7 +109,7 @@ class NumberAdjuster(Box):
         elif self.value != self.max:
             self.value = self.max
             self.update()
-        gobject.timeout_add(200, button.set_inner_color, self.button_inner_color)
+        GObject.timeout_add(200, button.set_inner_color, self.button_inner_color)
 
     def dec(self, button, event):
         button.set_inner_color(self.button_highlight_color)
@@ -119,7 +119,7 @@ class NumberAdjuster(Box):
         elif self.value != self.min:
             self.value = self.min
             self.update()
-        gobject.timeout_add(200, button.set_inner_color, self.button_inner_color)
+        GObject.timeout_add(200, button.set_inner_color, self.button_inner_color)
 
     def update(self, silent=False):
         self.update_rounded_value()
@@ -182,9 +182,9 @@ class NumberAdjuster(Box):
 if __name__ == '__main__':
     stage_width = 640
     stage_height = 480
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(stage_width, stage_height)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     def update_callback(source, value):
         print "Test value has been updated", value
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     test.connect("value-updated", update_callback)
     stage.add(test)
     
-    r = clutter.Rectangle()
+    r = Clutter.Rectangle()
     r.set_color('#8888ffff')
     test.set_background(r)
 
@@ -203,12 +203,12 @@ if __name__ == '__main__':
     stage.add(test)
     test.set_position(0, 200)
     
-    r = clutter.Rectangle()
+    r = Clutter.Rectangle()
     r.set_color('#8888ffff')
     test.set_background(r)
 
-    t = clutter.Text()
+    t = Clutter.Text()
 
     stage.show()
-    clutter.main()
+    Clutter.main()
 

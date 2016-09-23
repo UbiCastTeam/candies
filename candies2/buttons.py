@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 from text import TextContainer
 from roundrect import RoundRectangle, OutlinedRoundRectangle
-from clutter import cogl
+from gi.repository import Cogl
 
 class ClassicButton(TextContainer):
     __gtype_name__ = 'ClassicButton'
@@ -28,7 +28,7 @@ class ImageButton(ClassicButton):
         self._has_text = has_text
         self._expand = expand
         
-        self.image = clutter.Texture()
+        self.image = Clutter.Texture()
         if image_src:
             self.image.set_from_file(image_src)
         self.image.set_parent(self)
@@ -80,7 +80,7 @@ class ImageButton(ClassicButton):
         x_padding = round((inner_width - image_width) / 2.0)
         y_padding = round((remaining_height - image_height) / 2.0)
         
-        image_box = clutter.ActorBox()
+        image_box = Clutter.ActorBox()
         image_box.x1 = self._padding.x + x_padding
         image_box.y1 = self._padding.y + y_padding
         image_box.x2 = image_box.x1 + image_width
@@ -93,7 +93,7 @@ class ImageButton(ClassicButton):
             label_height = btn_height - base_y
             self._allocate_label(0, base_y, btn_width, label_height, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
     def do_set_property(self, pspec, value):
         return ClassicButton.do_set_property(self, pspec, value)
@@ -122,15 +122,15 @@ class ImageButton(ClassicButton):
         except:
             pass
 
-gobject.type_register(ImageButton)
+GObject.type_register(ImageButton)
 
 if __name__ == '__main__':
     from flowbox import FlowBox
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy', Clutter.main_quit)
     #toto = cogl.Material()
     texture_path = '/home/aviolo/sources/easycast/unstable/easycast/images/buttons/copy.png'
-    texture = clutter.cogl.texture_new_from_file(texture_path, clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
+    texture = Clutter.cogl.texture_new_from_file(texture_path, Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
     #toto.set_layer(0, texture)
     #stage.add(toto)
     t = ClassicButton('test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture = texture, rounded = True)
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     box0.set_size(640, 640)
     
     # Invisible rectangle for top margin
-    r = clutter.Rectangle()
+    r = Clutter.Rectangle()
     r.set_size(640, 1)
     box0.add(r)
     
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     box2.add(b)
     
     # Invisible rectangle for bottom margin
-    r = clutter.Rectangle()
+    r = Clutter.Rectangle()
     r.set_size(640, 1)
     box0.add(r)
     
@@ -227,7 +227,7 @@ if __name__ == '__main__':
         max_count = 5000
         
         #texture_path = '/home/sdiemer/sources/candies/main/candies2/effect_light.png'
-        texture = clutter.cogl.texture_new_from_file(texture_path, clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
+        texture = Clutter.cogl.texture_new_from_file(texture_path, Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
         texture = None
         
         def create_test_object():
@@ -243,7 +243,7 @@ if __name__ == '__main__':
                 print counter
                 tested_object = create_test_object()
                 stage.add(tested_object)
-                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
+                GObject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
             return False
         
         def remove_tested_object(tested_object, stage, counter):
@@ -252,10 +252,10 @@ if __name__ == '__main__':
             gc.collect()
             pprint(gc.garbage)
             
-            gobject.timeout_add(2, test_memory, stage, counter, max_count)
+            GObject.timeout_add(2, test_memory, stage, counter, max_count)
             return False
         
-        gobject.timeout_add(10, test_memory, stage, 0, max_count)
+        GObject.timeout_add(10, test_memory, stage, 0, max_count)
     
     stage.show()
-    clutter.main()
+    Clutter.main()

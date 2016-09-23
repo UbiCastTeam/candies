@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 
-from clutter import cogl
+from gi.repository import Cogl
 
-class Disk(clutter.Actor):
+class Disk(Clutter.Actor):
     """
-    Disk (clutter.Actor)
+    Disk (Clutter.Actor)
 
-    A simple actor drawing a disk using the clutter.cogl primitives
+    A simple actor drawing a disk using the Clutter.cogl primitives
     """
     __gtype_name__ = 'Disk'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, gobject.PARAM_READWRITE),
+        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self):
-        clutter.Actor.__init__(self)
-        self._color = clutter.color_from_string('Black')
+        Clutter.Actor.__init__(self)
+        self._color = Clutter.color_from_string('Black')
 
     def set_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
-            self._color = clutter.color_from_string(value)
+            self._color = Clutter.color_from_string(value)
         else:
             raise TypeError('Unknown property ' + pspec.name)
 
@@ -60,13 +60,13 @@ class Disk(clutter.Actor):
         (x1, y1, x2, y2) = self.get_allocation_box()
         self.__paint_circle(x2 - x1, y2 - y1, pick_color)
 
-gobject.type_register(Disk)
+GObject.type_register(Disk)
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_title('Nihon!')
     stage.set_size(640, 480)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
     disk = Disk()
     disk.set_color('Red')
@@ -76,5 +76,5 @@ if __name__ == '__main__':
     stage.add(disk)
 
     stage.show()
-    clutter.main()
+    Clutter.main()
 

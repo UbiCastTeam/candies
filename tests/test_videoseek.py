@@ -1,5 +1,5 @@
 from candies2 import VideoPlayer, SeekBar, ClassicButton
-import clutter
+from gi.repository import Clutter
 import sys
 
 import logging, sys
@@ -22,8 +22,8 @@ def show_time(player, current_time, progression, duration, time_label):
     time_label.set_position(200, 470)
     time_label.set_text(str(current_time) + '/' + str(duration))
 
-stage = clutter.Stage()
-stage.connect('destroy', clutter.main_quit)
+stage = Clutter.Stage()
+stage.connect('destroy', Clutter.main_quit)
 
 def on_button_seek(button, event, player):
     player.on_seek_relative(5)
@@ -77,7 +77,7 @@ b.set_position(50, 350)
 b.set_reactive(True)
 b.connect('button_press_event', on_button_seek, player)
 
-time_label = clutter.Text()
+time_label = Clutter.Text()
 player.connect('position_update', show_time, time_label)
 
 stage.set_size(800, 600)
@@ -87,4 +87,4 @@ stage.show()
 #import gobject
 #gobject.timeout_add(10000, player.set_filename, "/home/anthony/src/candies/mine/test2.ogg")
 
-clutter.main()
+Clutter.main()

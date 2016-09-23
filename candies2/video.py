@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 '''
-Video player: cluttergst.VideoTexture wrapper
+Video player: Cluttergst.VideoTexture wrapper
 
 Copyright 2008, Florent Thiery, UbiCast
 '''
-import gobject
+from gi.repository import GObject
 import gst
-import clutter
-from cluttergst import VideoTexture
+from gi.repository import Clutter
+from Cluttergst import VideoTexture
 
 import logging
 logger = logging.getLogger('candies2.videoplayer')
@@ -19,7 +19,7 @@ class VideoPlayer(VideoTexture):
     '''
     VideoPlayer
 
-    This class wraps the clutter base VideoTexture object, itself
+    This class wraps the Clutter base VideoTexture object, itself
     wrapping the gstreamer playbin element.
 
     It can be called with an optional uri (either http:// or file://),
@@ -164,11 +164,11 @@ class VideoPlayer(VideoTexture):
         for listener in self._listeners['on_seek']:
             listener(self._next_seek_percent)
         if self._seeking_timeout_id is None:
-            self._seeking_timeout_id = gobject.timeout_add(100, self._execute_seek_request)
+            self._seeking_timeout_id = GObject.timeout_add(100, self._execute_seek_request)
     
     def _execute_seek_request(self):
         if self._seeking_timeout_id is not None:
-            gobject.source_remove(self._seeking_timeout_id)
+            GObject.source_remove(self._seeking_timeout_id)
             self._seeking_timeout_id = None
         if self._next_seek_percent is not None:
             percent = self._next_seek_percent
@@ -236,10 +236,10 @@ class VideoPlayer(VideoTexture):
             current_volume = self.get_audio_volume()
             current_percent = self.get_progress()
             self.set_audio_volume(0)
-            gobject.timeout_add(5, self.set_playing, True)
-            gobject.timeout_add(15, self.set_playing, False)
-            gobject.timeout_add(20, self.set_audio_volume, current_volume)
-            gobject.timeout_add(20, self.seek_to_percent, current_percent)
+            GObject.timeout_add(5, self.set_playing, True)
+            GObject.timeout_add(15, self.set_playing, False)
+            GObject.timeout_add(20, self.set_audio_volume, current_volume)
+            GObject.timeout_add(20, self.seek_to_percent, current_percent)
     
     def get_ratio(self):
         preferred_width = VideoTexture.do_get_preferred_width(self, for_height=-1)[1]
@@ -251,10 +251,10 @@ class VideoPlayer(VideoTexture):
 
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_size(1000, 600)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
     
     p = VideoPlayer()
@@ -267,22 +267,22 @@ if __name__ == '__main__':
         p.set_audio_volume(0.4)
         p.play()
         
-        gobject.timeout_add(1000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
-        gobject.timeout_add(1100, p.play)
-        gobject.timeout_add(1300, p.set_audio_volume, 0.2)
-        gobject.timeout_add(2300, p.set_audio_volume, 0.1)
-        gobject.timeout_add(3300, p.set_audio_volume, 0.0)
+        GObject.timeout_add(1000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
+        GObject.timeout_add(1100, p.play)
+        GObject.timeout_add(1300, p.set_audio_volume, 0.2)
+        GObject.timeout_add(2300, p.set_audio_volume, 0.1)
+        GObject.timeout_add(3300, p.set_audio_volume, 0.0)
         
-        gobject.timeout_add(6000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
-        gobject.timeout_add(6100, p.play)
-        gobject.timeout_add(6300, p.set_audio_volume, 0.2)
-        gobject.timeout_add(7300, p.set_audio_volume, 0.1)
-        gobject.timeout_add(8300, p.set_audio_volume, 0.0)
+        GObject.timeout_add(6000, p.set_file, '/home/aviolo/src/common/easycast/unstable/easycast/data/userdata/videos/test.mp4')
+        GObject.timeout_add(6100, p.play)
+        GObject.timeout_add(6300, p.set_audio_volume, 0.2)
+        GObject.timeout_add(7300, p.set_audio_volume, 0.1)
+        GObject.timeout_add(8300, p.set_audio_volume, 0.0)
         
     
     stage.connect('button-release-event', test, p)
     
     stage.show()
-    clutter.main()
+    Clutter.main()
 
 

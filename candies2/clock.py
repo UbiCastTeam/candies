@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
-from clutter import cogl
+from gi.repository import Clutter
+from gi.repository import Cogl
 import math
 
 
-class Clock(clutter.Actor):
+class Clock(Clutter.Actor):
     __gtype_name__ = 'Clock'
     """
     A clock widget
     """
     
     def __init__(self, date=None, texture=None):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._date = date
         self._texture = texture
-        self._color = clutter.color_from_string('Black')
+        self._color = Clutter.color_from_string('Black')
     
     def set_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
         self.queue_redraw()
     
     def set_texture(self, texture):
@@ -32,7 +32,7 @@ class Clock(clutter.Actor):
             self.queue_redraw()
 
     def do_paint(self):
-        #clutter.Texture.do_paint(self)
+        #Clutter.Texture.do_paint(self)
         
         (x1, y1, x2, y2) = self.get_allocation_box()
         width = x2 - x1
@@ -96,11 +96,11 @@ class Clock(clutter.Actor):
 
 #main to test
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy',clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy',Clutter.main_quit)
     
-    import gobject, datetime
-    t = cogl.texture_new_from_file('clock.png', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
+    from gi.repository import GObject, datetime
+    t = cogl.texture_new_from_file('clock.png', Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
     c = Clock()
     c.set_texture(t)
     c.set_size(400, 400)
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         c.set_date(today)
         return True
     
-    gobject.timeout_add_seconds(60, update)
+    GObject.timeout_add_seconds(60, update)
     
     stage.show()
-    clutter.main()
+    Clutter.main()

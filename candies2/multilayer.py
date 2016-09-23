@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
 from container import BaseContainer
 import common
 
@@ -83,33 +83,33 @@ class MultiLayerContainer(BaseContainer):
         main_width = box.x2 - box.x1
         main_height = box.y2 - box.y1
         for child in self._children:
-            child_box = clutter.ActorBox()
+            child_box = Clutter.ActorBox()
             child_box.x1 = self._margin.x
             child_box.y1 = self._margin.y
             child_box.x2 = main_width - self._margin.x
             child_box.y2 = main_height - self._margin.y
             child.allocate(child_box, flags)
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
 
-    rect5 = clutter.Rectangle()
+    rect5 = Clutter.Rectangle()
     rect5.set_size(250, 150)
     rect5.set_color('#ff0000ff')
 
-    rect6 = clutter.Rectangle()
+    rect6 = Clutter.Rectangle()
     rect6.set_size(5, 5)
     rect6.set_color('#00ff0088')
 
-    rect_bg_2 = clutter.Rectangle()
+    rect_bg_2 = Clutter.Rectangle()
     rect_bg_2.set_color('#ffffffff')
 
     test_layer = MultiLayerContainer()
@@ -118,4 +118,4 @@ if __name__ == '__main__':
     stage.add(test_layer)
 
     stage.show()
-    clutter.main()
+    Clutter.main()

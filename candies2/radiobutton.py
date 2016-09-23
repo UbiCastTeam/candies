@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import clutter
+from gi.repository import Clutter
 from checkbox import CheckButton, CheckBox
 
 

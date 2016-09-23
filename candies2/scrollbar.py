@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import os
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 from container import BaseContainer
 
-class Scrollbar(clutter.Actor, clutter.Container):
+class Scrollbar(Clutter.Actor, Clutter.Container):
     '''
     Scrollbar class :
         variables :
-            .scrollbar_background : clutter.Rectangle or clutter.Texture if bar_image_path set
-            .scroller : clutter.Rectangle or clutter.Texture if scroller_image_path set
+            .scrollbar_background : Clutter.Rectangle or Clutter.Texture if bar_image_path set
+            .scroller : Clutter.Rectangle or Clutter.Texture if scroller_image_path set
             .scroller_position : float
             .padding : float
             .thin_scroller : boolean
@@ -25,10 +25,10 @@ class Scrollbar(clutter.Actor, clutter.Container):
             .do_pick
     '''
     __gtype_name__ = 'Scrollbar'
-    __gsignals__ = {'scroll_position': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, [gobject.TYPE_FLOAT])}
+    __gsignals__ = {'scroll_position': (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, [GObject.TYPE_FLOAT])}
     
     def __init__(self, padding=8, position='center', bar_image_path=None, scroller_image_path=None, scroller_press_image_path=None, horizontal=False, reallocate=False, label=None, value=0, scale=None):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self.padding = padding
         self.position = position
         self.reallocate = reallocate
@@ -44,26 +44,26 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.pointer_grabbed = False
         
         if bar_image_path != None and os.path.exists(bar_image_path):
-            self.scrollbar_background = clutter.Texture()
+            self.scrollbar_background = Clutter.Texture()
             self.scrollbar_background.set_from_file(bar_image_path)
         else:
-            self.scrollbar_background = clutter.Rectangle()
+            self.scrollbar_background = Clutter.Rectangle()
             self.scrollbar_background.set_color('LightBlue')
         self.scrollbar_background.set_parent(self)
 
         if label != None :
-            self.label = clutter.Text()
+            self.label = Clutter.Text()
             self.label.set_color('#FFFFFFFF')
             self.label.set_text(str(label))
             self.label.set_parent(self)
             self.show_label = True
 
         if scroller_image_path != None and os.path.exists(scroller_image_path):
-            self.scroller = clutter.Texture()
+            self.scroller = Clutter.Texture()
             self.scroller.set_from_file(scroller_image_path)
             self.scroller_image_path = scroller_image_path
         else:
-            self.scroller = clutter.Rectangle()
+            self.scroller = Clutter.Rectangle()
             self.scroller.set_color('Gray')
             self.scroller_image_path = None
         if scroller_press_image_path != None and os.path.exists(scroller_press_image_path):
@@ -72,7 +72,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scroller_press_image_path = None
         self.scroller.set_parent(self)
         
-        self.event_listener = clutter.Rectangle()
+        self.event_listener = Clutter.Rectangle()
         self.event_listener.set_color('#00000000')
         self.event_listener.set_parent(self)
         self.event_listener.set_reactive(True)
@@ -87,30 +87,30 @@ class Scrollbar(clutter.Actor, clutter.Container):
         if scale is not None :
             self.scale_list = list()
             for position in scale :
-                rect = clutter.Rectangle()
+                rect = Clutter.Rectangle()
                 rect.set_color('#FFFFFF30')
                 rect.set_parent(self)
                 self.scale_list.append(rect)
     
     def set_bar_image_path(self, path):
-        if isinstance(self.scrollbar_background, clutter.Rectangle):
+        if isinstance(self.scrollbar_background, Clutter.Rectangle):
             self.scrollbar_background.unparent()
             self.scrollbar_background.destroy()
-            self.scrollbar_background = clutter.Texture()
+            self.scrollbar_background = Clutter.Texture()
             self.scrollbar_background.set_parent(self)
         self.scrollbar_background.set_from_file(path)
     
     def set_scroller_image_path(self, path):
-        if isinstance(self.scroller, clutter.Rectangle):
+        if isinstance(self.scroller, Clutter.Rectangle):
             self.scroller.unparent()
             self.scroller.destroy()
-            self.scroller = clutter.Texture()
+            self.scroller = Clutter.Texture()
             self.scroller.set_parent(self)
         self.scroller.set_from_file(path)
     
     def on_mouse_scroll(self, source, event):
         current_pos = self.scroller_position_percent
-        if event.direction == clutter.SCROLL_UP:
+        if event.direction == Clutter.SCROLL_UP:
             if self.h:
                 current_pos += 0.1
             else:
@@ -123,7 +123,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.set_scroller_progress_percent(current_pos)
     
     def on_scroll_press(self, source, event):
-        clutter.grab_pointer(self.event_listener)
+        Clutter.grab_pointer(self.event_listener)
         self.pointer_grabbed = True
         self.last_event_y = event.y
         self.last_event_x = event.x
@@ -132,7 +132,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scroller.set_from_file(self.scroller_press_image_path)
 
     def on_scroll_release(self, source, event):
-        clutter.ungrab_pointer()
+        Clutter.ungrab_pointer()
         self.pointer_grabbed = False
         self.last_event_y = None
         self.last_event_x = None
@@ -193,7 +193,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.box = box
         self.flags = flags
         
-        listener_box = clutter.ActorBox(0, 0, box.x2 - box.x1, box.y2 - box.y1)
+        listener_box = Clutter.ActorBox(0, 0, box.x2 - box.x1, box.y2 - box.y1)
         self.event_listener.allocate(listener_box, flags)
         
         if self.h:
@@ -213,7 +213,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             bar_width = box_width/4
         bar_height = box_height - 2*self.padding - scroller_height + bar_width
 
-        bar_box = clutter.ActorBox()
+        bar_box = Clutter.ActorBox()
         if self.h:
             if self.position == 'center' :
                 bar_box.y1 = box_width/2 - bar_width/2
@@ -239,7 +239,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
 
         if self.scale_list is not None :
             for i, item in enumerate(self.scale_list) :
-                scale_box = clutter.ActorBox()
+                scale_box = Clutter.ActorBox()
                 position = self.scale_positions_percent[i]*(self.height-2*self.padding-self.scroller_height)+self.scroller_height/2 + self.padding + 1
                 scale_box.x1 = position
                 scale_box.y1 = bar_box.y1
@@ -248,14 +248,14 @@ class Scrollbar(clutter.Actor, clutter.Container):
                 item.allocate(scale_box, flags)
 
         if self.show_label :
-            label_box = clutter.ActorBox()
+            label_box = Clutter.ActorBox()
             label_box.x1 = bar_box.x1 + bar_width/2
             label_box.x2 = bar_box.x2
             label_box.y1 = bar_box.y1
             label_box.y2 = label_box.y1 + 20
             self.label.allocate(label_box,flags)
 
-        scroller_box = clutter.ActorBox()
+        scroller_box = Clutter.ActorBox()
         if self.h == False :
             scroller_box.x1 = self.padding
             scroller_box.x2 = scroller_box.x1 + scroller_width
@@ -280,7 +280,7 @@ class Scrollbar(clutter.Actor, clutter.Container):
             self.scroller_position_percent = (scroller_position)/(box_height - 2*self.padding - scroller_height)
         else:
             self.scroller_position_percent = 0
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
     def do_foreach(self, func, data=None):
         children = (self.scrollbar_background, self.scroller, self.event_listener)
@@ -334,12 +334,12 @@ class Scrollbar(clutter.Actor, clutter.Container):
         self.set_opacity(128 if lock else 255)
 
 
-class Clipper(clutter.Actor, clutter.Container):
+class Clipper(Clutter.Actor, Clutter.Container):
     '''
     Clipper class
-        need clutter.Actor
+        need Clutter.Actor
         variables :
-            .actor : clutter.Actor object to move
+            .actor : Clutter.Actor object to move
         functions :
             .callback_position : need float which indicate how to move clipper
             .do_allocate : move clipper
@@ -350,7 +350,7 @@ class Clipper(clutter.Actor, clutter.Container):
     __gtype_name__ = 'Clipper'
     
     def __init__(self, actor=None, expand=False):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self.actor = actor
         if self.actor is not None:
             self.actor.set_parent(self)
@@ -398,14 +398,14 @@ class Clipper(clutter.Actor, clutter.Container):
                 position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
                 self.actor.set_anchor_point(0, position)
                 self.actor.set_clip(0, position, box_width, box_height)
-                objbox = clutter.ActorBox(0, 0, box_width, box_height)
+                objbox = Clutter.ActorBox(0, 0, box_width, box_height)
                 self.actor.allocate(objbox, flags)
             else:
                 position = int(self.clipper_position * (self.actor.get_preferred_size()[3] - box_height))
                 self.actor.set_anchor_point(0, position)
                 self.actor.set_clip(0, position, box_width, box_height)
                 self.actor.allocate_preferred_size(flags)
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
         
     def do_foreach(self, func, data=None):
         if self.actor is not None:
@@ -481,41 +481,41 @@ class CoglClipper(BaseContainer):
             actor_width, actor_height = self.actor.get_preferred_size()[2:]
             position = 0 - int(self.clipper_position * (actor_height - self._height))
             if self.expand:
-                objbox = clutter.ActorBox(0, position, self._width, position + actor_height)
+                objbox = Clutter.ActorBox(0, position, self._width, position + actor_height)
             else:
-                objbox = clutter.ActorBox(0, position, actor_width, position + actor_height)
+                objbox = Clutter.ActorBox(0, position, actor_width, position + actor_height)
             self.actor.allocate(objbox, flags)
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def do_paint(self):
         # Draw a rectangle to cut animation
-        clutter.cogl.path_rectangle(0, 0, self._width, self._height)
-        clutter.cogl.path_close()
+        Clutter.cogl.path_rectangle(0, 0, self._width, self._height)
+        Clutter.cogl.path_close()
         # Start the clip
-        clutter.cogl.clip_push_from_path()
+        Clutter.cogl.clip_push_from_path()
         
         if self.actor:
             self.actor.paint()
 
         # Finish the clip
-        clutter.cogl.clip_pop()
+        Clutter.cogl.clip_pop()
 
 
 #main to test scrollbar
 if __name__ == '__main__':
 
-    stage = clutter.Stage()
-    stage.connect('destroy',clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy',Clutter.main_quit)
 
     scrollbar = Scrollbar()
     scrollbar.set_size(40, 480)
     scrollbar.set_position(600, 0)
     stage.add(scrollbar)
 
-    label = clutter.Text()
+    label = Clutter.Text()
     label.set_text('test')
     
-    image = clutter.Texture('test.jpg')
+    image = Clutter.Texture('test.jpg')
     
     clipper = Clipper(image)
     clipper.set_size(600, 480)
@@ -524,7 +524,7 @@ if __name__ == '__main__':
     stage.add(clipper)
     
     stage.show()
-    clutter.main()
+    Clutter.main()
 
 
 

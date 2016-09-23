@@ -1,12 +1,12 @@
 import os
-import clutter
+from gi.repository import Clutter
 import candies2
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
-    stage = clutter.Stage()
-    stage.connect('destroy', clutter.main_quit)
+    stage = Clutter.Stage()
+    stage.connect('destroy', Clutter.main_quit)
 
     # Test basis
     item1 = candies2.ItemButton('Item1')
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     stage.add(item1)
     
     # Test opacity
-    back = clutter.Texture(os.path.join(__path__, 'candies.png'))
+    back = Clutter.Texture(os.path.join(__path__, 'candies.png'))
     back.set_size(back.get_preferred_width(150)[1], 150)
     back.set_position(250, 50)
     stage.add(back)
@@ -86,4 +86,4 @@ if __name__ == '__main__':
     
     
     stage.show()
-    clutter.main()
+    Clutter.main()

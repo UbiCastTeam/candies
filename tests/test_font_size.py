@@ -1,8 +1,8 @@
-import clutter
+from gi.repository import Clutter
 
 lorem_ipsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed'\
               ' do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-label = clutter.Text()
+label = Clutter.Text()
 label.set_text(lorem_ipsum)
 print '----------------------------     --------------------------'
 print '| Font size | Actor height |     | Font size | Actor size |'

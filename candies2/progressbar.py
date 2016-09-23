@@ -1,30 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import gobject
-import clutter
+from gi.repository import GObject
+from gi.repository import Clutter
 import os
 
-from clutter import cogl
+from gi.repository import Cogl
 
-class ProgressBar(clutter.Actor):
+class ProgressBar(Clutter.Actor):
     __gtype_name__ = 'ProgressBar'
     __gproperties__ = {
         'color' : (
-            str, 'color', 'Color', None, gobject.PARAM_READWRITE
+            str, 'color', 'Color', None, GObject.PARAM_READWRITE
         ),
         'progress': (
-            gobject.TYPE_FLOAT, 'Progress', 'Progress value',
-            0.0, 1.0, 0.0, gobject.PARAM_READWRITE
+            GObject.TYPE_FLOAT, 'Progress', 'Progress value',
+            0.0, 1.0, 0.0, GObject.PARAM_READWRITE
         ),
     }
 
     def __init__(self, horizontal=True, reverse=False, texture=None, progress_texture=None):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._radius = 0.0
-        self._color = clutter.color_from_string('Black')
-        self._border_color = clutter.color_from_string('Grey')
-        self._progress_color = clutter.color_from_string('Blue')
+        self._color = Clutter.color_from_string('Black')
+        self._border_color = Clutter.color_from_string('Grey')
+        self._progress_color = Clutter.color_from_string('Blue')
         self._border_width = 0.0
         self._texture = texture
         self._progress_texture = progress_texture
@@ -55,18 +55,18 @@ class ProgressBar(clutter.Actor):
         self.queue_redraw()
     
     def set_inner_color(self, color):
-        self._color = clutter.color_from_string(color)
+        self._color = Clutter.color_from_string(color)
         self.queue_redraw()
     
     def set_color(self, color):
         self.set_inner_color(color)
     
     def set_border_color(self, color):
-        self._border_color = clutter.color_from_string(color)
+        self._border_color = Clutter.color_from_string(color)
         self.queue_redraw()
     
     def set_progress_color(self, color):
-        self._progress_color = clutter.color_from_string(color)
+        self._progress_color = Clutter.color_from_string(color)
         self.queue_redraw()
     
     def set_border_width(self, width):
@@ -110,10 +110,10 @@ class ProgressBar(clutter.Actor):
             radius = int(float(height) / 2.0)
         
         # background round rectangle
-        clutter.cogl.path_round_rectangle(0, 0, width, height, radius, 1)
-        clutter.cogl.path_close()
-        clutter.cogl.set_source_color(border_color)
-        clutter.cogl.path_fill()
+        Clutter.cogl.path_round_rectangle(0, 0, width, height, radius, 1)
+        Clutter.cogl.path_close()
+        Clutter.cogl.set_source_color(border_color)
+        Clutter.cogl.path_fill()
         
         if self._border_width > 0 and inner_color is not None:
             inner_width = int(width - 2*self._border_width)
@@ -133,17 +133,17 @@ class ProgressBar(clutter.Actor):
                 padding_y = int((height - inner_height) / 2.0)
                 
                 # foreground round rectangle
-                clutter.cogl.path_round_rectangle(padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
-                clutter.cogl.path_close()
-                clutter.cogl.set_source_color(inner_color)
-                clutter.cogl.path_fill()
+                Clutter.cogl.path_round_rectangle(padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
+                Clutter.cogl.path_close()
+                Clutter.cogl.set_source_color(inner_color)
+                Clutter.cogl.path_fill()
                 
                 # texture
                 if self._texture:
-                    clutter.cogl.path_round_rectangle(padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
-                    clutter.cogl.path_close()
-                    clutter.cogl.set_source_texture(self._texture)
-                    clutter.cogl.path_fill()
+                    Clutter.cogl.path_round_rectangle(padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
+                    Clutter.cogl.path_close()
+                    Clutter.cogl.set_source_texture(self._texture)
+                    Clutter.cogl.path_fill()
                 
                 if progress_color is not None:
                     # progress round rectangle
@@ -174,17 +174,17 @@ class ProgressBar(clutter.Actor):
                                 x2 = width - padding_x
                                 y2 = progress_y + progress_height
                             
-                            clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
-                            clutter.cogl.path_close()
-                            clutter.cogl.set_source_color(progress_color)
-                            clutter.cogl.path_fill()
+                            Clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                            Clutter.cogl.path_close()
+                            Clutter.cogl.set_source_color(progress_color)
+                            Clutter.cogl.path_fill()
                             
                             # progress_texture
                             if self._progress_texture:
-                                clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
-                                clutter.cogl.path_close()
-                                clutter.cogl.set_source_texture(self._progress_texture)
-                                clutter.cogl.path_fill()
+                                Clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                                Clutter.cogl.path_close()
+                                Clutter.cogl.set_source_texture(self._progress_texture)
+                                Clutter.cogl.path_fill()
                     else:
                         progress_width = inner_width
                         progress_height = int(self._progress * inner_height)
@@ -212,17 +212,17 @@ class ProgressBar(clutter.Actor):
                                 x2 = progress_x + progress_width
                                 y2 = height - padding_y
                             
-                            clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
-                            clutter.cogl.path_close()
-                            clutter.cogl.set_source_color(progress_color)
-                            clutter.cogl.path_fill()
+                            Clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                            Clutter.cogl.path_close()
+                            Clutter.cogl.set_source_color(progress_color)
+                            Clutter.cogl.path_fill()
                             
                             # progress_texture
                             if self._progress_texture:
-                                clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
-                                clutter.cogl.path_close()
-                                clutter.cogl.set_source_texture(self._progress_texture)
-                                clutter.cogl.path_fill()
+                                Clutter.cogl.path_round_rectangle(x1, y1, x2, y2, progress_radius, 1)
+                                Clutter.cogl.path_close()
+                                Clutter.cogl.set_source_texture(self._progress_texture)
+                                Clutter.cogl.path_fill()
     
     def do_paint(self):
         (x1, y1, x2, y2) = self.get_allocation_box()
@@ -252,7 +252,7 @@ class ProgressBar(clutter.Actor):
     def do_destroy(self):
         self.unparent()
 
-gobject.type_register(ProgressBar)
+GObject.type_register(ProgressBar)
 
 if __name__ == '__main__':
     def update_label(bar, event, label):
@@ -265,13 +265,13 @@ if __name__ == '__main__':
     
     def on_button_press(stage, event, bar):
         bar.set_progress(0.0)
-        gobject.timeout_add(10, progress, bar)
+        GObject.timeout_add(10, progress, bar)
     
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage.set_reactive(True)
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
-    label = clutter.Text()
+    label = Clutter.Text()
     label.set_position(5, 5)
     label.set_text('Click to launch progress...')
     stage.add(label)
@@ -288,4 +288,4 @@ if __name__ == '__main__':
 
     stage.show()
 
-    clutter.main()
+    Clutter.main()

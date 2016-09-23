@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
 import common
 
-class Box(clutter.Actor, clutter.Container):
+class Box(Clutter.Actor, Clutter.Container):
     __gtype_name__ = 'Box'
     '''
     A stacking box container.
     
     Works horizontally and vertically (see HBox and VBox for shortcut classes).
     
-    The elements contained in a box are defined by a clutter actor (the
+    The elements contained in a box are defined by a Clutter actor (the
     children of the container), a name (str) and optional properties.
     
     If bg_ignore_allocation_box is set to True, the box will allocate
@@ -36,7 +36,7 @@ class Box(clutter.Actor, clutter.Container):
     '''
     
     def __init__(self, horizontal=True, margin=0, padding=0, spacing=0, bg_ignore_allocation_box=True, pick_enabled=True):
-        clutter.Actor.__init__(self)
+        Clutter.Actor.__init__(self)
         self._margin = common.Margin(margin)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -482,7 +482,7 @@ class Box(clutter.Actor, clutter.Container):
                 else:
                     x_offset = max(0, (inner_width - obj_width) / 2)
             
-            objbox = clutter.ActorBox()
+            objbox = Clutter.ActorBox()
             objbox.x1 = round(x + x_offset)
             objbox.y1 = round(y + y_offset)
             objbox.x2 = round(x + x_offset + obj_width)
@@ -497,21 +497,21 @@ class Box(clutter.Actor, clutter.Container):
         if self.background:
             if self.bg_ignore_allocation_box and len(self.elements) > 0:
                 if self._horizontal:
-                    bgbox = clutter.ActorBox()
+                    bgbox = Clutter.ActorBox()
                     bgbox.x1 = self._margin.x
                     bgbox.y1 = self._margin.y
                     bgbox.x2 = self._margin.x + self._padding.x + round(x) - self._spacing.x
                     bgbox.y2 = main_height - self._margin.y
                     self.background.allocate(bgbox, flags)
                 else:
-                    bgbox = clutter.ActorBox()
+                    bgbox = Clutter.ActorBox()
                     bgbox.x1 = self._margin.x
                     bgbox.y1 = self._margin.y
                     bgbox.x2 = main_width - self._margin.x
                     bgbox.y2 = self._margin.y + self._padding.y + round(y) - self._spacing.y
                     self.background.allocate(bgbox, flags)
             else:
-                bgbox = clutter.ActorBox()
+                bgbox = Clutter.ActorBox()
                 bgbox.x1 = self._margin.x
                 bgbox.y1 = self._margin.y
                 bgbox.x2 = main_width - self._margin.x
@@ -522,28 +522,28 @@ class Box(clutter.Actor, clutter.Container):
         if self.overlay:
             if self.bg_ignore_allocation_box and len(self.elements) > 0:
                 if self._horizontal:
-                    ovbox = clutter.ActorBox()
+                    ovbox = Clutter.ActorBox()
                     ovbox.x1 = self._margin.x + self._padding.x
                     ovbox.y1 = self._margin.y + self._padding.y
                     ovbox.x2 = self._margin.x + round(x) - self._spacing.x
                     ovbox.y2 = main_height - self._margin.y - self._padding.y
                     self.overlay.allocate(ovbox, flags)
                 else:
-                    ovbox = clutter.ActorBox()
+                    ovbox = Clutter.ActorBox()
                     ovbox.x1 = self._margin.x + self._padding.x
                     ovbox.y1 = self._margin.y + self._padding.y
                     ovbox.x2 = main_width - self._margin.x - self._padding.x
                     ovbox.y2 = self._margin.y + round(y) - self._spacing.y
                     self.overlay.allocate(ovbox, flags)
             else:
-                ovbox = clutter.ActorBox()
+                ovbox = Clutter.ActorBox()
                 ovbox.x1 = self._margin.x + self._padding.x
                 ovbox.y1 = self._margin.y + self._padding.y
                 ovbox.x2 = main_width - self._margin.x - self._padding.x
                 ovbox.y2 = main_height - self._margin.y - self._padding.y
                 self.overlay.allocate(ovbox, flags)
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
     
     def set_bg_ignore_allocation_box(self, state):
         self.bg_ignore_allocation_box = state
@@ -583,7 +583,7 @@ class Box(clutter.Actor, clutter.Container):
         if self.pick_enabled:
             self.do_paint()
         else:
-            clutter.Actor.do_pick(self, color)
+            Clutter.Actor.do_pick(self, color)
     
     def do_destroy(self):
         self.unparent()
@@ -614,33 +614,33 @@ class VBox(Box):
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
-    rect_bg = clutter.Rectangle()
+    rect_bg = Clutter.Rectangle()
     rect_bg.set_color('#ffffffff')
-    rect_bg2 = clutter.Rectangle()
+    rect_bg2 = Clutter.Rectangle()
     rect_bg2.set_color('#ccccccff')
     
-    rect1 = clutter.Rectangle()
+    rect1 = Clutter.Rectangle()
     rect1.set_size(200, 50)
-    rect1.set_color(clutter.color_from_string('Black'))
+    rect1.set_color(Clutter.color_from_string('Black'))
     
-    rect2 = clutter.Rectangle()
+    rect2 = Clutter.Rectangle()
     rect2.set_size(20, 10)
-    rect2.set_color(clutter.color_from_string('Blue'))
+    rect2.set_color(Clutter.color_from_string('Blue'))
     
-    rect3 = clutter.Rectangle()
+    rect3 = Clutter.Rectangle()
     rect3.set_size(20, 20)
-    rect3.set_color(clutter.color_from_string('Yellow'))
+    rect3.set_color(Clutter.color_from_string('Yellow'))
     
-    rect4 = clutter.Rectangle()
+    rect4 = Clutter.Rectangle()
     rect4.set_size(40, 40)
-    rect4.set_color(clutter.color_from_string('Red'))
+    rect4.set_color(Clutter.color_from_string('Red'))
     
     
     col = Box(horizontal=False, margin=40, padding=0, spacing=10)
@@ -666,8 +666,8 @@ if __name__ == '__main__':
     line.add_element(col, 'col', resizable=0.5, expand=True)
     line.add_element(rect1, 'rect1', resizable=0.5)
     
-    #col.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
-    #line.props.request_mode = clutter.REQUEST_WIDTH_FOR_HEIGHT
+    #col.props.request_mode = Clutter.REQUEST_WIDTH_FOR_HEIGHT
+    #line.props.request_mode = Clutter.REQUEST_WIDTH_FOR_HEIGHT
     line.set_height(400)
     line.set_width(500)
     #line.set_size(400, 350)
@@ -695,7 +695,7 @@ if __name__ == '__main__':
     '''
     test_memory_usage = False
     if test_memory_usage:
-        import gobject
+        from gi.repository import GObject
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
         from pprint import pprint
@@ -704,9 +704,9 @@ if __name__ == '__main__':
         
         def create_test_object():
             t = Box(horizontal=True, spacing=10, padding=20)
-            r = clutter.Rectangle()
+            r = Clutter.Rectangle()
             r.set_size(250, 150)
-            r.set_color(clutter.color_from_string('Blue'))
+            r.set_color(Clutter.color_from_string('Blue'))
             t.add_element(r, 'rect')
             return t
         def remove_test_object(obj, stage):
@@ -719,7 +719,7 @@ if __name__ == '__main__':
                 print counter
                 tested_object = create_test_object()
                 stage.add(tested_object)
-                gobject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
+                GObject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
             return False
         
         def remove_tested_object(tested_object, stage, counter):
@@ -728,13 +728,13 @@ if __name__ == '__main__':
             gc.collect()
             pprint(gc.garbage)
             
-            gobject.timeout_add(2, test_memory, stage, counter, max_count)
+            GObject.timeout_add(2, test_memory, stage, counter, max_count)
             return False
         
-        gobject.timeout_add(10, test_memory, stage, 0, max_count)
+        GObject.timeout_add(10, test_memory, stage, 0, max_count)
 
     
     stage.show()
-    clutter.main()
+    Clutter.main()
     
     

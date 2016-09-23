@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import clutter
+from gi.repository import Clutter
 from container import BaseContainer
 from buttons import ImageButton
 from list import LightList
@@ -31,7 +31,7 @@ class Slider(BaseContainer):
         self._height = 0
         self._list_width = 0
         self._list_height = 0
-        self._list_box = clutter.ActorBox()
+        self._list_box = Clutter.ActorBox()
         
         self._previous = ImageButton(has_text=False)
         self._previous.connect('button-press-event', self._on_previous_press)
@@ -44,7 +44,7 @@ class Slider(BaseContainer):
         else:
             self._list = LightList(horizontal=horizontal, padding=(0, spacing), spacing=spacing)
         
-        self._group = clutter.Group()
+        self._group = Clutter.Group()
         self._group.add(self._list)
         
         self._add(self._group)
@@ -57,29 +57,29 @@ class Slider(BaseContainer):
         self._max_index = 0
         self._timeline_completed = True
         
-        self._timeline = clutter.Timeline(250)
+        self._timeline = Clutter.Timeline(250)
         self._timeline.set_loop(False)
         self._timeline.connect('completed', self._on_timeline_completed)
-        self._alpha = clutter.Alpha(self._timeline, clutter.LINEAR)
-        self._path = clutter.Path('M 0 0 L 0 0')
-        self._behaviour = clutter.BehaviourPath(self._alpha, self._path)
+        self._alpha = Clutter.Alpha(self._timeline, Clutter.LINEAR)
+        self._path = Clutter.Path('M 0 0 L 0 0')
+        self._behaviour = Clutter.BehaviourPath(self._alpha, self._path)
         
         # key bindings
-        self.pool = clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
-        self.pool.install_action('move-left', clutter.keysyms.Left, None, self._keyboard_previous_page)
-        self.pool.install_action('move-up', clutter.keysyms.Up, None, self._keyboard_previous_page)
-        self.pool.install_action('move-right', clutter.keysyms.Right, None, self._keyboard_next_page)
-        self.pool.install_action('move-down', clutter.keysyms.Down, None, self._keyboard_next_page)
+        self.pool = Clutter.BindingPool('%s_%s' %(self.__gtype_name__, id(self)))
+        self.pool.install_action('move-left', Clutter.keysyms.Left, None, self._keyboard_previous_page)
+        self.pool.install_action('move-up', Clutter.keysyms.Up, None, self._keyboard_previous_page)
+        self.pool.install_action('move-right', Clutter.keysyms.Right, None, self._keyboard_next_page)
+        self.pool.install_action('move-down', Clutter.keysyms.Down, None, self._keyboard_next_page)
         
-        self.pool.install_action('beginning', clutter.keysyms.Left, clutter.SHIFT_MASK, self._keyboard_beginning)
-        self.pool.install_action('beginning', clutter.keysyms.Up, clutter.SHIFT_MASK, self._keyboard_beginning)
-        self.pool.install_action('beginning', clutter.keysyms.Home, None, self._keyboard_beginning)
-        self.pool.install_action('end', clutter.keysyms.Right, clutter.SHIFT_MASK, self._keyboard_end)
-        self.pool.install_action('end', clutter.keysyms.Down, clutter.SHIFT_MASK, self._keyboard_end)
-        self.pool.install_action('end', clutter.keysyms.End, None, self._keyboard_end)
+        self.pool.install_action('beginning', Clutter.keysyms.Left, Clutter.SHIFT_MASK, self._keyboard_beginning)
+        self.pool.install_action('beginning', Clutter.keysyms.Up, Clutter.SHIFT_MASK, self._keyboard_beginning)
+        self.pool.install_action('beginning', Clutter.keysyms.Home, None, self._keyboard_beginning)
+        self.pool.install_action('end', Clutter.keysyms.Right, Clutter.SHIFT_MASK, self._keyboard_end)
+        self.pool.install_action('end', Clutter.keysyms.Down, Clutter.SHIFT_MASK, self._keyboard_end)
+        self.pool.install_action('end', Clutter.keysyms.End, None, self._keyboard_end)
         
-        self.pool.install_action('previous-page', clutter.keysyms.Page_Up, None, self._keyboard_previous_page)
-        self.pool.install_action('next-page', clutter.keysyms.Page_Down, None, self._keyboard_next_page)
+        self.pool.install_action('previous-page', Clutter.keysyms.Page_Up, None, self._keyboard_previous_page)
+        self.pool.install_action('next-page', Clutter.keysyms.Page_Down, None, self._keyboard_next_page)
         self.connect('key-press-event', self._on_key_press_event)
     
     def _on_key_press_event(self, source, event):
@@ -226,8 +226,8 @@ class Slider(BaseContainer):
             else:
                 self._list.set_clip(-start[0], -start[1], self._list_width, -diff + self._list_height)
         
-        self._path = clutter.Path('M %s %s L %s %s' %(start[0], start[1], end[0], end[1]))
-        self._behaviour = clutter.BehaviourPath(self._alpha, self._path)
+        self._path = Clutter.Path('M %s %s L %s %s' %(start[0], start[1], end[0], end[1]))
+        self._behaviour = Clutter.BehaviourPath(self._alpha, self._path)
         self._behaviour.apply(self._list)
         
         self._timeline.rewind()
@@ -431,8 +431,8 @@ class Slider(BaseContainer):
             self._refresh_allocation_params()
         
         # allocate buttons
-        previous_box = clutter.ActorBox()
-        next_box = clutter.ActorBox()
+        previous_box = Clutter.ActorBox()
+        next_box = Clutter.ActorBox()
         if self._horizontal:
             # previous
             previous_box.x1 = self._margin.x + self._padding.left
@@ -458,7 +458,7 @@ class Slider(BaseContainer):
         self._previous.allocate(previous_box, flags)
         self._next.allocate(next_box, flags)
         
-        list_box = clutter.ActorBox()
+        list_box = Clutter.ActorBox()
         if self._horizontal:
             list_box.x1 = previous_box.x2
             list_box.y1 = previous_box.y1
@@ -472,19 +472,19 @@ class Slider(BaseContainer):
         self._group.allocate(list_box, flags)
         self._list_box = list_box
         
-        clutter.Actor.do_allocate(self, box, flags)
+        Clutter.Actor.do_allocate(self, box, flags)
 
     def do_paint(self):
         # Draw a rectangle to cut animation
-        clutter.cogl.path_rectangle(self._list_box.x1, self._list_box.y1, self._list_box.x2, self._list_box.y2)
-        clutter.cogl.path_close()
+        Clutter.cogl.path_rectangle(self._list_box.x1, self._list_box.y1, self._list_box.x2, self._list_box.y2)
+        Clutter.cogl.path_close()
         # Start the clip
-        clutter.cogl.clip_push_from_path()
+        Clutter.cogl.clip_push_from_path()
         
         self._group.paint()
         
         # Finish the clip
-        clutter.cogl.clip_pop()
+        Clutter.cogl.clip_pop()
         
         self._previous.paint()
         self._next.paint()
@@ -492,20 +492,20 @@ class Slider(BaseContainer):
 
 if __name__ == '__main__':
     # stage
-    stage = clutter.Stage()
+    stage = Clutter.Stage()
     stage_width = 1000
     stage_height = 600
     stage.set_size(stage_width, stage_height)
     stage.set_color('#000000ff')
-    stage.connect('destroy', clutter.main_quit)
+    stage.connect('destroy', Clutter.main_quit)
     
-    bg = clutter.Rectangle()
+    bg = Clutter.Rectangle()
     bg.set_color('#444444ff')
     bg.set_size(700, 500)
     bg.set_position(150, 50)
     stage.add(bg)
     
-    bg = clutter.Rectangle()
+    bg = Clutter.Rectangle()
     bg.set_color('#666666ff')
     bg.set_size(660, 460)
     bg.set_position(170, 70)
@@ -570,5 +570,5 @@ if __name__ == '__main__':
         test_slider.add(rect)
     
     stage.show()
-    clutter.main()
+    Clutter.main()
     
