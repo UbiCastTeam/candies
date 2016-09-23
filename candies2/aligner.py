@@ -228,14 +228,11 @@ class Aligner(Clutter.Actor, Clutter.Container):
                 self.element.destroy()
 
 
-if __name__ == '__main__':
-    # stage
-    stage = Clutter.Stage()
+def tester(stage):
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
-    stage.set_color('#000000ff')
-    stage.connect('destroy', Clutter.main_quit)
+    stage.set_color(Clutter.color_from_string('#000000ff')[1])
 
     def on_click(source, event):
         color_a = '#880000ff'
@@ -243,15 +240,15 @@ if __name__ == '__main__':
         bg = source.background
         current_color = bg.get_color()
         if str(current_color) == color_a:
-            bg.set_color(color_b)
+            bg.set_color(Clutter.color_from_string(color_b)[1])
         else:
-            bg.set_color(color_a)
+            bg.set_color(Clutter.color_from_string(color_a)[1])
 
     bg = Clutter.Rectangle()
-    bg.set_color('#ff0000ff')
+    bg.set_color(Clutter.color_from_string('#ff0000ff')[1])
 
     ele = Clutter.Rectangle()
-    ele.set_color('#00ff00ff')
+    ele.set_color(Clutter.color_from_string('#00ff00ff')[1])
     ele.set_size(50, 100)
 
     aligner = Aligner(align='center', expand=False,
@@ -262,7 +259,8 @@ if __name__ == '__main__':
     # aligner.set_size(400, 400)
     aligner.set_reactive(True)
     aligner.connect('button-press-event', on_click)
-    stage.add(aligner)
+    stage.add_child(aligner)
 
-    stage.show()
-    Clutter.main()
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

@@ -635,10 +635,7 @@ class VBox(Box):
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
 
-if __name__ == '__main__':
-    Clutter.init()
-    # stage
-    stage = Clutter.Stage()
+def tester(stage):
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
@@ -762,5 +759,6 @@ if __name__ == '__main__':
 
         GObject.timeout_add(10, test_memory, stage, 0, max_count)
 
-    stage.show()
-    Clutter.main()
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
