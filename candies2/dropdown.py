@@ -64,7 +64,8 @@ class OptionLine(BaseContainer):
         self.spacer.hide()
         self._add(self.spacer)
         # label
-        self.label = TextContainer(unicode(text), padding=0, rounded=False, crypted=crypted)
+        self.label = TextContainer(
+            unicode(text), padding=0, rounded=False, crypted=crypted)
         self.label.set_font_color(self.font_color)
         self.label.set_font_name(self.font)
         self.label.set_inner_color('#00000000')
@@ -162,7 +163,8 @@ class OptionLine(BaseContainer):
     def do_get_preferred_width(self, for_height):
         if for_height != -1:
             for_height -= 2 * self._padding.y
-        preferred_width = self.icon_height + 2 * self._padding.x + self._spacing.x
+        preferred_width = self.icon_height + \
+            2 * self._padding.x + self._spacing.x
         preferred_width += self.spacer.get_preferred_width(for_height)[1]
         preferred_width += self.label.get_preferred_width(for_height)[1]
         return preferred_width, preferred_width
@@ -170,9 +172,11 @@ class OptionLine(BaseContainer):
     def do_get_preferred_height(self, for_width):
         preferred_height = 0
         if for_width != -1:
-            w = for_width - self.icon_height - 2 * self._padding.x - self._spacing.x
+            w = for_width - self.icon_height - \
+                2 * self._padding.x - self._spacing.x
             preferred_height = self.label.get_preferred_height(w)[1]
-        preferred_height = max(preferred_height, self.icon_height) + 2 * self._padding.y
+        preferred_height = max(
+            preferred_height, self.icon_height) + 2 * self._padding.y
         return preferred_height, preferred_height
 
     def do_allocate(self, box, flags):
@@ -277,7 +281,8 @@ class Select(Clutter.Actor, Clutter.Container):
         self.option_color = option_color
         self.texture = texture
 
-        # hidder is to catch click event on all stage when the select input is opened
+        # hidder is to catch click event on all stage when the select input is
+        # opened
         self._hidder = Clutter.Rectangle()
         self._hidder.set_color('#00000000')
         self._hidder.connect('button-release-event', self._on_hidder_click)
@@ -297,9 +302,12 @@ class Select(Clutter.Actor, Clutter.Container):
         self._auto_scroll.hide()
         self._auto_scroll.set_parent(self)
         # selected option is displayed when the select input is closed
-        self._selected_option = OptionLine('empty', '', padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=self.open_icon, icon_height=self.icon_height, enable_background=True, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
+        self._selected_option = OptionLine(
+            'empty', '', padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=self.open_icon,
+                                           icon_height=self.icon_height, enable_background=True, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
         self._selected_option.set_reactive(True)
-        self._selected_option.connect('button-release-event', self._on_selected_click)
+        self._selected_option.connect(
+            'button-release-event', self._on_selected_click)
         self._selected_option.set_parent(self)
         self._set_lock(True)
 
@@ -339,7 +347,10 @@ class Select(Clutter.Actor, Clutter.Container):
         return self._selected
 
     def add_option(self, name, hname, icon_path=None, index=None, indent_level=0):
-        new_option = OptionLine(name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height, enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
+        new_option = OptionLine(
+            name, hname, padding=(
+                self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height,
+                                enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
         new_option.set_line_alignment(self.alignment)
         if icon_path is not None and not self._has_icons:
             self._has_icons = True
@@ -349,7 +360,8 @@ class Select(Clutter.Actor, Clutter.Container):
         new_option.set_reactive(True)
         new_option.connect('button-release-event', self._on_click)
 
-        self._list.add_element(new_option, 'option_%s' % name, expand=True, index=index)
+        self._list.add_element(
+            new_option, 'option_%s' % name, expand=True, index=index)
         self.check_scrollbar()
 
         if self._selected is None:
@@ -500,7 +512,8 @@ class Select(Clutter.Actor, Clutter.Container):
         self._auto_scroll.set_scroller_image_path(path)
 
     def do_get_preferred_width(self, for_height):
-        preferred = max(self._selected_option.get_preferred_width(for_height)[1], self._list.get_preferred_width(for_height)[1])
+        preferred = max(self._selected_option.get_preferred_width(
+            for_height)[1], self._list.get_preferred_width(for_height)[1])
         return preferred, preferred
 
     def do_get_preferred_height(self, for_width):
@@ -520,9 +533,11 @@ class Select(Clutter.Actor, Clutter.Container):
             box_y = int(box_y)
 
             if self._stage_height > 0 and self._stage_width > 0:
-                hidder_box = Clutter.ActorBox(-box_x, -box_y, self._stage_width - box_x, self._stage_height - box_y)
+                hidder_box = Clutter.ActorBox(
+                    -box_x, -box_y, self._stage_width - box_x, self._stage_height - box_y)
             else:
-                hidder_box = Clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
+                hidder_box = Clutter.ActorBox(
+                    self._padding.x, self._padding.y, self._padding.x, self._padding.y)
             self._hidder.allocate(hidder_box, flags)
 
             option_height = self.icon_height + 2 * self._padding.y
@@ -530,16 +545,20 @@ class Select(Clutter.Actor, Clutter.Container):
             base_y = 0
             if self._stage_height > 0:
                 if total_height > self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]:
-                    total_height = self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]
+                    total_height = self._stage_height - 2 * \
+                        self.stage_padding - \
+                            self.y_offsets[0] - self.y_offsets[1]
                     base_y = -box_y + self.stage_padding + self.y_offsets[0]
                     if self.direction == "up":
                         base_y += total_height - main_height
                     # TODO enable scrollbar
                 elif self.direction == "up":
                     if total_height > box_y + main_height - self.y_offsets[0]:
-                        base_y = -box_y + total_height - main_height + self.y_offsets[0] + self.stage_padding
+                        base_y = -box_y + total_height - main_height + \
+                            self.y_offsets[0] + self.stage_padding
                 elif box_y + total_height > self._stage_height - self.stage_padding - self.y_offsets[1]:
-                    base_y = -box_y + self._stage_height - self.stage_padding - self.y_offsets[1] - total_height
+                    base_y = -box_y + self._stage_height - \
+                        self.stage_padding - self.y_offsets[1] - total_height
             x1 = 0
             x2 = main_width
             if self.direction == "up":
@@ -553,9 +572,11 @@ class Select(Clutter.Actor, Clutter.Container):
             list_box = Clutter.ActorBox(x1, y1, x2, y2)
             self._auto_scroll.allocate(list_box, flags)
         else:
-            hidder_box = Clutter.ActorBox(self._padding.x, self._padding.y, self._padding.x, self._padding.y)
+            hidder_box = Clutter.ActorBox(
+                self._padding.x, self._padding.y, self._padding.x, self._padding.y)
             self._hidder.allocate(hidder_box, flags)
-            self._background_box = Clutter.ActorBox(0, 0, main_width, main_height)
+            self._background_box = Clutter.ActorBox(
+                0, 0, main_width, main_height)
             self._background.allocate(self._background_box, flags)
             option_box = Clutter.ActorBox(0, 0, main_width, main_height)
             self._selected_option.allocate(option_box, flags)
@@ -627,7 +648,8 @@ if __name__ == '__main__':
     stage.set_size(stage_width, stage_height)
     stage.connect('destroy', Clutter.main_quit)
 
-    test_line = OptionLine('test', 'displayed fezfzefezfzef', icon_height=32, padding=8)
+    test_line = OptionLine(
+        'test', 'displayed fezfzefezfzef', icon_height=32, padding=8)
     test_line.label.set_font_name('22')
     test_line.set_position(0, 0)
     stage.add(test_line)
@@ -639,7 +661,8 @@ if __name__ == '__main__':
     # icon_path = 'test.jpg'
     test_select.add_option('test1', 'displayed', icon_path=icon_path)
     test_select.add_option('test2', 'displayed regregreg', icon_path=icon_path)
-    test_select.add_option('test3', 'displayed fezfzefezfzef', icon_path=icon_path)
+    test_select.add_option(
+        'test3', 'displayed fezfzefezfzef', icon_path=icon_path)
     # test_select.set_size(400, 64)
     stage.add(test_select)
 

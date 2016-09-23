@@ -5,6 +5,7 @@ from gi.repository import Clutter
 
 
 class BaseContainer(Clutter.Actor, Clutter.Container):
+
     """A container class wich implements all standard container functions."""
 
     __gtype_name__ = 'BaseContainer'
@@ -23,7 +24,8 @@ class BaseContainer(Clutter.Actor, Clutter.Container):
         if self.__allow_add:
             for child in children:
                 if child in self._children:
-                    raise Exception('Actor %s is already a children of %s' % (child, self))
+                    raise Exception(
+                        'Actor %s is already a children of %s' % (child, self))
                 child.set_parent(self)
                 self._children.append(child)
                 self.queue_relayout()
@@ -38,7 +40,8 @@ class BaseContainer(Clutter.Actor, Clutter.Container):
                     child.unparent()
                     self.queue_relayout()
                 else:
-                    raise Exception('Actor %s is not a child of %s' % (child, self))
+                    raise Exception(
+                        'Actor %s is not a child of %s' % (child, self))
         else:
             raise Exception('removing actor to %s is not authorized' % self)
 

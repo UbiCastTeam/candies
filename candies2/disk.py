@@ -6,7 +6,9 @@ from gi.repository import Clutter
 
 from gi.repository import Cogl
 
+
 class Disk(Clutter.Actor):
+
     """
     Disk (Clutter.Actor)
 
@@ -14,7 +16,7 @@ class Disk(Clutter.Actor):
     """
     __gtype_name__ = 'Disk'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
+        'color': (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self):
@@ -77,4 +79,3 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
-

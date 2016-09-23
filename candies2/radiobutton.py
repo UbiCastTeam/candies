@@ -7,11 +7,13 @@ from checkbox import CheckButton, CheckBox
 
 class RadioButton(CheckButton):
     __gtype_name__ = 'RadioButton'
-    
+
     def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False, callback=None, user_data=None):
-        CheckButton.__init__(self, name=name, not_checked_image_path=not_checked_image_path, checked_image_path=checked_image_path, checked=checked, callback=callback, user_data=user_data)
+        CheckButton.__init__(
+            self, name=name, not_checked_image_path=not_checked_image_path,
+                             checked_image_path=checked_image_path, checked=checked, callback=callback, user_data=user_data)
         self._related_buttons = list()
-    
+
     def set_related_buttons(self, buttons):
         # related buttons list must be a list of RadioButton
         self._related_buttons = list(buttons)
@@ -24,11 +26,11 @@ class RadioButton(CheckButton):
                     btn.set_checked(False)
                 else:
                     checked_found = True
-    
+
     def _on_press(self, source, event):
         if not self.checked:
             self.set_selected()
-    
+
     def set_selected(self, silent=False):
         self.set_checked(True, silent)
         for btn in self._related_buttons:
@@ -37,11 +39,12 @@ class RadioButton(CheckButton):
 
 class RadioBox(CheckBox):
     __gtype_name__ = 'RadioBox'
-    
+
     def __init__(self, label='RadioBox', checked=False, callback=None, spacing=20, size=64):
-        CheckBox.__init__(self, label=label, checked=checked, callback=callback, spacing=spacing, size=size)
+        CheckBox.__init__(self, label=label, checked=checked,
+                          callback=callback, spacing=spacing, size=size)
         self._related_buttons = list()
-    
+
     def set_related_buttons(self, buttons):
         # related buttons list must be a list of RadioButton
         self._related_buttons = list(buttons)
@@ -54,15 +57,14 @@ class RadioBox(CheckBox):
                     checked_found = True
                 else:
                     btn.set_checked(False)
-    
+
     def _on_press(self, source, event):
         if not self.checked:
             self.toggle_check()
             for btn in self._related_buttons:
                 btn.set_checked(False)
-    
+
     def set_selected(self, boolean, silent=False):
         self.set_checked(boolean, silent)
         for btn in self._related_buttons:
             btn.set_checked(False, silent)
-

@@ -22,13 +22,15 @@ from video import VideoPlayer
 
 
 class FileEntry(BaseContainer):
+
     '''
     An actor to represent a file
     '''
     __gtype_name__ = 'FileEntry'
 
     def __init__(self, name='', icon_src='', text='', extension='', is_dir=False, padding=10, spacing=10):
-        BaseContainer.__init__(self, allow_add=False, allow_remove=False, pick_enabled=False)
+        BaseContainer.__init__(
+            self, allow_add=False, allow_remove=False, pick_enabled=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
         self.name = name
@@ -85,15 +87,19 @@ class FileEntry(BaseContainer):
             h = for_height - 2 * self._padding.y
         else:
             h = for_height
-        preferred_width = 2 * self._padding.x + self._icon.get_preferred_width(h)[1] + self._label.get_preferred_width(h)[1]
+        preferred_width = 2 * self._padding.x + \
+            self._icon.get_preferred_width(h)[
+                1] + self._label.get_preferred_width(h)[1]
         return preferred_width, preferred_width
 
     def do_get_preferred_height(self, for_width):
         if for_width != -1:
-            w = for_width - 2 * self._padding.x - self._spacing.x - self.icon_size
+            w = for_width - 2 * self._padding.x - \
+                self._spacing.x - self.icon_size
         else:
             w = for_width
-        preferred_height = 2 * self._padding.y + max(self.label.get_preferred_height(w), self.icon_size)
+        preferred_height = 2 * self._padding.y + \
+            max(self.label.get_preferred_height(w), self.icon_size)
         return preferred_height, preferred_height
 
     def do_allocate(self, box, flags):
@@ -108,7 +114,8 @@ class FileEntry(BaseContainer):
         if self.icon_size == inner_height:
             icon_base_y = self._padding.y
         else:
-            icon_base_y = self._padding.y + int((inner_height - self.icon_size) / 2.0)
+            icon_base_y = self._padding.y + \
+                int((inner_height - self.icon_size) / 2.0)
 
         icon_box = Clutter.ActorBox()
         icon_box.x1 = self._padding.x
@@ -117,8 +124,10 @@ class FileEntry(BaseContainer):
         icon_box.y2 = icon_base_y + self.icon_size
 
         label_width = inner_width - self.icon_size - self._spacing.x
-        label_height = self._label.get_preferred_height(for_width=label_width)[1]
-        label_base_y = self._padding.y + int((inner_height - label_height) / 2.0)
+        label_height = self._label.get_preferred_height(
+            for_width=label_width)[1]
+        label_base_y = self._padding.y + \
+            int((inner_height - label_height) / 2.0)
 
         label_box = Clutter.ActorBox()
         label_box.x1 = self._padding.x + self.icon_size + self._spacing.x
@@ -137,7 +146,8 @@ class PreviewDisplayer(BaseContainer):
     __gtype_name__ = 'PreviewDisplayer'
 
     def __init__(self, padding=10):
-        BaseContainer.__init__(self, allow_add=False, allow_remove=False, pick_enabled=False)
+        BaseContainer.__init__(
+            self, allow_add=False, allow_remove=False, pick_enabled=False)
         self._padding = common.Padding(padding)
 
         self._image = Clutter.Texture()
@@ -189,7 +199,8 @@ class TypeFilter(object):
 
     def full_label(self):
         if self.extensions:
-            extension_list = ", ".join(["*.%s" % ext for ext in self.extensions])
+            extension_list = ", ".join(
+                ["*.%s" % ext for ext in self.extensions])
         else:
             extension_list = "*.*"
         return "%s (%s)" % (self.label, extension_list)
@@ -202,6 +213,7 @@ class TypeFilter(object):
 
 
 class FileChooser(BaseContainer):
+
     '''
     A panel to select file
     '''
@@ -219,7 +231,8 @@ class FileChooser(BaseContainer):
         self._base_dir = base_dir
         self.path = None
         # start_dir must be a subdirectory of base_dir
-        # startswith is not enough because /home/toto1 is not a subdir of /home/toto
+        # startswith is not enough because /home/toto1 is not a subdir of
+        # /home/toto
         if start_dir and os.path.dirname(start_dir).startswith(base_dir):
             self._start_dir = start_dir
         else:
@@ -239,7 +252,8 @@ class FileChooser(BaseContainer):
             self._type_filters = list()
             for type_filter in type_filters:
                 if type_filter in self.BASE_TYPE_FILTERS:
-                    self._type_filters.append(self.BASE_TYPE_FILTERS[type_filter])
+                    self._type_filters.append(
+                        self.BASE_TYPE_FILTERS[type_filter])
                 else:
                     self._type_filters.append(type_filter)
         else:
@@ -282,7 +296,8 @@ class FileChooser(BaseContainer):
         self._selected = None
         self._current_dir = None
         self.components_padding = 10
-        self.paths = list()  # list of tuples with path and current selection name
+        self.paths = list()
+                          # list of tuples with path and current selection name
 
         # actors
         self._bg = Clutter.Rectangle()
@@ -294,8 +309,10 @@ class FileChooser(BaseContainer):
         self._add(self._panel_bg)
 
         self.top_container = HBox(spacing=8, padding=12)
-        self._slider = Slider(elements_per_page=4, keep_ratio=False, horizontal=True, margin=0, h_align='left')
-        self.top_container.add_element(self._slider, "slider", expand=True, resizable=1.0)
+        self._slider = Slider(
+            elements_per_page=4, keep_ratio=False, horizontal=True, margin=0, h_align='left')
+        self.top_container.add_element(
+            self._slider, "slider", expand=True, resizable=1.0)
         button = self._slider.get_next_button()
         button.set_font_name(self.styles['button_font_name'])
         button.set_font_color(self.styles['button_font_color'])
@@ -330,11 +347,13 @@ class FileChooser(BaseContainer):
             self._texture.set_opacity(255)
             self.playbutton.set_element(self._texture)
             self.playbutton.set_reactive(True)
-        self.right_container.add_element(self.preview_block, "preview", expand=True, resizable=0.9, center=True)
+        self.right_container.add_element(
+            self.preview_block, "preview", expand=True, resizable=0.9, center=True)
 
         self._add(self.right_container)
 
-        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get('cancel_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
+        self._cancel = OptionLine('cancel', 'Cancel', icon_path=self.icons.get(
+            'cancel_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
         self._cancel.set_reactive(True)
         self._cancel.connect('button-release-event', self._on_cancel)
         self._cancel.set_font_name(self.styles['button_font_name'])
@@ -344,7 +363,8 @@ class FileChooser(BaseContainer):
         self._cancel.set_texture(self.styles['button_texture'])
         self._add(self._cancel)
 
-        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons.get('validate_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
+        self._validate = OptionLine('validate', 'Validate', icon_path=self.icons.get(
+            'validate_btn'), icon_height=self.styles['icon_height'], padding=(10, 0))
         self._validate.set_reactive(True)
         self._validate.connect('button-release-event', self._on_validate)
         self._validate.set_font_name(self.styles['button_font_name'])
@@ -370,7 +390,8 @@ class FileChooser(BaseContainer):
         )
 
         for type_filter in self._type_filters:
-            self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+            self._type_filter_select.add_option(
+                type_filter.name, type_filter.full_label())
         if len(self._type_filters) < 2:
             self._type_filter_select.set_lock(True)
         self._add(self._type_filter_select)
@@ -396,15 +417,24 @@ class FileChooser(BaseContainer):
         self.open_dir(self._start_dir)
 
         # key bindings
-        self.pool = Clutter.BindingPool('%s_%s' % (self.__gtype_name__, id(self)))
-        self.pool.install_action('move-down', Clutter.keysyms.Down, None, self.select_next)
-        self.pool.install_action('move-up', Clutter.keysyms.Up, None, self.select_previous)
-        self.pool.install_action('parent', Clutter.keysyms.BackSpace, None, self.parent_dir)
-        self.pool.install_action('select', Clutter.keysyms.Return, None, self._on_validate)
-        self.pool.install_action('select', Clutter.keysyms.KP_Enter, None, self._on_validate)
-        self.pool.install_action('escape', Clutter.keysyms.Escape, None, self._on_cancel)
-        self.pool.install_action('display_hidden_files', Clutter.keysyms.h, Clutter.CONTROL_MASK, self._on_display_hidden_files)
-        self.pool.install_action('refresh', Clutter.keysyms.F5, None, self._on_refresh)
+        self.pool = Clutter.BindingPool(
+            '%s_%s' % (self.__gtype_name__, id(self)))
+        self.pool.install_action(
+            'move-down', Clutter.keysyms.Down, None, self.select_next)
+        self.pool.install_action(
+            'move-up', Clutter.keysyms.Up, None, self.select_previous)
+        self.pool.install_action(
+            'parent', Clutter.keysyms.BackSpace, None, self.parent_dir)
+        self.pool.install_action(
+            'select', Clutter.keysyms.Return, None, self._on_validate)
+        self.pool.install_action(
+            'select', Clutter.keysyms.KP_Enter, None, self._on_validate)
+        self.pool.install_action(
+            'escape', Clutter.keysyms.Escape, None, self._on_cancel)
+        self.pool.install_action(
+            'display_hidden_files', Clutter.keysyms.h, Clutter.CONTROL_MASK, self._on_display_hidden_files)
+        self.pool.install_action(
+            'refresh', Clutter.keysyms.F5, None, self._on_refresh)
         self.connect('key-press-event', self._on_key_press_event)
 
     def _on_key_press_event(self, source, event):
@@ -439,19 +469,26 @@ class FileChooser(BaseContainer):
         if activate_delete_button:
             # delete button
             self._delete_file_button = ClassicButton('Delete')
-            self._delete_file_button.connect('button-release-event', self._on_delete_file_pressed)
-            self._delete_file_button.set_font_name(self.styles['button_font_name'])
-            self._delete_file_button.set_font_color(self.styles['button_font_color'])
-            self._delete_file_button.set_inner_color(self.styles['button_inner_color'])
-            self._delete_file_button.set_border_color(self.styles['button_border_color'])
+            self._delete_file_button.connect(
+                'button-release-event', self._on_delete_file_pressed)
+            self._delete_file_button.set_font_name(
+                self.styles['button_font_name'])
+            self._delete_file_button.set_font_color(
+                self.styles['button_font_color'])
+            self._delete_file_button.set_inner_color(
+                self.styles['button_inner_color'])
+            self._delete_file_button.set_border_color(
+                self.styles['button_border_color'])
             self._delete_file_button.set_texture(self.styles['button_texture'])
-            self.right_container.add_element(self._delete_file_button, "delete_file_button", expand=True, resizable=0.1)
+            self.right_container.add_element(
+                self._delete_file_button, "delete_file_button", expand=True, resizable=0.1)
 
     def set_custom_widget(self, custom_widget=None):
         self.remove_custom_widget()
         if custom_widget:
             self.custom_widget = custom_widget
-            self.top_container.add_element(self.custom_widget, "custom_widget", expand=False)
+            self.top_container.add_element(
+                self.custom_widget, "custom_widget", expand=False)
         else:
             self.custom_widget = None
 
@@ -482,7 +519,8 @@ class FileChooser(BaseContainer):
 
     def set_start_dir(self, start_dir, selected=None):
         # start_dir must be a subdirectory of base_dir
-        # startswith is not enough because /home/toto1 is not a subdir of /home/toto
+        # startswith is not enough because /home/toto1 is not a subdir of
+        # /home/toto
         if start_dir and os.path.dirname(start_dir).startswith(self._base_dir):
             self._start_dir = start_dir
         else:
@@ -540,7 +578,8 @@ class FileChooser(BaseContainer):
             self._type_filters = list()
             for type_filter in type_filters:
                 if type_filter in self.BASE_TYPE_FILTERS:
-                    self._type_filters.append(self.BASE_TYPE_FILTERS[type_filter])
+                    self._type_filters.append(
+                        self.BASE_TYPE_FILTERS[type_filter])
                 else:
                     self._type_filters.append(type_filter)
         else:
@@ -552,7 +591,8 @@ class FileChooser(BaseContainer):
         selected = self._type_filter_select.get_selected().name
         self._type_filter_select.remove_all_options()
         for type_filter in self._type_filters:
-            self._type_filter_select.add_option(type_filter.name, type_filter.full_label())
+            self._type_filter_select.add_option(
+                type_filter.name, type_filter.full_label())
         if len(self._type_filters) < 2:
             self._type_filter_select.set_lock(True)
         if selected in self._type_filters_dict:
@@ -660,7 +700,8 @@ class FileChooser(BaseContainer):
                 else:
                     self.preview_block.hide()
                 if self._delete_file_button:
-                    self._delete_file_button.set_lock(bool(self._can_delete and not self._can_delete(source.name)))
+                    self._delete_file_button.set_lock(
+                        bool(self._can_delete and not self._can_delete(source.name)))
         elif event is None:
             if is_dir:
                 self.open_dir(self.path)
@@ -715,7 +756,8 @@ class FileChooser(BaseContainer):
                 except Exception:
                     pass
             try:
-                file1 = unicodedata.normalize("NFKD", file1).encode("utf8", "ignore")
+                file1 = unicodedata.normalize(
+                    "NFKD", file1).encode("utf8", "ignore")
             except Exception:
                 pass
             file2 = file2.lower()
@@ -727,7 +769,8 @@ class FileChooser(BaseContainer):
                 except Exception:
                     pass
             try:
-                file2 = unicodedata.normalize("NFKD", file2).encode("utf8", "ignore")
+                file2 = unicodedata.normalize(
+                    "NFKD", file2).encode("utf8", "ignore")
             except Exception:
                 pass
         return cmp(file1, file2)
@@ -739,7 +782,8 @@ class FileChooser(BaseContainer):
         files = os.listdir(dir_path)
 
         # filter by type
-        current_type_filter = self._type_filters_dict[self._type_filter_select.get_selected().name]
+        current_type_filter = self._type_filters_dict[
+            self._type_filter_select.get_selected().name]
         tmp = list()
         for file_ in files:
             file_path = os.path.join(dir_path, file_)
@@ -768,7 +812,8 @@ class FileChooser(BaseContainer):
             else:
                 extension = os.path.splitext(name)[1][1:]
                 icon_src = self.icons.get(extension, self.icons['default'])
-            file_entry = FileEntry(name=file_path, icon_src=icon_src, text=name, extension=extension, is_dir=is_dir)
+            file_entry = FileEntry(
+                name=file_path, icon_src=icon_src, text=name, extension=extension, is_dir=is_dir)
             file_entry.set_reactive(True)
             file_entry.connect('button-release-event', self.select_entry)
             if cycle == 'even':
@@ -886,12 +931,14 @@ class FileChooser(BaseContainer):
         panel_bg_box.x1 = self._padding.x
         panel_bg_box.y1 = top_container_box.y2
         panel_bg_box.x2 = width - self._padding.x
-        panel_bg_box.y2 = height - self._padding.y - self.styles['bottom_bar_height']
+        panel_bg_box.y2 = height - self._padding.y - \
+            self.styles['bottom_bar_height']
 
         panel_box = Clutter.ActorBox()
         panel_box.x1 = panel_bg_box.x1
         panel_box.y1 = panel_bg_box.y1
-        panel_box.x2 = width - self._padding.x - self.styles['preview_width'] - self._spacing.x
+        panel_box.x2 = width - self._padding.x - \
+            self.styles['preview_width'] - self._spacing.x
         panel_box.y2 = panel_bg_box.y2
 
         right_box = Clutter.ActorBox()
@@ -903,22 +950,27 @@ class FileChooser(BaseContainer):
         type_filter_box = Clutter.ActorBox()
         type_filter_box.y1 = panel_bg_box.y2 + self.components_padding
         type_filter_box.y2 = height - self._padding.y - self.components_padding
-        type_filter_width = self._type_filter_select.get_preferred_width(for_height=type_filter_box.y2 - type_filter_box.y1)[1]
-        type_filter_box.x1 = width - self._spacing.x - self.components_padding - type_filter_width
+        type_filter_width = self._type_filter_select.get_preferred_width(
+            for_height=type_filter_box.y2 - type_filter_box.y1)[1]
+        type_filter_box.x1 = width - self._spacing.x - \
+            self.components_padding - type_filter_width
         type_filter_box.x2 = type_filter_box.x1 + type_filter_width
 
         cancel_box = Clutter.ActorBox()
         cancel_box.y1 = type_filter_box.y1
         cancel_box.y2 = type_filter_box.y2
-        cancel_width = self._cancel.get_preferred_width(for_height=cancel_box.y2 - cancel_box.y1)[1]
+        cancel_width = self._cancel.get_preferred_width(
+            for_height=cancel_box.y2 - cancel_box.y1)[1]
         cancel_box.x1 = self._spacing.x + self.components_padding
         cancel_box.x2 = cancel_box.x1 + cancel_width
 
         validate_box = Clutter.ActorBox()
         validate_box.y1 = type_filter_box.y1
         validate_box.y2 = type_filter_box.y2
-        validate_width = self._validate.get_preferred_width(for_height=validate_box.y2 - validate_box.y1)[1]
-        validate_box.x1 = (type_filter_box.x1 + cancel_box.x2 - validate_width) / 2
+        validate_width = self._validate.get_preferred_width(
+            for_height=validate_box.y2 - validate_box.y1)[1]
+        validate_box.x1 = (
+            type_filter_box.x1 + cancel_box.x2 - validate_width) / 2
         validate_box.x2 = validate_box.x1 + validate_width
 
         self._bg.allocate(bg_box, flags)
@@ -978,8 +1030,13 @@ if __name__ == '__main__':
         "all"
     )
 
-    fc = FileChooser(base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
-    # fc = FileChooser(base_dir='/home/sde-melo', start_dir='/home/sde-melo/Images', allow_hidden_files=True, directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
+    fc = FileChooser(
+        base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True,
+                     directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
+    # fc = FileChooser(base_dir='/home/sde-melo',
+    # start_dir='/home/sde-melo/Images', allow_hidden_files=True,
+    # directories_first=True, case_sensitive_sort=False,
+    # type_filters=type_filters, callback=cb, icons=icons)
     fc.set_size(1100, 600)
     fc.set_position(50, 50)
     stage.add(fc)

@@ -5,7 +5,9 @@ from gi.repository import GObject
 from gi.repository import Clutter
 from gi.repository import Cogl
 
+
 class Circle(Clutter.Actor):
+
     """
     Circle (Clutter.Actor)
 
@@ -13,7 +15,7 @@ class Circle(Clutter.Actor):
     """
     __gtype_name__ = 'Circle'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
+        'color': (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self, color='Black', stroke_width=50):
@@ -23,10 +25,10 @@ class Circle(Clutter.Actor):
 
     def set_color(self, color):
         self._color = Clutter.color_from_string(color)
-    
+
     def set_stroke_width(self, width):
         self._stroke_width = width
-    
+
     def do_set_property(self, pspec, value):
         if pspec.name == 'color':
             self._color = self.set_color(value)
@@ -42,7 +44,8 @@ class Circle(Clutter.Actor):
     def __paint_circle(self, width, height, color):
         cogl.path_arc(width / 2, height / 2, width / 2, height / 2, 0, 360)
         cogl.path_close()
-        cogl.path_arc(width / 2, height / 2, (width / 2) - self._stroke_width, (height / 2) - self._stroke_width, 0, 360)
+        cogl.path_arc(width / 2, height / 2, (width / 2) -
+                      self._stroke_width, (height / 2) - self._stroke_width, 0, 360)
         cogl.path_close()
 
         cogl.set_source_color(color)
@@ -55,7 +58,7 @@ class Circle(Clutter.Actor):
 
         real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
         paint_color.alpha = real_alpha
-        
+
         self.__paint_circle(x2 - x1, y2 - y1, paint_color)
 
     def do_pick(self, pick_color):
@@ -81,4 +84,3 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
-

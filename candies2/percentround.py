@@ -6,14 +6,16 @@ from gi.repository import Clutter
 from gi.repository import Cogl
 import math
 
+
 class PercentRound(Clutter.Actor):
+
     """
     Test (Clutter.Actor)
 
     """
     __gtype_name__ = 'PercentRound'
     __gproperties__ = {
-        'color' : (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
+        'color': (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
     }
 
     def __init__(self, color='Black', percent=0, init_percent=0, color2='Gray'):
@@ -52,29 +54,31 @@ class PercentRound(Clutter.Actor):
             raise TypeError('Unknown property ' + pspec.name)
 
     def __paint_circle(self, width, height, color):
-        if self.percent != 0 :
-            init_angle = self.init_percent*360/100
-            end_angle = (self.init_percent+self.percent)*360/100
-            cogl.path_arc(width/2, height/2, width/2, height/2,\
+        if self.percent != 0:
+            init_angle = self.init_percent * 360 / 100
+            end_angle = (self.init_percent + self.percent) * 360 / 100
+            cogl.path_arc(width / 2, height / 2, width / 2, height / 2,
                           init_angle, end_angle)
             cogl.path_line_to(width / 2, height / 2)
-            
-            end_x = width/2 + math.cos(math.radians(init_angle))*width/2
-            
-            end_y = height/2 + math.sin(math.radians(init_angle))*height/2
+
+            end_x = width / 2 + math.cos(math.radians(init_angle)) * width / 2
+
+            end_y = height / 2 + \
+                math.sin(math.radians(init_angle)) * height / 2
             cogl.path_line_to(end_x, end_y)
-        else :
-            cogl.path_line(width/2, height/2,width, height/2)
+        else:
+            cogl.path_line(width / 2, height / 2, width, height / 2)
         cogl.path_close()
         cogl.set_source_color(color)
         cogl.path_fill()
 
-        if self.init_percent != 0 :
-            init_angle = self.init_percent*360/100
+        if self.init_percent != 0:
+            init_angle = self.init_percent * 360 / 100
             cogl.path_new()
-            cogl.path_arc(width/2, height/2, width/2, height/2, 0, init_angle)
+            cogl.path_arc(
+                width / 2, height / 2, width / 2, height / 2, 0, init_angle)
             cogl.path_line_to(width / 2, height / 2)
-            cogl.path_line_to(width, height/2)
+            cogl.path_line_to(width, height / 2)
             cogl.path_close()
             paint_color = self._color2.copy()
             real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
@@ -113,4 +117,3 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
-

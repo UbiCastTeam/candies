@@ -39,4 +39,3 @@ from adjusters import NumberAdjuster
 # player
 from seekbar import SeekBar
 from video import VideoPlayer
-
