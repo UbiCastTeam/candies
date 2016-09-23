@@ -315,12 +315,7 @@ class RoundRectangle(Clutter.Actor):
         self.unparent()
 
 
-if __name__ == '__main__':
-    Clutter.init()
-    stage = Clutter.Stage()
-    stage.set_size(640, 480)
-    stage.connect('destroy', Clutter.main_quit)
-
+def tester(stage):
     rect = OutlinedRoundRectangle()
     rect.set_radius(10)
     rect.set_width(5)
@@ -375,7 +370,7 @@ if __name__ == '__main__':
             return t
 
         def remove_test_object(obj, stage):
-            stage.remove(obj)
+            stage.remove_child(obj)
             obj.destroy()
             return False
 
@@ -400,5 +395,7 @@ if __name__ == '__main__':
 
         GObject.timeout_add(10, test_memory, stage, 0, max_count)
 
-    stage.show()
-    Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
