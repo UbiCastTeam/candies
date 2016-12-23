@@ -193,7 +193,7 @@ if __name__ == '__main__':
     stage.connect('destroy', Clutter.main_quit)
 
     def update_callback(source, value):
-        print "Test value has been updated", value
+        print("Test value has been updated", value)
 
     test = NumberAdjuster(0, 10, 5, increment=0.1, text="Test value")
     test.connect("value-updated", update_callback)

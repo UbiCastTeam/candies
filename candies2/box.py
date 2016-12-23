@@ -741,7 +741,7 @@ def tester(stage):
         def test_memory(stage, counter, max_count):
             if counter < max_count or max_count == 0:
                 counter += 1
-                print counter
+                print(counter)
                 tested_object = create_test_object()
                 stage.add(tested_object)
                 GObject.timeout_add(
