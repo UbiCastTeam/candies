@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
@@ -27,12 +29,12 @@ class SimpleClick(GObject.GObject):
         self._is_pressed = True
 
     def on_release(self, source, event):
-        if self._is_pressed == True:
+        if self._is_pressed:
             self._is_pressed = False
             self.actor.emit('simple-click-event')
 
     def on_leave(self, source, event):
-        if self._is_pressed == True:
+        if self._is_pressed:
             self._is_pressed = False
 
 
@@ -82,7 +84,7 @@ class LongClick(SimpleClick):
 
     def on_release(self, source, event):
         Clutter.ungrab_pointer()
-        if self._is_pressed == True:
+        if self._is_pressed:
             self._is_pressed = False
             if self._timeout_id:
                 GObject.source_remove(self._timeout_id)
@@ -95,17 +97,16 @@ class LongClick(SimpleClick):
     def is_long(self):
         return self._is_long
 
-if __name__ == '__main__':
-    stage = Clutter.Stage()
-    stage.connect('destroy', Clutter.main_quit)
+
+def tester(stage):
 
     lbl = Clutter.Text()
 
     rect = Clutter.Rectangle()
     SimpleClick(rect)
-    rect.set_color(Clutter.color_from_string('Green'))
+    rect.set_color(Clutter.color_from_string('Green')[1])
     rect.set_border_width(2)
-    rect.set_border_color(Clutter.color_from_string('DarkGreen'))
+    rect.set_border_color(Clutter.color_from_string('DarkGreen')[1])
     rect.set_size(200, 75)
     rect.set_position(240, 75)
     rect.set_reactive(True)
@@ -114,9 +115,9 @@ if __name__ == '__main__':
 
     rect2 = Clutter.Rectangle()
     LongClick(rect2)
-    rect2.set_color(Clutter.color_from_string('Yellow'))
+    rect2.set_color(Clutter.color_from_string('Yellow')[1])
     rect2.set_border_width(2)
-    rect2.set_border_color(Clutter.color_from_string('DarkGreen'))
+    rect2.set_border_color(Clutter.color_from_string('DarkGreen')[1])
     rect2.set_size(200, 75)
     rect2.set_position(240, 175)
     rect2.set_reactive(True)
@@ -127,7 +128,13 @@ if __name__ == '__main__':
     rect2.connect('long-click-event', lambda src:
                   lbl.set_text('Long clic on yellow!'))
 
-    stage.add(lbl, rect, rect2)
+    stage.add_child(lbl)
+    stage.add_child(rect)
+    stage.add_child(rect2)
     stage.show()
 
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
