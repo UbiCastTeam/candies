@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 import common
 
@@ -49,7 +51,7 @@ class Box(Clutter.Actor, Clutter.Container):
             self._horizontal = True
         else:
             self._horizontal = False
-        if bg_ignore_allocation_box == True:
+        if bg_ignore_allocation_box:
             self.bg_ignore_allocation_box = True
         else:
             self.bg_ignore_allocation_box = False
@@ -632,6 +634,7 @@ class VBox(Box):
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
 
+
 def tester(stage):
     stage_width = 1200
     stage_height = 600
@@ -668,14 +671,14 @@ def tester(stage):
     col.set_background(rect_bg2)
     col.add(
         {'name': 'rect2',
-         #'resizable': 1.0,
+         # 'resizable': 1.0,
          'keep_ratio': True,
          'expand': True,
-         #'center': True,
+         # 'center': True,
          'object': rect2},
 
         {'name': 'rect3',
-         #'resizable': 1.0,
+         # 'resizable': 1.0,
          'object': rect3},
 
         {'name': 'rect4',
