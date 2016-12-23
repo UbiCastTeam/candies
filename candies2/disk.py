@@ -1,81 +1,74 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import cairo
+import math
+
 from gi.repository import GObject
 from gi.repository import Clutter
 
-
+from candies2.utils import get_rgb_color
 
 
 class Disk(Clutter.Actor):
+    '''
+    A simple actor drawing a disk using cairo.
+    '''
 
-    """
-    Disk (Clutter.Actor)
+    def __init__(self, color=None, stroke_width=50):
+        super(Disk, self).__init__()
+        self.color = get_rgb_color(color or 'black')
+        self.stroke_width = stroke_width
 
-    A simple actor drawing a disk using the Clutter.cogl primitives
-    """
-    __gtype_name__ = 'Disk'
-    __gproperties__ = {
-        'color': (str, 'color', 'Color', None, GObject.PARAM_READWRITE),
-    }
-
-    def __init__(self):
-        Clutter.Actor.__init__(self)
-        self._color = Clutter.color_from_string('Black')
+        self.canvas = Clutter.Canvas()
+        self.set_content(self.canvas)
+        self.canvas.connect('draw', self.draw)
+        self.connect('notify::allocation', self.on_allocation)
 
     def set_color(self, color):
-        self._color = Clutter.color_from_string(color)
+        self.color = get_rgb_color(color)
 
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'color':
-            self._color = Clutter.color_from_string(value)
+    def set_stroke_width(self, width):
+        self.stroke_width = width
+
+    def on_allocation(self, *kwargs):
+        GObject.idle_add(self.idle_resize)
+
+    def idle_resize(self):
+        self.canvas.set_size(*self.get_size())
+
+    def draw(self, canvas, ctx, width, height):
+        # reset canvas
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+        ctx.paint()
+        ctx.set_operator(cairo.OPERATOR_OVER)
+
+        if width == height:
+            radius = width / 2.
+            ctx.arc(radius, radius, radius, 0, 2 * math.pi)
         else:
-            raise TypeError('Unknown property ' + pspec.name)
+            x_radius = width / 2.
+            y_radius = height / 2.
+            ctx.save()
+            ctx.translate(x_radius, y_radius)
+            ctx.scale(x_radius, y_radius)
+            ctx.arc(0, 0, 1, 0, 2 * math.pi)
+            ctx.restore()
+        ctx.close_path()
+        ctx.set_source_rgb(*self.color)
+        ctx.fill()
 
-    def do_get_property(self, pspec):
-        if pspec.name == 'color':
-            return self._color
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
 
-    def __paint_circle(self, width, height, color):
-        cogl.path_ellipse(width / 2, height / 2, width / 2, height / 2)
-        cogl.path_close()
+def tester(stage):
+    actor = Disk()
+    actor.set_color('red')
+    actor.set_size(200, 200)
+    actor.set_anchor_point(100, 100)
+    actor.set_position(320, 240)
+    stage.add_child(actor)
+    GObject.timeout_add_seconds(2, actor.set_size, 100, 400)
 
-        cogl.set_source_color(color)
-        cogl.path_fill()
-
-    def do_paint(self):
-        (x1, y1, x2, y2) = self.get_allocation_box()
-
-        paint_color = self._color.copy()
-
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
-
-        self.__paint_circle(x2 - x1, y2 - y1, paint_color)
-
-    def do_pick(self, pick_color):
-        if not self.should_pick_paint():
-            return
-
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_circle(x2 - x1, y2 - y1, pick_color)
-
-GObject.type_register(Disk)
 
 if __name__ == '__main__':
-    stage = Clutter.Stage()
-    stage.set_title('Nihon!')
-    stage.set_size(640, 480)
-    stage.connect('destroy', Clutter.main_quit)
-
-    disk = Disk()
-    disk.set_color('Red')
-    disk.set_size(200, 200)
-    disk.set_anchor_point(100, 100)
-    disk.set_position(320, 240)
-    stage.add(disk)
-
-    stage.show()
-    Clutter.main()
+    from test import run_test
+    run_test(tester)

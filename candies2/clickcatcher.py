@@ -3,7 +3,7 @@
 
 from gi.repository import Clutter
 from container import BaseContainer
-from circle import Circle
+from disk import Disk
 
 
 class ClickCatcher(BaseContainer):
@@ -19,7 +19,7 @@ class ClickCatcher(BaseContainer):
 
         self._circle_radius = circles_radius
         self._circle_center = 0, 0
-        self._circle = Circle()
+        self._circle = Disk()
         self._circle.set_opacity(0)
         self._circle.set_color(circles_color)
         self._circle.set_stroke_width(10)
@@ -27,7 +27,7 @@ class ClickCatcher(BaseContainer):
         self._add(self._circle)
 
         self._inner_circle_radius = self._circle_radius / 2.0
-        self._inner_circle = Circle()
+        self._inner_circle = Disk()
         self._inner_circle.set_opacity(0)
         self._inner_circle.set_color(circles_color)
         self._inner_circle.set_stroke_width(7)

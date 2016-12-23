@@ -15,7 +15,6 @@ from autoscroll import AutoScrollPanel
 from tooltip import ToolTipManager
 from slider import Slider
 # actors
-from circle import Circle
 from percentround import PercentRound
 from disk import Disk
 from roundrect import RoundRectangle

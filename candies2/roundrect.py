@@ -89,16 +89,16 @@ class RoundRectangle(Clutter.Actor):
 
 
 def tester(stage):
-    rect = RoundRectangle()
-    rect.set_radius(25)
-    rect.set_inner_color('#0000ffff')
-    rect.set_border_width(5)
-    rect.set_border_color('#00ffffff')
-    rect.set_size(160, 120)
-    rect.set_anchor_point(80, 60)
-    rect.set_position(480, 240)
-    stage.add_child(rect)
-    GObject.timeout_add_seconds(2, rect.set_size, 300, 400)
+    actor = RoundRectangle()
+    actor.set_radius(25)
+    actor.set_inner_color('#0000ffff')
+    actor.set_border_width(5)
+    actor.set_border_color('#00ffffff')
+    actor.set_size(160, 120)
+    actor.set_anchor_point(80, 60)
+    actor.set_position(480, 240)
+    stage.add_child(actor)
+    GObject.timeout_add_seconds(2, actor.set_size, 300, 400)
 
     test_memory_usage = False
     if test_memory_usage:
