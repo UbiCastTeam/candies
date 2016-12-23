@@ -50,7 +50,7 @@ class RoundRectangle(Clutter.Actor):
 
     def set_border_color(self, color):
         self.border_color = get_rgb_color(color)
-        self.canvas.invalidate()()
+        self.canvas.invalidate()
 
     def set_border_width(self, width):
         self.border_width = width
