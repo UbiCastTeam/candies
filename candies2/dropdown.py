@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
-
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
+from gi.repository import Cogl
 import common
 from container import BaseContainer
 from roundrect import RoundRectangle
@@ -11,14 +13,16 @@ from autoscroll import AutoScrollPanel
 
 
 class OptionLine(BaseContainer):
-    __gtype_name__ = 'OptionLine'
     """
     A option line for select input. Can be used alone to have a text with icon.
     """
 
     INDENT_WIDTH = 24
 
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True, crypted=False, indent_level=0):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8,
+                 spacing=8, enable_background=True, font='14', font_color='Black',
+                 color='LightGray', border_color='Gray', texture=None,
+                 rounded=True, crypted=False, indent_level=0):
         BaseContainer.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -66,10 +70,11 @@ class OptionLine(BaseContainer):
         # label
         self.label = TextContainer(
             unicode(text), padding=0, rounded=False, crypted=crypted)
-        self.label.set_font_color(self.font_color)
+        color = Clutter.color_from_string(self.font_color)[1]
+        self.label.set_font_color(color)
         self.label.set_font_name(self.font)
-        self.label.set_inner_color('#00000000')
-        self.label.set_border_color('#00000000')
+        self.label.set_inner_color(Clutter.color_from_string('#00000000')[1])
+        self.label.set_border_color(Clutter.color_from_string('#00000000')[1])
         self.label.set_line_wrap(False)  # to center text vertically
         self._add(self.label)
 
@@ -118,16 +123,16 @@ class OptionLine(BaseContainer):
             self.icon.hide()
 
     def set_font_color(self, color):
-        self.label.set_font_color(color)
+        self.label.set_font_color(Clutter.color_from_string(color)[1])
 
     def set_font_name(self, font_name):
         self.label.set_font_name(font_name)
 
     def set_inner_color(self, color):
-        self.background.set_color(color)
+        self.background.set_color(Clutter.color_from_string(color)[1])
 
     def set_border_color(self, color):
-        self.background.set_border_color(color)
+        self.background.set_border_color(Clutter.color_from_string(color)[1])
 
     def set_radius(self, radius):
         if self.rounded:
@@ -151,12 +156,12 @@ class OptionLine(BaseContainer):
             self.queue_relayout()
 
     def show_background(self):
-        if self.enable_background != True:
+        if not self.enable_background:
             self.enable_background = True
             self.background.show()
 
     def hide_background(self):
-        if self.enable_background != False:
+        if self.enable_background:
             self.enable_background = False
             self.background.hide()
 
@@ -239,12 +244,16 @@ class OptionLine(BaseContainer):
 
 
 class Select(Clutter.Actor, Clutter.Container):
-    __gtype_name__ = 'Select'
     """
     A select input.
     """
 
-    def __init__(self, padding=8, spacing=8, on_change_callback=None, icon_height=48, open_icon_path=None, font='14', font_color='Black', selected_font_color='Blue', color='LightGray', border_color='Gray', option_color='LightBlue', texture=None, user_data=None, direction="down", y_offsets=None, alignment="center"):
+    def __init__(self, padding=8, spacing=8, on_change_callback=None,
+                 icon_height=48, open_icon_path=None, font='14',
+                 font_color='Black', selected_font_color='Blue',
+                 color='LightGray', border_color='Gray',
+                 option_color='LightBlue', texture=None, user_data=None,
+                 direction="down", y_offsets=None, alignment="center"):
         Clutter.Actor.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -284,7 +293,7 @@ class Select(Clutter.Actor, Clutter.Container):
         # hidder is to catch click event on all stage when the select input is
         # opened
         self._hidder = Clutter.Rectangle()
-        self._hidder.set_color('#00000000')
+        self._hidder.set_color(Clutter.color_from_string('#00000000')[1])
         self._hidder.connect('button-release-event', self._on_hidder_click)
         self._hidder.set_reactive(True)
         self._hidder.set_parent(self)
@@ -303,8 +312,12 @@ class Select(Clutter.Actor, Clutter.Container):
         self._auto_scroll.set_parent(self)
         # selected option is displayed when the select input is closed
         self._selected_option = OptionLine(
-            'empty', '', padding=(self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=self.open_icon,
-                                           icon_height=self.icon_height, enable_background=True, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture)
+            'empty', '', padding=(self._padding.x, self._padding.y),
+            spacing=self._spacing.x, icon_path=self.open_icon,
+            icon_height=self.icon_height, enable_background=True,
+            font=self.font, font_color=self.font_color,
+            color=self.option_color, border_color='#00000000',
+            texture=self.texture)
         self._selected_option.set_reactive(True)
         self._selected_option.connect(
             'button-release-event', self._on_selected_click)
@@ -348,9 +361,10 @@ class Select(Clutter.Actor, Clutter.Container):
 
     def add_option(self, name, hname, icon_path=None, index=None, indent_level=0):
         new_option = OptionLine(
-            name, hname, padding=(
-                self._padding.x, self._padding.y), spacing=self._spacing.x, icon_path=icon_path, icon_height=self.icon_height,
-                                enable_background=False, font=self.font, font_color=self.font_color, color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
+            name, hname, padding=(self._padding.x, self._padding.y), spacing=self._spacing.x,
+            icon_path=icon_path, icon_height=self.icon_height,
+            enable_background=False, font=self.font, font_color=self.font_color,
+            color=self.option_color, border_color='#00000000', texture=self.texture, indent_level=indent_level)
         new_option.set_line_alignment(self.alignment)
         if icon_path is not None and not self._has_icons:
             self._has_icons = True
@@ -546,8 +560,7 @@ class Select(Clutter.Actor, Clutter.Container):
             if self._stage_height > 0:
                 if total_height > self._stage_height - 2 * self.stage_padding - self.y_offsets[0] - self.y_offsets[1]:
                     total_height = self._stage_height - 2 * \
-                        self.stage_padding - \
-                            self.y_offsets[0] - self.y_offsets[1]
+                        self.stage_padding - self.y_offsets[0] - self.y_offsets[1]
                     base_y = -box_y + self.stage_padding + self.y_offsets[0]
                     if self.direction == "up":
                         base_y += total_height - main_height
@@ -599,7 +612,7 @@ class Select(Clutter.Actor, Clutter.Container):
         # Clip auto scroll panel
         if self._background_box is not None:
             # Draw a rectangle to cut scroller
-            Clutter.cogl.path_round_rectangle(
+            Cogl.path_round_rectangle(
                 self._background_box.x1 + 3,
                 self._background_box.y1 + 3,
                 self._background_box.x2 - 3,
@@ -641,7 +654,7 @@ class Select(Clutter.Actor, Clutter.Container):
                 self._auto_scroll.destroy()
 
 
-if __name__ == '__main__':
+def tester(stage):
     Clutter.init()
     stage_width = 640
     stage_height = 480
@@ -653,7 +666,7 @@ if __name__ == '__main__':
         'test', 'displayed fezfzefezfzef', icon_height=32, padding=8)
     test_line.label.set_font_name('22')
     test_line.set_position(0, 0)
-    stage.add(test_line)
+    stage.add_child(test_line)
 
     # test_select = Select(open_icon_path='/data/www/sdiemer/top.png')
     test_select = Select()
@@ -665,7 +678,7 @@ if __name__ == '__main__':
     test_select.add_option(
         'test3', 'displayed fezfzefezfzef', icon_path=icon_path)
     # test_select.set_size(400, 64)
-    stage.add(test_select)
+    stage.add_child(test_select)
 
     """def on_click(btn, event):
         print 'click -----------'
@@ -676,3 +689,7 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
