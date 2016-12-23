@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import GObject
 from gi.repository import Clutter
 from text import TextContainer
-from roundrect import RoundRectangle
 
 
 class ClassicButton(TextContainer):
-    __gtype_name__ = 'ClassicButton'
 
     def __init__(self, label=' ', margin=0, padding=6, texture=None, rounded=True, crypted=False):
         TextContainer.__init__(
@@ -21,7 +21,6 @@ class ClassicButton(TextContainer):
 
 
 class ImageButton(ClassicButton):
-    __gtype_name__ = 'ImageButton'
 
     def __init__(self, label=' ', image_src=None, margin=0, padding=10, spacing=10, texture=None, has_text=True, expand=False):
         ClassicButton.__init__(
@@ -131,21 +130,23 @@ class ImageButton(ClassicButton):
 
 GObject.type_register(ImageButton)
 
-if __name__ == '__main__':
-    from flowbox import FlowBox
-    stage = Clutter.Stage()
-    stage.connect('destroy', Clutter.main_quit)
-    # toto = cogl.Material()
-    texture_path = '/home/aviolo/sources/easycast/unstable/easycast/images/buttons/copy.png'
-    texture = Clutter.cogl.texture_new_from_file(
-        texture_path, Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
+
+def tester(stage):
+    texture_path = '/home/aviolo/easycast/easycast/images/buttons/copy.png'
+    texture = Clutter.Texture()
+    # texture.set_cogl_texture(texture_path)
+    # texture = Clutter.cogl.texture_new_from_file(
+    # texture_path, Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
     # toto.set_layer(0, texture)
     # stage.add(toto)
+    # texture = Clutter.Texture()
+    texture.set_from_file(texture_path)
     t = ClassicButton(
         'test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture=texture, rounded=True)
     t.set_size(640, 480)
-    stage.add(t)
+    stage.add_child(t)
     '''
+    from flowbox import FlowBox
     # Main flowbox
     box0 = FlowBox()
     box0.set_size(640, 640)
@@ -227,6 +228,7 @@ if __name__ == '__main__':
 
     stage.add(box0)
     '''
+
     test_memory_usage = False
     if test_memory_usage:
         import gc
@@ -270,6 +272,9 @@ if __name__ == '__main__':
             return False
 
         GObject.timeout_add(10, test_memory, stage, 0, max_count)
-
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

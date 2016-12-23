@@ -10,7 +10,6 @@ from box import Box
 
 
 class NumberAdjuster(Box):
-    __gtype_name__ = 'NumberAdjuster'
     __gproperties__ = {
         'increment': (
             GObject.TYPE_FLOAT, 'increment', 'Increment amount when adjusting the value',

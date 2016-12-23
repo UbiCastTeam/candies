@@ -1,10 +1,11 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
 
+import gi
+gi.require_version('Clutter', '1.0')
 import os
 from gi.repository import GObject
 from gi.repository import Clutter
-from container import BaseContainer
 
 
 class Scrollbar(Clutter.Actor, Clutter.Container):
