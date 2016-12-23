@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import gi
+gi.require_version('Clutter', '1.0')
 import sys
 from gi.repository import GObject
 from gi.repository import Clutter
@@ -188,13 +190,10 @@ class NumberAdjuster(Box):
             self.update()
 
 
-if __name__ == '__main__':
-    Clutter.init()
+def tester(stage):
     stage_width = 640
     stage_height = 480
-    stage = Clutter.Stage()
     stage.set_size(stage_width, stage_height)
-    stage.connect('destroy', Clutter.main_quit)
 
     def update_callback(source, value):
         print("Test value has been updated", value)
@@ -218,7 +217,9 @@ if __name__ == '__main__':
     r.set_color(color)
     test.set_background(r)
 
-    t = Clutter.Text()
-
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

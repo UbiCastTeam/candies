@@ -6,7 +6,6 @@ import common
 
 
 class Box(Clutter.Actor, Clutter.Container):
-    __gtype_name__ = 'Box'
     '''
     A stacking box container.
 
@@ -623,14 +622,12 @@ class Box(Clutter.Actor, Clutter.Container):
 
 
 class HBox(Box):
-    __gtype_name__ = 'HBox'
 
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=True, *args, **kw)
 
 
 class VBox(Box):
-    __gtype_name__ = 'VBox'
 
     def __init__(self, *args, **kw):
         Box.__init__(self, horizontal=False, *args, **kw)
