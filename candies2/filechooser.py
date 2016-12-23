@@ -304,11 +304,13 @@ class FileChooser(BaseContainer):
 
         # actors
         self._bg = Clutter.Rectangle()
-        self._bg.set_color(self.styles['bg_color'])
+        color = Clutter.color_from_string(self.styles['bg_color'])[1]
+        self._bg.set_color(color)
         self._add(self._bg)
 
         self._panel_bg = Clutter.Rectangle()
-        self._panel_bg.set_color(self.styles['panel_bg_color'])
+        color = Clutter.color_from_string(self.styles['panel_bg_color'])[1]
+        self._panel_bg.set_color(color)
         self._add(self._panel_bg)
 
         self.top_container = HBox(spacing=8, padding=12)
@@ -1032,7 +1034,7 @@ def tester(stage):
     )
 
     fc = FileChooser(
-        base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True,
+        base_dir='/home/aviolo/easycast/candies', start_dir='tests', allow_hidden_files=True,
         directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
     # fc = FileChooser(base_dir='/home/sde-melo',
     # start_dir='/home/sde-melo/Images', allow_hidden_files=True,
