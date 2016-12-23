@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
-
-import gi
-gi.require_version('Clutter', '1.0')
 import cairo
 import math
 
-from gi.repository import GObject
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
+from gi.repository import GObject
 
 from candies2.utils import get_rgb_color
 

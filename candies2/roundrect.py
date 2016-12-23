@@ -4,6 +4,8 @@ import cairo
 import math
 import os
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
