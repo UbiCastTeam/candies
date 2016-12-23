@@ -12,8 +12,7 @@ from candies2.utils import get_rgb_color
 
 class RoundRectangle(Clutter.Actor):
     '''
-    A simple actor drawing a rectangle with round angles using the Clutter.Cogl
-    primitives.
+    A simple actor drawing a rectangle with round angles using cairo.
     '''
 
     def __init__(self, **params):
@@ -69,8 +68,8 @@ class RoundRectangle(Clutter.Actor):
         # clear the previous frame
         ctx.set_operator(cairo.OPERATOR_CLEAR)
         ctx.paint()
-
         ctx.set_operator(cairo.OPERATOR_OVER)
+
         x = self.border_width
         y = self.border_width
         w = width - self.border_width * 2

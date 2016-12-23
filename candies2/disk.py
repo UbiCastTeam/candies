@@ -56,7 +56,7 @@ class Disk(Clutter.Actor):
         self.__paint_circle(x2 - x1, y2 - y1, paint_color)
 
     def do_pick(self, pick_color):
-        if self.should_pick_paint() == False:
+        if not self.should_pick_paint():
             return
 
         (x1, y1, x2, y2) = self.get_allocation_box()

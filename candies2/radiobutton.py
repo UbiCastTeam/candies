@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-from gi.repository import Clutter
 from checkbox import CheckButton, CheckBox
 
 
@@ -9,9 +8,7 @@ class RadioButton(CheckButton):
     __gtype_name__ = 'RadioButton'
 
     def __init__(self, name='', not_checked_image_path=None, checked_image_path=None, checked=False, callback=None, user_data=None):
-        CheckButton.__init__(
-            self, name=name, not_checked_image_path=not_checked_image_path,
-                             checked_image_path=checked_image_path, checked=checked, callback=callback, user_data=user_data)
+        CheckButton.__init__(self, name=name, not_checked_image_path=not_checked_image_path, checked_image_path=checked_image_path, checked=checked, callback=callback, user_data=user_data)
         self._related_buttons = list()
 
     def set_related_buttons(self, buttons):

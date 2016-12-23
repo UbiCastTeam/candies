@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-from gi.repository import GObject
 from gi.repository import Clutter
 import common
 from container import BaseContainer

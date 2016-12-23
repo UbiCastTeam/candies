@@ -13,7 +13,7 @@ from candies2.utils import get_rgb_color, get_clutter_color
 
 class Clock(Clutter.Actor):
     '''
-    A clock widget
+    A clock widget using cairo.
     '''
 
     def __init__(self, color=None, image=None):

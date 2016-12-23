@@ -9,7 +9,6 @@ python test_filelist.py /mnt/recordings
 from gi.repository import Clutter
 import os
 import sys
-import gobject
 from candies2 import FileList, ClassicButton, VideoPlayer
 import re
 
@@ -30,6 +29,7 @@ texture = Clutter.Texture()
 texture.set_x(245)
 texture.hide()
 
+
 def on_video_pressed(player, event):
     if event.button == 1:
         player.toggle_playing()
@@ -47,8 +47,10 @@ player.set_reactive(True)
 player.connect('button-press-event', on_video_pressed)
 player.hide()
 
+
 def on_directory_changed(lst, event):
     stage.set_title(lst.props.directory)
+
 
 def on_file_selected(lst):
     filename = lst.selection[0].label.get_text()
@@ -60,7 +62,7 @@ def on_file_selected(lst):
     if os.path.isdir(path):
         lst.props.directory = path
         return
-    info_text = os.popen('file "%s"' %(path)).read()
+    info_text = os.popen('file "%s"' % (path)).read()
     info.set_text(info_text[len(path) + 2:-1])
     info.show()
     if image_pattern.match(filename):
@@ -83,6 +85,7 @@ lst.spacing = 4
 lst.set_width(240)
 lst.set_y(38)
 lst.connect('select-event', on_file_selected)
+
 
 def on_button_press(btn, event):
     texture.hide()

@@ -2,7 +2,7 @@ from candies2 import VideoPlayer, SeekBar, ClassicButton
 from gi.repository import Clutter
 import sys
 
-import logging, sys
+import logging
 
 logging.basicConfig(
     level=getattr(logging, "DEBUG"),
@@ -10,24 +10,27 @@ logging.basicConfig(
     stream=sys.stderr
 )
 
+
 def show_time(player, current_time, progression, duration, time_label):
     hour = duration // 3600
     min = (duration % 3600) // 60
     sec = duration % 60
-    duration = "%02d:%02d:%02d" %(hour, min, sec)
+    duration = "%02d:%02d:%02d" % (hour, min, sec)
     hour = current_time // 3600
     min = (current_time % 3600) // 60
     sec = current_time % 60
-    current_time = "%02d:%02d:%02d" %(hour, min, sec)
+    current_time = "%02d:%02d:%02d" % (hour, min, sec)
     time_label.set_position(200, 470)
     time_label.set_text(str(current_time) + '/' + str(duration))
 
 stage = Clutter.Stage()
 stage.connect('destroy', Clutter.main_quit)
 
+
 def on_button_seek(button, event, player):
     player.on_seek_relative(5)
     return True
+
 
 def on_button_press(player, event):
     if event.button == 1:
@@ -51,7 +54,7 @@ player.connect('button_press_event', on_button_press)
 player.set_size(320, 240)
 
 seek = SeekBar()
-#player.end_callback = seek.finish
+# player.end_callback = seek.finish
 
 seek.set_background_color('DarkGreen')
 seek.set_cursor_color('Black')
@@ -83,8 +86,5 @@ player.connect('position_update', show_time, time_label)
 stage.set_size(800, 600)
 stage.add(player, seek, seek2, b, time_label)
 stage.show()
-
-#import gobject
-#gobject.timeout_add(10000, player.set_filename, "/home/anthony/src/candies/mine/test2.ogg")
 
 Clutter.main()
