@@ -17,13 +17,13 @@ class RoundRectangle(Clutter.Actor):
     primitives.
     """
 
-    def __init__(self, texture=None):
+    def __init__(self, **params):
         super(RoundRectangle, self).__init__()
-        self.inner_color = get_rgb_color('black')
-        self.border_color = get_rgb_color('green')
-        self.border_width = 0.0
-        self.border_radius = 0.0
-        self.texture = texture
+        self.inner_color = get_rgb_color(params.get('inner_color', 'black'))
+        self.border_color = get_rgb_color(params.get('border_color', 'black'))
+        self.border_width = params.get('border_width', 0.0)
+        self.border_radius = params.get('border_radius', 0.0)
+        self.texture = params.get('texture')
 
         self.canvas = Clutter.Canvas()
         self.set_content(self.canvas)
@@ -32,11 +32,14 @@ class RoundRectangle(Clutter.Actor):
 
     def set_texture(self, texture):
         self.texture = texture
-        # self.queue_redraw()
+        self.queue_redraw()
 
-    def set_radius(self, radius):
+    def set_border_radius(self, radius):
         self.border_radius = radius
         self.queue_redraw()
+
+    def set_radius(self, radius):
+        self.set_border_radius(radius)
 
     def set_inner_color(self, color):
         self.inner_color = get_rgb_color(color)
@@ -90,13 +93,14 @@ class RoundRectangle(Clutter.Actor):
 def tester(stage):
     rect = RoundRectangle()
     rect.set_radius(25)
-    rect.set_color('#0000ffff')
+    rect.set_inner_color('#0000ffff')
     rect.set_border_width(5)
     rect.set_border_color('#00ffffff')
     rect.set_size(160, 120)
     rect.set_anchor_point(80, 60)
     rect.set_position(480, 240)
     stage.add_child(rect)
+    GObject.timeout_add_seconds(2, rect.set_size, 300, 400)
 
     test_memory_usage = False
     if test_memory_usage:
@@ -123,8 +127,7 @@ def tester(stage):
                 print counter
                 tested_object = create_test_object()
                 stage.add_child(tested_object)
-                GObject.timeout_add(
-                    2, remove_tested_object, tested_object, stage, counter)
+                GObject.timeout_add(2, remove_tested_object, tested_object, stage, counter)
             return False
 
         def remove_tested_object(tested_object, stage, counter):
