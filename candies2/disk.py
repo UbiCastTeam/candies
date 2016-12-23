@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import gi
+gi.require_version('Clutter', '1.0')
 import cairo
 import math
 
