@@ -20,7 +20,6 @@ ClutterGst.VideoTexture = Clutter.Actor  # Temporary fix for import
 
 
 class VideoPlayer(ClutterGst.VideoTexture):
-    __gtype_name__ = 'VideoPlayer'
     '''
     VideoPlayer
 

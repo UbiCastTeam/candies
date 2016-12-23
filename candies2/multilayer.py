@@ -7,7 +7,6 @@ import common
 
 
 class MultiLayerContainer(BaseContainer):
-    __gtype_name__ = 'MultiLayerContainer'
     '''
     A container in wich all childs have the same space allocated
     '''

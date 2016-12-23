@@ -10,7 +10,6 @@ import math
 
 
 class Slider(BaseContainer):
-    __gtype_name__ = 'Slider'
 
     def __init__(self, elements_per_page=3, margin=0, spacing=10, horizontal=True, keep_ratio=False, h_align='center', v_align='middle', pick_enabled=True):
         BaseContainer.__init__(

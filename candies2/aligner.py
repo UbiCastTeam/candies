@@ -8,7 +8,6 @@ import common
 
 
 class Aligner(Clutter.Actor, Clutter.Container):
-    __gtype_name__ = 'Aligner'
 
     ALIGNMENT = ('top_left', 'top', 'top_right', 'left',
                  'center', 'right', 'bottom_left', 'bottom', 'bottom_right')

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 import common
 from gi.repository import GObject
@@ -26,7 +28,6 @@ class FileEntry(BaseContainer):
     '''
     An actor to represent a file
     '''
-    __gtype_name__ = 'FileEntry'
 
     def __init__(self, name='', icon_src='', text='', extension='', is_dir=False, padding=10, spacing=10):
         BaseContainer.__init__(
@@ -143,7 +144,6 @@ class FileEntry(BaseContainer):
 
 
 class PreviewDisplayer(BaseContainer):
-    __gtype_name__ = 'PreviewDisplayer'
 
     def __init__(self, padding=10):
         BaseContainer.__init__(
@@ -217,14 +217,17 @@ class FileChooser(BaseContainer):
     '''
     A panel to select file
     '''
-    __gtype_name__ = 'FileChooser'
 
     BASE_TYPE_FILTERS = {
         "images": TypeFilter("images", ("png", "bmp", "jpg", "jpeg", "tiff"), "Images"),
         "all": TypeFilter("all", None, "All")
     }
 
-    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False, display_hidden_files_at_start=False, directories_first=True, case_sensitive_sort=False, type_filters=None, callback=None, delete_button=False, custom_widget=None, custom_image=None, padding=0, spacing=0, styles=None, icons=None, can_delete=None):
+    def __init__(self, base_dir='/', start_dir=None, allow_hidden_files=False,
+                 display_hidden_files_at_start=False, directories_first=True,
+                 case_sensitive_sort=False, type_filters=None, callback=None,
+                 delete_button=False, custom_widget=None, custom_image=None,
+                 padding=0, spacing=0, styles=None, icons=None, can_delete=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -297,7 +300,7 @@ class FileChooser(BaseContainer):
         self._current_dir = None
         self.components_padding = 10
         self.paths = list()
-                          # list of tuples with path and current selection name
+        # list of tuples with path and current selection name
 
         # actors
         self._bg = Clutter.Rectangle()
@@ -985,14 +988,12 @@ class FileChooser(BaseContainer):
         Clutter.Actor.do_allocate(self, box, flags)
 
 
-if __name__ == '__main__':
+def tester(stage):
     # stage
-    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 700
     stage.set_size(stage_width, stage_height)
-    stage.set_color('#000000ff')
-    stage.connect('destroy', Clutter.main_quit)
+    stage.set_color(Clutter.color_from_string('#000000ff')[1])
 
     def cb(result):
         print result
@@ -1032,7 +1033,7 @@ if __name__ == '__main__':
 
     fc = FileChooser(
         base_dir='/data', start_dir='/data/sdiemer', allow_hidden_files=True,
-                     directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
+        directories_first=True, case_sensitive_sort=False, type_filters=type_filters, callback=cb, icons=icons)
     # fc = FileChooser(base_dir='/home/sde-melo',
     # start_dir='/home/sde-melo/Images', allow_hidden_files=True,
     # directories_first=True, case_sensitive_sort=False,
@@ -1044,3 +1045,7 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

@@ -12,7 +12,6 @@ class LightList(BaseContainer):
     LightList is a light weight list to optimize long list with scrollbars
     All elements in this list will have the same height
     '''
-    __gtype_name__ = 'LightList'
 
     def __init__(self, element_size=50, padding=0, spacing=0, horizontal=False):
         BaseContainer.__init__(self, allow_add=True, allow_remove=True)
