@@ -30,29 +30,29 @@ class RoundRectangle(Clutter.Actor):
 
     def set_texture(self, texture):
         self.texture = texture
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def set_border_radius(self, radius):
         self.border_radius = radius
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def set_radius(self, radius):
         self.set_border_radius(radius)
 
     def set_inner_color(self, color):
         self.inner_color = get_rgb_color(color)
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def set_color(self, color):
         self.set_inner_color(color)
 
     def set_border_color(self, color):
         self.border_color = get_rgb_color(color)
-        self.queue_redraw()
+        self.canvas.invalidate()()
 
     def set_border_width(self, width):
         self.border_width = width
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def on_allocation(self, *kwargs):
         GObject.idle_add(self.idle_resize)

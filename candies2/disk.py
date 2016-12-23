@@ -30,12 +30,15 @@ class Disk(Clutter.Actor):
 
     def set_color(self, color):
         self.color = get_rgb_color(color) if color else None
+        self.canvas.invalidate()
 
     def set_border_color(self, color):
         self.border_color = get_rgb_color(color) if color else None
+        self.canvas.invalidate()
 
     def set_border_width(self, width):
         self.border_width = width
+        self.canvas.invalidate()
 
     def on_allocation(self, *kwargs):
         GObject.idle_add(self.idle_resize)
