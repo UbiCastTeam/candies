@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 import cairo
 
 import gi
@@ -7,7 +7,7 @@ gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color, get_clutter_color
+from candies2.utils import get_rgba_color, get_clutter_color
 
 
 class Tracer(Clutter.Actor):
@@ -17,8 +17,8 @@ class Tracer(Clutter.Actor):
 
     def __init__(self, color='green', n=50, stroke_width=3, with_scale=False, percent=None):
         super(Tracer, self).__init__()
-        self.color = get_rgb_color(color)
-        self.grid_color = get_rgb_color('white')
+        self.color = get_rgba_color(color)
+        self.grid_color = get_rgba_color('white')
         self.stroke_width = stroke_width
         self.percent = percent or list()
         self.n = n
@@ -36,7 +36,7 @@ class Tracer(Clutter.Actor):
         self.canvas.invalidate()
 
     def set_color(self, color):
-        self.color = get_rgb_color(color)
+        self.color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_stroke_width(self, width):
@@ -56,7 +56,7 @@ class Tracer(Clutter.Actor):
 
         ctx.set_line_width(self.stroke_width)
         if self.with_scale:
-            ctx.set_source_rgb(*self.grid_color)
+            ctx.set_source_rgba(*self.grid_color)
             # rect
             ctx.rectangle(0, 0, width, height)
             ctx.stroke()
@@ -74,7 +74,7 @@ class Tracer(Clutter.Actor):
             ctx.stroke()
 
         # stats
-        ctx.set_source_rgb(*self.color)
+        ctx.set_source_rgba(*self.color)
         scale_x = width / float(self.n)
         for i, value in enumerate(self.percent):
             y = height - (value * height) / 100

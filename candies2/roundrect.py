@@ -9,7 +9,7 @@ gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color, get_clutter_color
+from candies2.utils import get_rgba_color, get_clutter_color
 
 
 class RoundRectangle(Clutter.Actor):
@@ -19,8 +19,8 @@ class RoundRectangle(Clutter.Actor):
 
     def __init__(self, **params):
         super(RoundRectangle, self).__init__()
-        self.color = get_rgb_color(params.get('color', 'black'))
-        self.border_color = get_rgb_color(params.get('border_color', 'blue'))
+        self.color = get_rgba_color(params.get('color', 'black'))
+        self.border_color = get_rgba_color(params.get('border_color', 'blue'))
         self.border_width = params.get('border_width', 0.0)
         self.border_radius = params.get('border_radius', 0.0)
         self.texture = params.get('texture')
@@ -39,11 +39,11 @@ class RoundRectangle(Clutter.Actor):
         self.canvas.invalidate()
 
     def set_color(self, color):
-        self.color = get_rgb_color(color)
+        self.color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_border_color(self, color):
-        self.border_color = get_rgb_color(color)
+        self.border_color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_border_width(self, width):
@@ -80,10 +80,10 @@ class RoundRectangle(Clutter.Actor):
         else:
             ctx.rectangle(x, y, width, height)
 
-        ctx.set_source_rgb(*self.color)
+        ctx.set_source_rgba(*self.color)
         ctx.fill_preserve()  # fill but keep the rectangle
         ctx.set_line_width(self.border_width)
-        ctx.set_source_rgb(*self.border_color)
+        ctx.set_source_rgba(*self.border_color)
         ctx.stroke()
 
 

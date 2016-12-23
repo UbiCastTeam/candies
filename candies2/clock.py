@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 import cairo
 import datetime
 import math
@@ -8,7 +8,7 @@ import os
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color, get_clutter_color
+from candies2.utils import get_rgba_color, get_clutter_color
 
 
 class Clock(Clutter.Actor):
@@ -21,7 +21,7 @@ class Clock(Clutter.Actor):
         if not image:
             image = os.path.join(os.path.dirname(__file__), 'images', 'clock.png')
         self.texture = cairo.ImageSurface.create_from_png(image)
-        self.color = get_rgb_color(color or 'black')
+        self.color = get_rgba_color(color or 'black')
         self.date = datetime.datetime.now()
 
         self.canvas = Clutter.Canvas()
@@ -32,7 +32,7 @@ class Clock(Clutter.Actor):
         GObject.timeout_add_seconds(61 - self.date.second, self.update)
 
     def set_color(self, color):
-        self.color = get_rgb_color(color)
+        self.color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_texture(self, texture):
@@ -92,7 +92,7 @@ class Clock(Clutter.Actor):
         ctx.line_to(center_x + (hw / 4) * math.cos(right), center_y + (hh / 4) * math.sin(right))
         ctx.line_to(center_x, center_y)
         ctx.close_path()
-        ctx.set_source_rgb(*self.color)
+        ctx.set_source_rgba(*self.color)
         ctx.fill()
 
         # minute
@@ -110,7 +110,7 @@ class Clock(Clutter.Actor):
         ctx.line_to(center_x + (hw / 3) * math.cos(right), center_y + (hh / 3) * math.sin(right))
         ctx.line_to(center_x, center_y)
         ctx.close_path()
-        ctx.set_source_rgb(*self.color)
+        ctx.set_source_rgba(*self.color)
         ctx.fill()
 
 

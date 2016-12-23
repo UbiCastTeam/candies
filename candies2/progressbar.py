@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 import cairo
 import math
 
@@ -8,7 +8,7 @@ gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color, get_clutter_color
+from candies2.utils import get_rgba_color, get_clutter_color
 
 
 class ProgressBar(Clutter.Actor):
@@ -25,9 +25,9 @@ class ProgressBar(Clutter.Actor):
     def __init__(self, horizontal=True, reverse=False, texture=None, progress_texture=None):
         super(ProgressBar, self).__init__()
         self.radius = 0.0
-        self.color = get_rgb_color('Black')
-        self.border_color = get_rgb_color('Grey')
-        self.progress_color = get_rgb_color('Blue')
+        self.color = get_rgba_color('Black')
+        self.border_color = get_rgba_color('Grey')
+        self.progress_color = get_rgba_color('Blue')
         self.border_width = 0.0
         self.texture = cairo.ImageSurface.create_from_png(texture) if texture else None
         self.progress_texture = cairo.ImageSurface.create_from_png(progress_texture) if progress_texture else None
@@ -66,15 +66,15 @@ class ProgressBar(Clutter.Actor):
         self.canvas.invalidate()
 
     def set_color(self, color):
-        self.color = get_rgb_color(color)
+        self.color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_border_color(self, color):
-        self.border_color = get_rgb_color(color)
+        self.border_color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_progress_color(self, color):
-        self.progress_color = get_rgb_color(color)
+        self.progress_color = get_rgba_color(color)
         self.canvas.invalidate()
 
     def set_border_width(self, width):
@@ -88,7 +88,6 @@ class ProgressBar(Clutter.Actor):
         self.canvas.set_size(*self.get_size())
 
     def draw(self, canvas, ctx, width, height):
-        # def __paint_rectangle(self, width, height, border_color, inner_color=None, progress_color=None):
         if width <= 0 or height <= 0:
             return
         # check if size will not cause problem with radius
@@ -115,10 +114,10 @@ class ProgressBar(Clutter.Actor):
             ctx.close_path()
         else:
             ctx.rectangle(x, y, width, height)
-        ctx.set_source_rgb(*self.color)
+        ctx.set_source_rgba(*self.color)
         ctx.fill_preserve()  # fill but keep the rectangle
         ctx.set_line_width(self.border_width)
-        ctx.set_source_rgb(*self.border_color)
+        ctx.set_source_rgba(*self.border_color)
         # background texture
         if self.texture:
             ctx.stroke_preserve()
@@ -181,7 +180,7 @@ class ProgressBar(Clutter.Actor):
         else:
             ctx.rectangle(x + progress_x, y + progress_y, progress_width, progress_height)
         ctx.close_path()
-        ctx.set_source_rgb(*self.progress_color)
+        ctx.set_source_rgba(*self.progress_color)
         # progress_texture
         if self.progress_texture:
             ctx.fill_preserve()
@@ -210,8 +209,6 @@ def tester(stage):
         for bar in bars:
             bar.set_progress(0.0)
         GObject.timeout_add(10, progress, *bars)
-
-    stage.set_reactive(True)
 
     label = Clutter.Text()
     label.set_position(50, 10)
@@ -243,6 +240,7 @@ def tester(stage):
     bar2.set_position(50, 170)
     stage.add_child(bar2)
 
+    stage.set_reactive(True)
     bar1.connect('notify::progress', update_label, label)
     stage.connect('button-press-event', on_button_press, bar1, bar2)
 

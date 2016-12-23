@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 import cairo
 import math
 
@@ -8,7 +8,7 @@ gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color
+from candies2.utils import get_rgba_color
 
 
 class Disk(Clutter.Actor):
@@ -18,8 +18,8 @@ class Disk(Clutter.Actor):
 
     def __init__(self, color=None, border_color=None, border_width=5):
         super(Disk, self).__init__()
-        self.color = get_rgb_color(color) if color else None
-        self.border_color = get_rgb_color(border_color) if border_color else None
+        self.color = get_rgba_color(color) if color else None
+        self.border_color = get_rgba_color(border_color) if border_color else None
         self.border_width = border_width
 
         self.canvas = Clutter.Canvas()
@@ -28,11 +28,11 @@ class Disk(Clutter.Actor):
         self.connect('notify::allocation', self.on_allocation)
 
     def set_color(self, color):
-        self.color = get_rgb_color(color) if color else None
+        self.color = get_rgba_color(color) if color else None
         self.canvas.invalidate()
 
     def set_border_color(self, color):
-        self.border_color = get_rgb_color(color) if color else None
+        self.border_color = get_rgba_color(color) if color else None
         self.canvas.invalidate()
 
     def set_border_width(self, width):
@@ -71,11 +71,11 @@ class Disk(Clutter.Actor):
             ctx.restore()
         ctx.close_path()
         if self.color:
-            ctx.set_source_rgb(*self.color)
+            ctx.set_source_rgba(*self.color)
             ctx.fill_preserve()  # fill but keep the rectangle
         if self.border_color:
             ctx.set_line_width(self.border_width)
-            ctx.set_source_rgb(*self.border_color)
+            ctx.set_source_rgba(*self.border_color)
             ctx.stroke()
 
 

@@ -1,97 +1,137 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
-
-from gi.repository import GObject
-from gi.repository import Clutter
-
+# -*- coding: utf-8 -*-
+import cairo
 import math
+
+import gi
+gi.require_version('Clutter', '1.0')
+from gi.repository import Clutter
+from gi.repository import GObject
+
+from candies2.utils import get_rgba_color
 
 
 class PercentRound(Clutter.Actor):
     '''
-    PercentRound
+    Simple actor to draw pie charts.
     '''
 
-    def __init__(self, color='Black', percent=0, init_percent=0, color2='Gray'):
-        Clutter.Actor.__init__(self)
-        self._color = Clutter.color_from_string(color)
-        self._color2 = Clutter.color_from_string(color2)
+    def __init__(self, color='black', percent=0, init_percent=0, color2='grey'):
+        super(PercentRound, self).__init__()
+        self._color = get_rgba_color(color)
+        self._color2 = get_rgba_color(color2)
         self.percent = percent
-        self.init_percent = 0
+        self.init_percent = init_percent
+
+        self.canvas = Clutter.Canvas()
+        self.set_content(self.canvas)
+        self.canvas.connect('draw', self.draw)
+        self.connect('notify::allocation', self.on_allocation)
 
     def set_percent(self, percent):
         self.percent = percent
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def set_init_percent(self, percent):
         self.init_percent = percent
-        self.queue_redraw()
+        self.canvas.invalidate()
 
     def set_color(self, color):
-        self._color = Clutter.color_from_string(color)
-        self.queue_redraw()
+        self._color = get_rgba_color(color)
+        self.canvas.invalidate()
 
     def set_color2(self, color):
-        self._color2 = Clutter.color_from_string(color)
-        self.queue_redraw()
+        self._color2 = get_rgba_color(color)
+        self.canvas.invalidate()
 
-    def __paint_circle(self, width, height, color):
-        if self.percent != 0:
-            init_angle = self.init_percent * 360 / 100
-            end_angle = (self.init_percent + self.percent) * 360 / 100
-            cogl.path_arc(width / 2, height / 2, width / 2, height / 2, init_angle, end_angle)
-            cogl.path_line_to(width / 2, height / 2)
+    def on_allocation(self, *kwargs):
+        GObject.idle_add(self.idle_resize)
 
-            end_x = width / 2 + math.cos(math.radians(init_angle)) * width / 2
-            end_y = height / 2 + math.sin(math.radians(init_angle)) * height / 2
-            cogl.path_line_to(end_x, end_y)
+    def idle_resize(self):
+        self.canvas.set_size(*self.get_size())
+
+    def draw(self, canvas, ctx, width, height):
+        # clear the previous frame
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+        ctx.paint()
+        ctx.set_operator(cairo.OPERATOR_OVER)
+
+        x = width / 2
+        y = height / 2
+        radius = min(x, y)
+        ctx.new_sub_path()
+        ctx.set_source_rgba(*self._color)
+        ctx.move_to(x, y)
+        init_angle = 2 * math.pi * self.init_percent / 100
+        end_angle = 2 * math.pi * (self.init_percent + self.percent) / 100
+        if init_angle:
+            ctx.line_to(x + math.cos(init_angle) * radius, y + math.sin(init_angle) * radius)
         else:
-            cogl.path_line(width / 2, height / 2, width, height / 2)
-        cogl.path_close()
-        cogl.set_source_color(color)
-        cogl.path_fill()
+            ctx.line_to(x + radius, y)
+        if init_angle != end_angle:
+            ctx.arc(x, y, radius, init_angle, end_angle)
+            ctx.close_path()
+            ctx.fill()
+        else:
+            ctx.set_line_width(3)
+            ctx.stroke()
 
-        if self.init_percent != 0:
-            init_angle = self.init_percent * 360 / 100
-            cogl.path_new()
-            cogl.path_arc(width / 2, height / 2, width / 2, height / 2, 0, init_angle)
-            cogl.path_line_to(width / 2, height / 2)
-            cogl.path_line_to(width, height / 2)
-            cogl.path_close()
-            paint_color = self._color2.copy()
-            real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-            paint_color.alpha = real_alpha
-            cogl.set_source_color(paint_color)
-            cogl.path_fill()
+        if init_angle:
+            ctx.new_sub_path()
+            ctx.set_source_rgba(*self._color2)
+            ctx.move_to(x, y)
+            ctx.arc(x, y, radius, 0, init_angle)
+            ctx.close_path()
+            ctx.fill()
 
-    def do_paint(self):
-        (x1, y1, x2, y2) = self.get_allocation_box()
 
-        paint_color = self._color.copy()
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
-        self.__paint_circle(x2 - x1, y2 - y1, paint_color)
+def tester(stage):
+    pc1 = PercentRound(percent=90)
+    pc1.set_color('red')
+    pc1.set_size(200, 200)
+    pc1.set_position(50, 50)
+    stage.add_child(pc1)
 
-    def do_pick(self, pick_color):
-        if not self.should_pick_paint():
-            return
+    pc2 = PercentRound(percent=0)
+    pc2.set_color('blue')
+    pc2.set_size(200, 200)
+    pc2.set_position(50, 300)
+    stage.add_child(pc2)
 
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_circle(x2 - x1, y2 - y1, pick_color)
+    pc3 = PercentRound(init_percent=25, percent=40)
+    pc3.set_color('black')
+    pc3.set_size(200, 200)
+    pc3.set_position(300, 50)
+    stage.add_child(pc3)
 
-GObject.type_register(PercentRound)
+    pc4 = PercentRound(init_percent=40, percent=0)
+    pc4.set_color('green')
+    pc4.set_size(200, 200)
+    pc4.set_position(300, 300)
+    stage.add_child(pc4)
+
+    def progress(pc):
+        new_percent = pc.percent + 1
+        pc.set_percent(new_percent)
+        return new_percent < 100
+
+    def on_button_press(pc, event):
+        pc.set_percent(0)
+        GObject.timeout_add(10, progress, pc)
+
+    pc1.set_reactive(True)
+    pc1.connect('button-press-event', on_button_press)
+
+    pc2.set_reactive(True)
+    pc2.connect('button-press-event', on_button_press)
+
+    pc3.set_reactive(True)
+    pc3.connect('button-press-event', on_button_press)
+
+    pc4.set_reactive(True)
+    pc4.connect('button-press-event', on_button_press)
+
 
 if __name__ == '__main__':
-    stage = Clutter.Stage()
-    stage.set_size(640, 480)
-    stage.connect('destroy', Clutter.main_quit)
-
-    circle = PercentRound(percent=90)
-    circle.set_color('Red')
-    circle.set_size(200, 200)
-    circle.set_anchor_point(100, 100)
-    circle.set_position(320, 240)
-    stage.add(circle)
-
-    stage.show()
-    Clutter.main()
+    from test import run_test
+    run_test(tester)

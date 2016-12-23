@@ -3,7 +3,7 @@ from gi.repository import GObject
 from gi.repository import Clutter
 import cairo
 import math
-from candies2.utils import get_clutter_color, get_rgb_color
+from candies2.utils import get_clutter_color, get_rgba_color
 
 
 class RoundRectangle(Clutter.Actor):
@@ -16,8 +16,8 @@ class RoundRectangle(Clutter.Actor):
         self.canvas.connect('draw', self.draw)
         self.line_width = 5
         self.border_radius = 50
-        self.fill_color = get_rgb_color('red')
-        self.stroke_color = get_rgb_color('blue')
+        self.fill_color = get_rgba_color('red')
+        self.stroke_color = get_rgba_color('blue')
 
         self.connect('notify::allocation', self.on_allocation)
 
@@ -48,10 +48,10 @@ class RoundRectangle(Clutter.Actor):
         ctx.arc(x + w - radius, y + radius, radius, math.pi * 3 / 2, math.pi * 2)
         ctx.close_path()
 
-        ctx.set_source_rgb(*self.fill_color)
+        ctx.set_source_rgba(*self.fill_color)
         ctx.fill_preserve()  # fill but keep the rectangle
         ctx.set_line_width(self.line_width)
-        ctx.set_source_rgb(*self.stroke_color)
+        ctx.set_source_rgba(*self.stroke_color)
         ctx.stroke()
 
 

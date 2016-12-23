@@ -25,7 +25,7 @@ def get_rgb_color(color):
         c_color = color
     else:
         c_color = Clutter.color_from_string(color)[1]
-    return c_color.red, c_color.green, c_color.blue
+    return c_color.red / 255., c_color.green / 255., c_color.blue / 255.
 
 
 def get_rgba_color(color):
@@ -39,4 +39,4 @@ def get_rgba_color(color):
         c_color = color
     else:
         c_color = Clutter.color_from_string(color)[1]
-    return c_color.red, c_color.green, c_color.blue, c_color.alpha
+    return c_color.red / 255., c_color.green / 255., c_color.blue / 255., c_color.alpha / 255.
