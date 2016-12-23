@@ -46,7 +46,8 @@ class NumberAdjuster(Box):
 
         self.minus = ClassicButton('-', texture=texture)
         self.minus.set_font_name(self.button_font_size)
-        self.minus.set_font_color(self.button_font_color)
+        color = Clutter.color_from_string(self.button_font_color)[1]
+        self.minus.set_font_color(color)
         self.minus.set_inner_color(self.button_inner_color)
         self.minus.set_border_color(self.button_border_color)
         self.minus.set_size(self.button_size, self.button_size)
@@ -54,7 +55,8 @@ class NumberAdjuster(Box):
 
         self.value_btn = ClassicButton(texture=texture)
         self.value_btn.set_font_name(self.button_font_size)
-        self.value_btn.set_font_color(self.button_font_color)
+        color = Clutter.color_from_string(self.button_font_color)[1]
+        self.value_btn.set_font_color(color)
         self.value_btn.set_inner_color(self.button_inner_color)
         self.value_btn.set_border_color(self.button_border_color)
         self.value_btn.set_size(
@@ -65,7 +67,8 @@ class NumberAdjuster(Box):
 
         self.plus = ClassicButton('+', texture=texture)
         self.plus.set_font_name(self.button_font_size)
-        self.plus.set_font_color(self.button_font_color)
+        color = Clutter.color_from_string(self.button_font_color)[1]
+        self.plus.set_font_color(color)
         self.plus.set_inner_color(self.button_inner_color)
         self.plus.set_border_color(self.button_border_color)
         self.plus.set_size(self.button_size, self.button_size)
@@ -75,7 +78,8 @@ class NumberAdjuster(Box):
         if text is not None:
             self.label = TextContainer(str(text), padding=0)
             self.label.set_font_name(self.label_font_size)
-            self.label.set_font_color(self.label_font_color)
+            color = Clutter.color_from_string(self.button_font_color)[1]
+            self.label.set_font_color(color)
             self.label.set_inner_color('#00000000')
             self.label.set_border_color('#00000000')
             self.add_element(self.label, 'minus', expand=True, resizable=0.7)
@@ -197,19 +201,21 @@ if __name__ == '__main__':
 
     test = NumberAdjuster(0, 10, 5, increment=0.1, text="Test value")
     test.connect("value-updated", update_callback)
-    stage.add(test)
+    stage.add_child(test)
 
     r = Clutter.Rectangle()
-    r.set_color('#8888ffff')
+    color = Clutter.color_from_string('#8888ffff')[1]
+    r.set_color(color)
     test.set_background(r)
 
     test = NumberAdjuster(1000, 10000, 5000, increment=1000, factor=0.001)
     test.set_width(600)
-    stage.add(test)
+    stage.add_child(test)
     test.set_position(0, 200)
 
     r = Clutter.Rectangle()
-    r.set_color('#8888ffff')
+    color = Clutter.color_from_string('#8888ffff')[1]
+    r.set_color(color)
     test.set_background(r)
 
     t = Clutter.Text()
