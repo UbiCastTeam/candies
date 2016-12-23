@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import gi
+gi.require_version('Clutter', '1.0')
 import operator
 from gi.repository import Clutter
 from container import BaseContainer
@@ -13,7 +15,6 @@ class FlowBox(BaseContainer):
 
     This is an horizontal Box container which can wraps on several lines.
     """
-    __gtype_name__ = 'FlowBox'
 
     def __init__(self, orientation=0):
         BaseContainer.__init__(self)
@@ -108,23 +109,22 @@ class FlowBox(BaseContainer):
 
         Clutter.Actor.do_allocate(self, box, flags)
 
-if __name__ == '__main__':
+
+def tester(stage):
     def create_box():
         import random
         box = FlowBox()
         for i in range(10):
             rect = Clutter.Rectangle()
-            color = Clutter.color_from_string(
+            from candies2.utils import get_clutter_color
+            color = get_clutter_color((
                 random.randint(0, 255), random.randint(0, 255),
-                random.randint(0, 255), 255
-            )
+                random.randint(0, 255), 255))
+            color = Clutter.color_from_string(color)
             rect.set_color(color)
             rect.set_size(50, 50)
             box.add(rect)
         return box
-
-    stage = Clutter.Stage()
-    stage.connect('destroy', Clutter.main_quit)
 
     box1 = create_box()
     box1.set_width(640)
@@ -138,3 +138,7 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
