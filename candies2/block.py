@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import GObject
 from gi.repository import Clutter
 from gi.repository import Cogl
@@ -11,7 +13,6 @@ from text import TextContainer
 
 
 class TexturedBlock(BaseContainer):
-    __gtype_name__ = 'TexturedBlock'
 
     def __init__(self, title=None, title_actor=None, content_actor=None, margin=0, padding=10, spacing=10, title_padding=None, textures_package=None):
         BaseContainer.__init__(self)
@@ -282,7 +283,7 @@ class TexturedBlock(BaseContainer):
             if self._has_title:
                 content_box.y1 = self._margin.y + self._padding.y + 2 * \
                     self._title_padding.y + \
-                        self._title_height + self._spacing.y
+                    self._title_height + self._spacing.y
             else:
                 content_box.y1 = self._margin.y + self._padding.y
             content_box.x2 = self.width - self._margin.x - self._padding.x
@@ -443,14 +444,10 @@ class TexturedBlock(BaseContainer):
             self.content_actor.paint()
 
 
-if __name__ == '__main__':
-    # stage
-    Clutter.init()
-    stage = Clutter.Stage()
+def tester(stage):
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
-    stage.connect('destroy', Clutter.main_quit)
 
     textures_path = '/home/sdiemer/Bureau/textures/'
     """
@@ -552,3 +549,7 @@ if __name__ == '__main__':
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
