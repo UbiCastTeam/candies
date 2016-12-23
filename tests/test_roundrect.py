@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     texture = candies2.RoundRectangle()
     texture.set_size(200, 200)
-    texture.set_radius(10)
+    texture.set_border_radius(10)
     stage.add(texture)
 
     print texture.get_property('color')

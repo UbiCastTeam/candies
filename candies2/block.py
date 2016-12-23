@@ -98,7 +98,7 @@ class TexturedBlock(BaseContainer):
         self.default_title_actor.set_border_color(color)
 
     def set_title_radius(self, radius):
-        self.default_title_actor.set_radius(radius)
+        self.default_title_actor.set_border_radius(radius)
 
     def set_title_wrap(self, boolean):
         if boolean:

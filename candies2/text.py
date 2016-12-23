@@ -61,7 +61,7 @@ class TextContainer(Clutter.Actor, Clutter.Container):
             self.rect = RoundRectangle(texture=texture)
             self.rect.set_border_color(self.default_border_color)
             self.rect.set_border_width(3)
-            self.rect.set_radius(10)
+            self.rect.set_border_radius(10)
         else:
             self._rounded = False
             self.rect = Clutter.Rectangle()
@@ -92,9 +92,9 @@ class TextContainer(Clutter.Actor, Clutter.Container):
         if self._rounded:
             self.rect.set_texture(texture)
 
-    def set_radius(self, radius):
+    def set_border_radius(self, radius):
         if self._rounded:
-            self.rect.set_radius(radius)
+            self.rect.set_border_radius(radius)
 
     def set_font_color(self, color):
         self.label.set_color(color)

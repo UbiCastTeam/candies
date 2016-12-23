@@ -607,7 +607,7 @@ if __name__ == '__main__':
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
         rect.set_border_color('#558844ff')
         rect.set_inner_color("#ffffffff")
-        rect.set_radius(10)
+        rect.set_border_radius(10)
         rect.set_border_width(5)
         test_slider.add(rect)
         test_slider.complete_relayout()
@@ -629,7 +629,7 @@ if __name__ == '__main__':
             color = (255 - 10 * i, 10 * i, 10 * i, 255)
         rect.set_border_color(color)
         rect.set_inner_color("#ffffffff")
-        rect.set_radius(10)
+        rect.set_border_radius(10)
         rect.set_border_width(5)
         rect.set_reactive(True)
         rect.name = 'rect %s' % i

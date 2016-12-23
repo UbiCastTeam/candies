@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
+import cairo
+import math
 
-from gi.repository import GObject
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
+from gi.repository import GObject
+
+from candies2.utils import get_rgb_color, get_clutter_color
 
 
 class ProgressBar(Clutter.Actor):
-    __gtype_name__ = 'ProgressBar'
+    '''
+    A progress bar widget using cairo.
+    '''
     __gproperties__ = {
-        'color': (
-            str, 'color', 'Color', None, GObject.PARAM_READWRITE
-        ),
         'progress': (
             GObject.TYPE_FLOAT, 'Progress', 'Progress value',
             0.0, 1.0, 0.0, GObject.PARAM_READWRITE
@@ -18,288 +23,230 @@ class ProgressBar(Clutter.Actor):
     }
 
     def __init__(self, horizontal=True, reverse=False, texture=None, progress_texture=None):
-        Clutter.Actor.__init__(self)
-        self._radius = 0.0
-        self._color = Clutter.color_from_string('Black')
-        self._border_color = Clutter.color_from_string('Grey')
-        self._progress_color = Clutter.color_from_string('Blue')
-        self._border_width = 0.0
-        self._texture = texture
-        self._progress_texture = progress_texture
-        self._progress = 0.0
-        self._horizontal = horizontal
-        self._reverse = reverse
+        super(ProgressBar, self).__init__()
+        self.radius = 0.0
+        self.color = get_rgb_color('Black')
+        self.border_color = get_rgb_color('Grey')
+        self.progress_color = get_rgb_color('Blue')
+        self.border_width = 0.0
+        self.texture = cairo.ImageSurface.create_from_png(texture) if texture else None
+        self.progress_texture = cairo.ImageSurface.create_from_png(progress_texture) if progress_texture else None
+        self.progress = 0.0
+        self.horizontal = horizontal
+        self.reverse = reverse
+
+        self.canvas = Clutter.Canvas()
+        self.set_content(self.canvas)
+        self.canvas.connect('draw', self.draw)
+        self.connect('notify::allocation', self.on_allocation)
 
     def set_progress(self, value):
         if value > 1.0:
-            self._progress = 1.0
+            self.progress = 1.0
         elif value < 0.0:
-            self._progress = 0.0
+            self.progress = 0.0
         else:
-            self._progress = value
+            self.progress = value
         self.notify('progress')
-        self.queue_relayout()
+        self.canvas.invalidate()
 
     def get_progress(self):
-        return self._progress
+        return self.progress
 
-    def set_texture(self, texture):
-        self._texture = texture
-        self.queue_redraw()
+    def set_texture(self, image):
+        self.texture = cairo.ImageSurface.create_from_png(image) if image else None
+        self.canvas.invalidate()
 
-    def set_progress_texture(self, texture):
-        self._progress_texture = texture
-        self.queue_redraw()
+    def set_progress_texture(self, image):
+        self.progress_texture = cairo.ImageSurface.create_from_png(image) if image else None
+        self.canvas.invalidate()
 
-    def set_radius(self, radius):
-        self._radius = radius
-        self.queue_redraw()
-
-    def set_inner_color(self, color):
-        self._color = Clutter.color_from_string(color)
-        self.queue_redraw()
+    def set_border_radius(self, radius):
+        self.border_radius = radius
+        self.canvas.invalidate()
 
     def set_color(self, color):
-        self.set_inner_color(color)
+        self.color = get_rgb_color(color)
+        self.canvas.invalidate()
 
     def set_border_color(self, color):
-        self._border_color = Clutter.color_from_string(color)
-        self.queue_redraw()
+        self.border_color = get_rgb_color(color)
+        self.canvas.invalidate()
 
     def set_progress_color(self, color):
-        self._progress_color = Clutter.color_from_string(color)
-        self.queue_redraw()
+        self.progress_color = get_rgb_color(color)
+        self.canvas.invalidate()
 
     def set_border_width(self, width):
-        self._border_width = width
-        self.queue_redraw()
+        self.border_width = width
+        self.canvas.invalidate()
 
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'progress':
-            self.set_progress(value)
-        elif pspec.name == 'border-color':
-            self.set_border_color(value)
-        elif pspec.name == 'border-width':
-            self.set_border_width(value)
-        elif pspec.name == 'color':
-            self.set_color(value)
-        elif pspec.name == 'radius':
-            self.set_radius(value)
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
+    def on_allocation(self, *kwargs):
+        GObject.idle_add(self.idle_resize)
 
-    def do_get_property(self, pspec):
-        if pspec.name == 'progress':
-            return self._progress
-        elif pspec.name == 'border-color':
-            return self._border_color
-        elif pspec.name == 'border-width':
-            return self._border_width
-        elif pspec.name == 'color':
-            return self._color
-        elif pspec.name == 'radius':
-            return self._radius
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
+    def idle_resize(self):
+        self.canvas.set_size(*self.get_size())
 
-    def __paint_rectangle(self, width, height, border_color, inner_color=None, progress_color=None):
-        # check if size will not cause problem with radius
-        radius = self._radius
-        if width < 2 * radius:
-            radius = int(float(width) / 2.0)
-        if height < 2 * radius:
-            radius = int(float(height) / 2.0)
-
-        # background round rectangle
-        Clutter.cogl.path_round_rectangle(0, 0, width, height, radius, 1)
-        Clutter.cogl.path_close()
-        Clutter.cogl.set_source_color(border_color)
-        Clutter.cogl.path_fill()
-
-        if self._border_width > 0 and inner_color is not None:
-            inner_width = int(width - 2 * self._border_width)
-            inner_height = int(height - 2 * self._border_width)
-            if inner_width > 0 and inner_height > 0:
-                inner_radius = radius - self._border_width
-                if inner_width < 2 * inner_radius:
-                    new_radius = int(float(inner_width) / 2.0)
-                    inner_height -= 2 * (inner_radius - new_radius)
-                    inner_radius = new_radius
-                if inner_height < 2 * inner_radius:
-                    new_radius = int(float(inner_height) / 2.0)
-                    inner_width -= 2 * (inner_radius - new_radius)
-                    inner_radius = new_radius
-
-                padding_x = int((width - inner_width) / 2.0)
-                padding_y = int((height - inner_height) / 2.0)
-
-                # foreground round rectangle
-                Clutter.cogl.path_round_rectangle(
-                    padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
-                Clutter.cogl.path_close()
-                Clutter.cogl.set_source_color(inner_color)
-                Clutter.cogl.path_fill()
-
-                # texture
-                if self._texture:
-                    Clutter.cogl.path_round_rectangle(
-                        padding_x, padding_y, padding_x + inner_width, padding_y + inner_height, inner_radius, 1)
-                    Clutter.cogl.path_close()
-                    Clutter.cogl.set_source_texture(self._texture)
-                    Clutter.cogl.path_fill()
-
-                if progress_color is not None:
-                    # progress round rectangle
-                    if self._horizontal:
-                        progress_width = int(self._progress * inner_width)
-                        progress_height = inner_height
-                        if self._progress > 0 and inner_width > 0:
-                            progress_radius = inner_radius
-                            if progress_width < 2 * progress_radius:
-                                new_radius = int(float(progress_width) / 2.0)
-                                progress_height -= 2 * \
-                                    (progress_radius - new_radius)
-                                progress_radius = new_radius
-                            if progress_height < 2 * progress_radius:
-                                new_radius = int(float(progress_height) / 2.0)
-                                progress_width -= 2 * \
-                                    (progress_radius - new_radius)
-                                progress_radius = new_radius
-
-                            progress_y = int((height - progress_height) / 2.0)
-
-                            if not self._reverse:
-                                x1 = padding_x
-                                y1 = progress_y
-                                x2 = padding_x + progress_width
-                                y2 = progress_y + progress_height
-                            else:
-                                x1 = width - padding_x - progress_width
-                                y1 = progress_y
-                                x2 = width - padding_x
-                                y2 = progress_y + progress_height
-
-                            Clutter.cogl.path_round_rectangle(
-                                x1, y1, x2, y2, progress_radius, 1)
-                            Clutter.cogl.path_close()
-                            Clutter.cogl.set_source_color(progress_color)
-                            Clutter.cogl.path_fill()
-
-                            # progress_texture
-                            if self._progress_texture:
-                                Clutter.cogl.path_round_rectangle(
-                                    x1, y1, x2, y2, progress_radius, 1)
-                                Clutter.cogl.path_close()
-                                Clutter.cogl.set_source_texture(
-                                    self._progress_texture)
-                                Clutter.cogl.path_fill()
-                    else:
-                        progress_width = inner_width
-                        progress_height = int(self._progress * inner_height)
-                        if self._progress > 0 and inner_height > 0:
-                            progress_radius = inner_radius
-                            if progress_height < 2 * progress_radius:
-                                new_radius = int(float(progress_height) / 2.0)
-                                progress_width -= 2 * \
-                                    (progress_radius - new_radius)
-                                progress_radius = new_radius
-                            if progress_width < 2 * progress_radius:
-                                new_radius = int(float(progress_width) / 2.0)
-                                progress_height -= 2 * \
-                                    (progress_radius - new_radius)
-                                progress_radius = new_radius
-
-                            progress_x = int((width - progress_width) / 2.0)
-
-                            if not self._reverse:
-                                x1 = progress_x
-                                y1 = padding_y
-                                x2 = progress_x + progress_width
-                                y2 = padding_y + progress_height
-                            else:
-                                x1 = progress_x
-                                y1 = height - padding_y - progress_height
-                                x2 = progress_x + progress_width
-                                y2 = height - padding_y
-
-                            Clutter.cogl.path_round_rectangle(
-                                x1, y1, x2, y2, progress_radius, 1)
-                            Clutter.cogl.path_close()
-                            Clutter.cogl.set_source_color(progress_color)
-                            Clutter.cogl.path_fill()
-
-                            # progress_texture
-                            if self._progress_texture:
-                                Clutter.cogl.path_round_rectangle(
-                                    x1, y1, x2, y2, progress_radius, 1)
-                                Clutter.cogl.path_close()
-                                Clutter.cogl.set_source_texture(
-                                    self._progress_texture)
-                                Clutter.cogl.path_fill()
-
-    def do_paint(self):
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        width = x2 - x1
-        height = y2 - y1
-
-        inner_color = self._color.copy()
-        real_alpha = self.get_paint_opacity() * inner_color.alpha / 255
-        inner_color.alpha = real_alpha
-
-        border_color = self._border_color.copy()
-        real_alpha = self.get_paint_opacity() * border_color.alpha / 255
-        border_color.alpha = real_alpha
-
-        progress_color = self._progress_color.copy()
-        real_alpha = self.get_paint_opacity() * progress_color.alpha / 255
-        progress_color.alpha = real_alpha
-
-        self.__paint_rectangle(
-            width, height, border_color, inner_color, progress_color)
-
-    def do_pick(self, pick_color):
-        if not self.should_pick_paint():
+    def draw(self, canvas, ctx, width, height):
+        # def __paint_rectangle(self, width, height, border_color, inner_color=None, progress_color=None):
+        if width <= 0 or height <= 0:
             return
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        self.__paint_rectangle(x2 - x1, y2 - y1, pick_color)
+        # check if size will not cause problem with radius
+        radius = self.border_radius
+        if radius > 0 and (width < radius * 2 or height < radius * 2):
+            radius = min((width, height)) / 2
 
-    def do_destroy(self):
-        self.unparent()
+        # clear the previous frame
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+        ctx.paint()
+        ctx.set_operator(cairo.OPERATOR_OVER)
 
-GObject.type_register(ProgressBar)
+        x = self.border_width / 2.
+        y = self.border_width / 2.
+        width -= self.border_width
+        height -= self.border_width
+        # background round rectangle
+        if radius > 0:
+            ctx.new_sub_path()
+            ctx.arc(x + width - radius, y + height - radius, radius, 0, math.pi / 2)
+            ctx.arc(x + radius, y + height - radius, radius, math.pi / 2, math.pi)
+            ctx.arc(x + radius, y + radius, radius, math.pi, math.pi * 3 / 2)
+            ctx.arc(x + width - radius, y + radius, radius, math.pi * 3 / 2, math.pi * 2)
+            ctx.close_path()
+        else:
+            ctx.rectangle(x, y, width, height)
+        ctx.set_source_rgb(*self.color)
+        ctx.fill_preserve()  # fill but keep the rectangle
+        ctx.set_line_width(self.border_width)
+        ctx.set_source_rgb(*self.border_color)
+        # background texture
+        if self.texture:
+            ctx.stroke_preserve()
+            ctx.save()
+            width_ratio = float(width) / float(self.texture.get_width())
+            height_ratio = float(height) / float(self.texture.get_height())
+            ctx.scale(width_ratio, height_ratio)
+            ctx.set_source_surface(self.texture)
+            ctx.fill()
+            ctx.restore()
+        else:
+            ctx.stroke()
 
-if __name__ == '__main__':
+        # progress round rectangle
+        if self.progress <= 0:
+            return
+        x = self.border_width
+        y = self.border_width
+        width -= self.border_width
+        height -= self.border_width
+        progress_radius = radius
+        progress_radius -= self.border_width / 2.
+        if self.horizontal:
+            progress_width = int(self.progress * width)
+            progress_height = height
+            if progress_radius > 0 and progress_width < 2 * progress_radius:
+                new_radius = int(float(progress_width) / 2.)
+                progress_height -= 2 * (progress_radius - new_radius)
+                progress_radius = new_radius
+            if progress_radius > 0 and progress_height < 2 * progress_radius:
+                new_radius = int(float(progress_height) / 2.)
+                progress_width -= 2 * (progress_radius - new_radius)
+                progress_radius = new_radius
+
+            progress_x = width - progress_width if self.reverse else 0
+            progress_y = int((height - progress_height) / 2.)
+        else:
+            progress_width = width
+            progress_height = int(self.progress * height)
+            if progress_radius > 0 and progress_height < 2 * progress_radius:
+                new_radius = int(float(progress_height) / 2.)
+                progress_width -= 2 * (progress_radius - new_radius)
+                progress_radius = new_radius
+            if progress_radius > 0 and progress_width < 2 * progress_radius:
+                new_radius = int(float(progress_width) / 2.)
+                progress_height -= 2 * (progress_radius - new_radius)
+                progress_radius = new_radius
+
+            progress_x = int((width - progress_width) / 2.)
+            progress_y = height - progress_height if self.reverse else 0
+
+        # progress round rectangle
+        if progress_radius > 0:
+            ctx.new_sub_path()
+            ctx.arc(x + progress_x + progress_width - progress_radius, y + progress_y + progress_height - progress_radius, progress_radius, 0, math.pi / 2)
+            ctx.arc(x + progress_x + progress_radius, y + progress_y + progress_height - progress_radius, progress_radius, math.pi / 2, math.pi)
+            ctx.arc(x + progress_x + progress_radius, y + progress_y + progress_radius, progress_radius, math.pi, math.pi * 3 / 2)
+            ctx.arc(x + progress_x + progress_width - progress_radius, y + progress_y + progress_radius, progress_radius, math.pi * 3 / 2, math.pi * 2)
+            ctx.close_path()
+        else:
+            ctx.rectangle(x + progress_x, y + progress_y, progress_width, progress_height)
+        ctx.close_path()
+        ctx.set_source_rgb(*self.progress_color)
+        # progress_texture
+        if self.progress_texture:
+            ctx.fill_preserve()
+            ctx.save()
+            width_ratio = float(width) / float(self.progress_texture.get_width())
+            height_ratio = float(height) / float(self.progress_texture.get_height())
+            ctx.scale(width_ratio, height_ratio)
+            ctx.set_source_surface(self.progress_texture)
+            ctx.fill()
+            ctx.restore()
+        else:
+            ctx.fill()
+
+
+def tester(stage):
     def update_label(bar, event, label):
         label.set_text('%d %%' % (bar.get_progress() * 100))
 
-    def progress(bar):
-        new_progress = round(bar.get_progress() + 0.002, 3)
-        bar.set_progress(new_progress)
+    def progress(*bars):
+        for bar in bars:
+            new_progress = round(bar.get_progress() + 0.002, 3)
+            bar.set_progress(new_progress)
         return new_progress < 1.0
 
-    def on_button_press(stage, event, bar):
-        bar.set_progress(0.0)
-        GObject.timeout_add(10, progress, bar)
+    def on_button_press(stage, event, *bars):
+        for bar in bars:
+            bar.set_progress(0.0)
+        GObject.timeout_add(10, progress, *bars)
 
-    stage = Clutter.Stage()
     stage.set_reactive(True)
-    stage.connect('destroy', Clutter.main_quit)
 
     label = Clutter.Text()
-    label.set_position(5, 5)
+    label.set_position(50, 10)
     label.set_text('Click to launch progress...')
-    stage.add(label)
+    stage.add_child(label)
 
-    bar = ProgressBar()
-    bar.set_radius(10)
-    bar.set_border_width(5)
-    bar.set_color('Cyan')
-    bar.set_size(630, 100)
-    bar.set_position(5, 30)
-    bar.connect('notify::progress', update_label, label)
-    stage.add(bar)
-    stage.connect('button-press-event', on_button_press, bar)
+    bar1 = ProgressBar()
+    bar1.set_border_radius(10)
+    bar1.set_border_width(5)
+    bar1.set_border_color('black')
+    bar1.set_color('cyan')
+    bar1.set_size(600, 100)
+    bar1.set_position(50, 50)
+    stage.add_child(bar1)
 
-    stage.show()
+    rect2 = Clutter.Rectangle()
+    rect2.set_color(get_clutter_color('gray'))
+    rect2.set_size(50, 400)
+    rect2.set_position(50, 170)
+    stage.add_child(rect2)
 
-    Clutter.main()
+    bar2 = ProgressBar(horizontal=False, reverse=True)
+    bar2.set_border_radius(10)
+    bar2.set_border_width(5)
+    bar2.set_border_color('black')
+    bar2.set_color('red')
+    bar2.set_progress_color('green')
+    bar2.set_size(50, 400)
+    bar2.set_position(50, 170)
+    stage.add_child(bar2)
+
+    bar1.connect('notify::progress', update_label, label)
+    stage.connect('button-press-event', on_button_press, bar1, bar2)
+
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

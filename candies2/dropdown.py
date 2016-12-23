@@ -42,7 +42,7 @@ class OptionLine(BaseContainer):
             self.background.set_color(self.default_color)
             self.background.set_border_color(self.default_border_color)
             self.background.set_border_width(3)
-            self.background.set_radius(10)
+            self.background.set_border_radius(10)
         else:
             self.background = Clutter.Rectangle()
             self.background.set_color(self.default_color)
@@ -134,9 +134,9 @@ class OptionLine(BaseContainer):
     def set_border_color(self, color):
         self.background.set_border_color(Clutter.color_from_string(color)[1])
 
-    def set_radius(self, radius):
+    def set_border_radius(self, radius):
         if self.rounded:
-            self.background.set_radius(radius)
+            self.background.set_border_radius(radius)
 
     def set_border_width(self, width):
         self.background.set_border_width(width)
@@ -302,7 +302,7 @@ class Select(Clutter.Actor, Clutter.Container):
         self._background.set_color(self.default_color)
         self._background.set_border_color(self.default_border_color)
         self._background.set_border_width(3)
-        self._background.set_radius(10)
+        self._background.set_border_radius(10)
         self._background.set_parent(self)
         # list of options displayed when the select input is opened
         self._list = VBox(padding=0, spacing=0)

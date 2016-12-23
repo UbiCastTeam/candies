@@ -9,7 +9,7 @@ gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from gi.repository import GObject
 
-from candies2.utils import get_rgb_color
+from candies2.utils import get_rgb_color, get_clutter_color
 
 
 class RoundRectangle(Clutter.Actor):
@@ -19,7 +19,7 @@ class RoundRectangle(Clutter.Actor):
 
     def __init__(self, **params):
         super(RoundRectangle, self).__init__()
-        self.inner_color = get_rgb_color(params.get('inner_color', 'black'))
+        self.color = get_rgb_color(params.get('color', 'black'))
         self.border_color = get_rgb_color(params.get('border_color', 'blue'))
         self.border_width = params.get('border_width', 0.0)
         self.border_radius = params.get('border_radius', 0.0)
@@ -38,15 +38,9 @@ class RoundRectangle(Clutter.Actor):
         self.border_radius = radius
         self.canvas.invalidate()
 
-    def set_radius(self, radius):
-        self.set_border_radius(radius)
-
-    def set_inner_color(self, color):
-        self.inner_color = get_rgb_color(color)
-        self.canvas.invalidate()
-
     def set_color(self, color):
-        self.set_inner_color(color)
+        self.color = get_rgb_color(color)
+        self.canvas.invalidate()
 
     def set_border_color(self, color):
         self.border_color = get_rgb_color(color)
@@ -64,7 +58,7 @@ class RoundRectangle(Clutter.Actor):
 
     def draw(self, canvas, ctx, width, height):
         radius = self.border_radius
-        if width <= radius * 2 or height <= radius * 2:
+        if radius > 0 and (width < radius * 2 or height < radius * 2):
             radius = min((width, height)) / 2
 
         # clear the previous frame
@@ -72,18 +66,21 @@ class RoundRectangle(Clutter.Actor):
         ctx.paint()
         ctx.set_operator(cairo.OPERATOR_OVER)
 
-        x = self.border_width
-        y = self.border_width
-        w = width - self.border_width * 2
-        h = height - self.border_width * 2
-        ctx.new_sub_path()
-        ctx.arc(x + w - radius, y + h - radius, radius, 0, math.pi / 2)
-        ctx.arc(x + radius, y + h - radius, radius, math.pi / 2, math.pi)
-        ctx.arc(x + radius, y + radius, radius, math.pi, math.pi * 3 / 2)
-        ctx.arc(x + w - radius, y + radius, radius, math.pi * 3 / 2, math.pi * 2)
-        ctx.close_path()
+        x = self.border_width / 2.
+        y = self.border_width / 2.
+        width -= self.border_width
+        height -= self.border_width
+        if radius > 0:
+            ctx.new_sub_path()
+            ctx.arc(x + width - radius, y + height - radius, radius, 0, math.pi / 2)
+            ctx.arc(x + radius, y + height - radius, radius, math.pi / 2, math.pi)
+            ctx.arc(x + radius, y + radius, radius, math.pi, math.pi * 3 / 2)
+            ctx.arc(x + width - radius, y + radius, radius, math.pi * 3 / 2, math.pi * 2)
+            ctx.close_path()
+        else:
+            ctx.rectangle(x, y, width, height)
 
-        ctx.set_source_rgb(*self.inner_color)
+        ctx.set_source_rgb(*self.color)
         ctx.fill_preserve()  # fill but keep the rectangle
         ctx.set_line_width(self.border_width)
         ctx.set_source_rgb(*self.border_color)
@@ -91,16 +88,36 @@ class RoundRectangle(Clutter.Actor):
 
 
 def tester(stage):
-    actor = RoundRectangle()
-    actor.set_radius(25)
-    actor.set_inner_color('#0000ffff')
-    actor.set_border_width(5)
-    actor.set_border_color('#00ffffff')
-    actor.set_size(160, 120)
-    actor.set_anchor_point(80, 60)
-    actor.set_position(480, 240)
-    stage.add_child(actor)
-    GObject.timeout_add_seconds(2, actor.set_size, 300, 400)
+    rr1 = RoundRectangle()
+    rr1.set_border_radius(10)
+    rr1.set_color('blue')
+    rr1.set_border_width(5)
+    rr1.set_border_color('cyan')
+    rr1.set_size(200, 400)
+    rr1.set_position(300, 50)
+    stage.add_child(rr1)
+    GObject.timeout_add_seconds(2, rr1.set_size, 300, 200)
+
+    rect1 = Clutter.Rectangle()
+    rect1.set_color(get_clutter_color('gray'))
+    rect1.set_size(200, 400)
+    rect1.set_position(50, 50)
+    stage.add_child(rect1)
+
+    rr2 = RoundRectangle()
+    rr2.set_border_radius(25)
+    rr2.set_color('blue')
+    rr2.set_border_width(5)
+    rr2.set_border_color('cyan')
+    rr2.set_size(200, 400)
+    rr2.set_position(50, 50)
+    stage.add_child(rr2)
+
+    rect2 = Clutter.Rectangle()
+    rect2.set_color(get_clutter_color('#ffffffaa'))
+    rect2.set_size(190, 390)
+    rect2.set_position(55, 55)
+    stage.add_child(rect2)
 
     test_memory_usage = False
     if test_memory_usage:

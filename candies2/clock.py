@@ -77,10 +77,8 @@ class Clock(Clutter.Actor):
 
         # texture
         ctx.save()
-        img_height = self.texture.get_height()
-        img_width = self.texture.get_width()
-        width_ratio = float(width) / float(img_width)
-        height_ratio = float(height) / float(img_height)
+        width_ratio = float(width) / float(self.texture.get_width())
+        height_ratio = float(height) / float(self.texture.get_height())
         ctx.rectangle(0, 0, width, height)
         ctx.close_path()
         ctx.scale(width_ratio, height_ratio)
