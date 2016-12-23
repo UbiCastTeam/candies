@@ -1,12 +1,10 @@
 #!/ur/bin/env python
 # -*- coding: utf-8 -*-
-
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from scrollbar import Scrollbar, Clipper
 from box import HBox
-
-# auto scroll panel
-#-------------------------------------------------------------------------
 
 
 class AutoScrollPanel(HBox):
