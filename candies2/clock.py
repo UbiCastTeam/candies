@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
+import cairo
+import datetime
+import math
+import os
 
 from gi.repository import Clutter
+from gi.repository import GObject
 
-import math
+from candies2.utils import get_rgb_color, get_clutter_color
 
 
 class Clock(Clutter.Actor):
@@ -11,113 +16,115 @@ class Clock(Clutter.Actor):
     A clock widget
     '''
 
-    def __init__(self, date=None, texture=None):
-        Clutter.Actor.__init__(self)
-        self._date = date
-        self._texture = texture
-        self._color = Clutter.color_from_string('Black')
+    def __init__(self, color=None, image=None):
+        super(Clock, self).__init__()
+        if not image:
+            image = os.path.join(os.path.dirname(__file__), 'images', 'clock.png')
+        self.texture = cairo.ImageSurface.create_from_png(image)
+        self.color = get_rgb_color(color or 'black')
+        self.date = datetime.datetime.now()
+
+        self.canvas = Clutter.Canvas()
+        self.set_content(self.canvas)
+        self.canvas.connect('draw', self.draw)
+        self.connect('notify::allocation', self.on_allocation)
+
+        GObject.timeout_add_seconds(61 - self.date.second, self.update)
 
     def set_color(self, color):
-        self._color = Clutter.color_from_string(color)
-        self.queue_redraw()
+        self.color = get_rgb_color(color)
+        self.canvas.invalidate()
 
     def set_texture(self, texture):
-        self._texture = texture
-        self.queue_redraw()
+        self.texture = texture
+        self.canvas.invalidate()
 
-    def set_date(self, date=None):
-        self._date = date
-        if date is not None:
-            self.queue_redraw()
+    def update(self):
+        self.date = datetime.datetime.now()
+        self.canvas.invalidate()
+        GObject.timeout_add_seconds(61 - self.date.second, self.update)
 
-    def do_paint(self):
-        # Clutter.Texture.do_paint(self)
+    def on_allocation(self, *kwargs):
+        GObject.idle_add(self.idle_resize)
 
-        (x1, y1, x2, y2) = self.get_allocation_box()
-        width = x2 - x1
-        height = y2 - y1
+    def idle_resize(self):
+        self.canvas.set_size(*self.get_size())
+
+    def draw(self, canvas, ctx, width, height):
         hw = width / 2
         hh = height / 2
 
         center_x = hw
         center_y = hh
 
-        # texture
-        if self._texture is not None:
-            cogl.path_rectangle(0, 0, width, height)
-            cogl.path_close()
-            cogl.set_source_texture(self._texture)
-            cogl.path_fill()
-
         # clock hands
-        if self._date is not None:
-            hour = self._date.hour
-            minute = self._date.minute
+        hour = self.date.hour
+        minute = self.date.minute
 
-            # hour
-            angle = (60 * hour + minute) / 2 + 270
-            left = angle - 14
-            right = angle + 14
+        # hour
+        angle = (60 * hour + minute) / 2 + 270
+        left = angle - 14
+        right = angle + 14
 
-            angle = angle * (math.pi / 180)
-            left = left * (math.pi / 180)
-            right = right * (math.pi / 180)
+        angle = angle * (math.pi / 180)
+        left = left * (math.pi / 180)
+        right = right * (math.pi / 180)
 
-            cogl.path_move_to(center_x, center_y)
-            cogl.path_line_to(center_x + (hw / 4) * math.cos(
-                left), center_y + (hh / 4) * math.sin(left))
-            cogl.path_line_to(center_x + (2 * hw / 3) * math.cos(
-                angle), center_y + (2 * hh / 3) * math.sin(angle))
-            cogl.path_line_to(center_x + (hw / 4) * math.cos(
-                right), center_y + (hh / 4) * math.sin(right))
-            cogl.path_line_to(center_x, center_y)
-            cogl.path_close()
-            cogl.set_source_color(self._color)
-            cogl.path_fill()
+        # reset canvas
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+        ctx.paint()
+        ctx.set_operator(cairo.OPERATOR_OVER)
 
-            # minute
-            angle = 6 * minute + 270
-            left = angle - 10
-            right = angle + 10
+        # texture
+        ctx.save()
+        img_height = self.texture.get_height()
+        img_width = self.texture.get_width()
+        width_ratio = float(width) / float(img_width)
+        height_ratio = float(height) / float(img_height)
+        ctx.rectangle(0, 0, width, height)
+        ctx.close_path()
+        ctx.scale(width_ratio, height_ratio)
+        ctx.set_source_surface(self.texture)
+        ctx.fill()
+        ctx.restore()
 
-            angle = angle * (math.pi / 180)
-            left = left * (math.pi / 180)
-            right = right * (math.pi / 180)
+        ctx.move_to(center_x, center_y)
+        ctx.line_to(center_x + (hw / 4) * math.cos(left), center_y + (hh / 4) * math.sin(left))
+        ctx.line_to(center_x + (2 * hw / 3) * math.cos(angle), center_y + (2 * hh / 3) * math.sin(angle))
+        ctx.line_to(center_x + (hw / 4) * math.cos(right), center_y + (hh / 4) * math.sin(right))
+        ctx.line_to(center_x, center_y)
+        ctx.close_path()
+        ctx.set_source_rgb(*self.color)
+        ctx.fill()
 
-            cogl.path_move_to(center_x, center_y)
-            cogl.path_line_to(center_x + (hw / 3) * math.cos(
-                left), center_y + (hh / 3) * math.sin(left))
-            cogl.path_line_to(center_x + hw * math.cos(
-                angle), center_y + hh * math.sin(angle))
-            cogl.path_line_to(center_x + (hw / 3) * math.cos(
-                right), center_y + (hh / 3) * math.sin(right))
-            cogl.path_line_to(center_x, center_y)
-            cogl.path_close()
-            cogl.set_source_color(self._color)
-            cogl.path_fill()
+        # minute
+        angle = 6 * minute + 270
+        left = angle - 10
+        right = angle + 10
+
+        angle = angle * (math.pi / 180)
+        left = left * (math.pi / 180)
+        right = right * (math.pi / 180)
+
+        ctx.move_to(center_x, center_y)
+        ctx.line_to(center_x + (hw / 3) * math.cos(left), center_y + (hh / 3) * math.sin(left))
+        ctx.line_to(center_x + hw * math.cos(angle), center_y + hh * math.sin(angle))
+        ctx.line_to(center_x + (hw / 3) * math.cos(right), center_y + (hh / 3) * math.sin(right))
+        ctx.line_to(center_x, center_y)
+        ctx.close_path()
+        ctx.set_source_rgb(*self.color)
+        ctx.fill()
 
 
-# main to test
-if __name__ == '__main__':
-    stage = Clutter.Stage()
-    stage.connect('destroy', Clutter.main_quit)
-
-    from gi.repository import GObject, datetime
-    t = cogl.texture_new_from_file(
-        'clock.png', Clutter.cogl.TEXTURE_NO_SLICING, Clutter.cogl.PIXEL_FORMAT_ANY)
+def tester(stage):
     c = Clock()
-    c.set_texture(t)
+    c.set_color('white')
     c.set_size(400, 400)
     c.set_position(50, 50)
-    stage.add(c)
+    stage.add_child(c)
+    stage.set_color(get_clutter_color('#888888'))
 
-    def update():
-        today = datetime.datetime.today()
-        # self.actor.set_text(today.strftime('%H:%M\n%d / %m'))
-        c.set_date(today)
-        return True
 
-    GObject.timeout_add_seconds(60, update)
-
-    stage.show()
-    Clutter.main()
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)

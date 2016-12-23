@@ -19,7 +19,7 @@ class RoundRectangle(Clutter.Actor):
     def __init__(self, **params):
         super(RoundRectangle, self).__init__()
         self.inner_color = get_rgb_color(params.get('inner_color', 'black'))
-        self.border_color = get_rgb_color(params.get('border_color', 'black'))
+        self.border_color = get_rgb_color(params.get('border_color', 'blue'))
         self.border_width = params.get('border_width', 0.0)
         self.border_radius = params.get('border_radius', 0.0)
         self.texture = params.get('texture')
