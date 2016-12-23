@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from text import TextContainer
 from container import BaseContainer
 
 
 class CheckButton(Clutter.Texture):
-    __gtype_name__ = 'CheckButton'
     """
     A check button
     """
@@ -76,7 +77,6 @@ class CheckButton(Clutter.Texture):
 
 
 class CheckBox(BaseContainer):
-    __gtype_name__ = 'CheckBox'
     """
     A check button with a label
     """
@@ -94,7 +94,8 @@ class CheckBox(BaseContainer):
         self._not_checked_image_path = None
 
         self._label = TextContainer(label, padding=0, rounded=False)
-        self._label.set_inner_color('#00000000')
+        color = Clutter.color_from_string('#00000000')[1]
+        self._label.set_inner_color(color)
 
         self._image = Clutter.Texture()
 
@@ -209,10 +210,8 @@ class CheckBox(BaseContainer):
 
         Clutter.Actor.do_allocate(self, box, flags)
 
-# main to test
-if __name__ == '__main__':
-    stage = Clutter.Stage()
-    stage.connect('destroy', Clutter.main_quit)
+
+def tester(stage):
 
     def callback(checked):
         print checked
@@ -220,7 +219,11 @@ if __name__ == '__main__':
     checkbox = CheckBox('Test', callback=callback)
     checkbox.set_reactive(True)
     checkbox.set_position(50, 50)
-    stage.add(checkbox)
+    stage.add_child(checkbox)
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
