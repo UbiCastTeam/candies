@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
-
+import gi
+gi.require_version('Clutter', '1.0')
 from gi.repository import Clutter
 from container import BaseContainer
 from disk import Disk
 
 
 class ClickCatcher(BaseContainer):
-    __gtype_name__ = 'ClickCatcher'
 
     def __init__(self, actor=None, circles_radius=60, circles_color='#ff8888aa', click_callback=None):
         BaseContainer.__init__(self, allow_add=False, allow_remove=False)
@@ -22,31 +22,33 @@ class ClickCatcher(BaseContainer):
         self._circle = Disk()
         self._circle.set_opacity(0)
         self._circle.set_color(circles_color)
-        self._circle.set_stroke_width(10)
-        self._circle.move_anchor_point_from_gravity(Clutter.GRAVITY_CENTER)
+        self._circle.set_border_width(10)
+        self._circle.move_anchor_point_from_gravity(Clutter.Gravity.CENTER)
         self._add(self._circle)
 
         self._inner_circle_radius = self._circle_radius / 2.0
         self._inner_circle = Disk()
         self._inner_circle.set_opacity(0)
         self._inner_circle.set_color(circles_color)
-        self._inner_circle.set_stroke_width(7)
+        self._inner_circle.set_border_width(7)
         self._inner_circle.move_anchor_point_from_gravity(
-            Clutter.GRAVITY_CENTER)
+            Clutter.Gravity.CENTER)
         self._add(self._inner_circle)
 
         self._timeline = Clutter.Timeline(duration=500)
         self._timeline.connect('completed', self._on_timeline_completed)
         self._timeline_completed = True
 
-        alpha = Clutter.Alpha(self._timeline, Clutter.LINEAR)
+        # alpha = Clutter.Alpha(self._timeline, Clutter.LINEAR)
+        alpha = Clutter.Alpha.new_full(self._timeline, Clutter.AnimationMode.LINEAR)
 
         self.alpha_behaviour = Clutter.BehaviourOpacity(
             opacity_start=255, opacity_end=0, alpha=alpha)
         self.alpha_behaviour.apply(self._circle)
         self.alpha_behaviour.apply(self._inner_circle)
-        self.scale_behaviour = Clutter.BehaviourScale(
-            0.0, 0.0, 1.0, 1.0, alpha=alpha)
+
+        self.scale_behaviour = Clutter.BehaviourScale.new(alpha, 0.0, 0.0, 1.0, 1.0)
+
         self.scale_behaviour.apply(self._circle)
         self.scale_behaviour.apply(self._inner_circle)
 
@@ -109,23 +111,21 @@ class ClickCatcher(BaseContainer):
         self._inner_circle.allocate(icbox, flags)
 
         if self._actor:
-            abox = Clutter.ActorBox(0, 0, width, height)
+            abox = Clutter.ActorBox.new(0, 0, width, height)
             self._actor.allocate(abox, flags)
 
         Clutter.Actor.do_allocate(self, box, flags)
 
 
-if __name__ == '__main__':
+def tester(stage):
     # stage
-    stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
     stage.set_size(stage_width, stage_height)
-    stage.set_color('#000000ff')
-    stage.connect('destroy', Clutter.main_quit)
+    stage.set_color(Clutter.color_from_string('#000000ff')[1])
 
     bg = Clutter.Rectangle()
-    bg.set_color('#000000ff')
+    bg.set_color(Clutter.color_from_string('#000000ff')[1])
 
     def on_bg_press(source, event):
         print 'press on bg'
@@ -139,7 +139,11 @@ if __name__ == '__main__':
 
     catcher = ClickCatcher(bg)
     catcher.set_size(1200, 600)
-    stage.add(catcher)
+    stage.add_child(catcher)
 
     stage.show()
     Clutter.main()
+
+if __name__ == '__main__':
+    from test import run_test
+    run_test(tester)
