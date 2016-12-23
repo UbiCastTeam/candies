@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import cairo
 import math
+import os
 
-from gi.repository import GObject
 from gi.repository import Clutter
+from gi.repository import GObject
+
 from candies2.utils import get_rgb_color
 
 
@@ -106,11 +107,11 @@ def tester(stage):
     if test_memory_usage:
         import gc
         gc.set_debug(gc.DEBUG_LEAK)
-        from pprint import pprint
 
         max_count = 20000
 
-        texture = Clutter.Texture.new_from_file(os.path.expanduser('~/.face'))
+        texture_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'logo.png')
+        texture = Clutter.Texture.new_from_file(texture_path)
 
         def create_test_object():
             t = RoundRectangle(texture=texture)
@@ -134,7 +135,6 @@ def tester(stage):
             remove_test_object(tested_object, stage)
 
             gc.collect()
-            pprint(gc.garbage)
 
             GObject.timeout_add(2, test_memory, stage, counter, max_count)
             return False
