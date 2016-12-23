@@ -26,7 +26,7 @@ from scrollbar import Scrollbar, Clipper
 from progressbar import ProgressBar
 from dropdown import OptionLine, Select
 
-from text import StretchText, TextContainer
+from text import TextContainer
 from buttons import ClassicButton, ImageButton
 from clicking import SimpleClick, LongClick
 from clickcatcher import ClickCatcher

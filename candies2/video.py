@@ -2,20 +2,22 @@
 # -*- coding: utf-8 -*-
 
 '''
-Video player: Cluttergst.VideoTexture wrapper
+Video player: ClutterGst.VideoTexture wrapper
 
 Copyright 2008, Florent Thiery, UbiCast
 '''
 from gi.repository import GObject
-import gst
+# import gst
 from gi.repository import Clutter
-from Cluttergst import VideoTexture
+from gi.repository import ClutterGst
 
 import logging
 logger = logging.getLogger('candies2.videoplayer')
 
+ClutterGst.VideoTexture = Clutter.Actor  # Temporary fix for import
 
-class VideoPlayer(VideoTexture):
+
+class VideoPlayer(ClutterGst.VideoTexture):
     __gtype_name__ = 'VideoPlayer'
     '''
     VideoPlayer
@@ -28,7 +30,7 @@ class VideoPlayer(VideoTexture):
     '''
 
     def __init__(self, uri=None, keep_ratio=True):
-        VideoTexture.__init__(self)
+        ClutterGst.VideoTexture.__init__(self)
         self._last_progress = None
         self._seeking_timeout_id = None
         self._next_seek_percent = None
@@ -246,9 +248,9 @@ class VideoPlayer(VideoTexture):
             GObject.timeout_add(20, self.seek_to_percent, current_percent)
 
     def get_ratio(self):
-        preferred_width = VideoTexture.do_get_preferred_width(
+        preferred_width = ClutterGst.VideoTexture.do_get_preferred_width(
             self, for_height=-1)[1]
-        preferred_height = VideoTexture.do_get_preferred_height(
+        preferred_height = ClutterGst.VideoTexture.do_get_preferred_height(
             self, for_width=-1)[1]
         if preferred_height > 0:
             return preferred_width / preferred_height
