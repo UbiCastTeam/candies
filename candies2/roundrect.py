@@ -1,178 +1,90 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
+import cairo
+import math
 
 from gi.repository import GObject
 from gi.repository import Clutter
-from gi.repository import Cogl
+from candies2.utils import get_rgb_color
 
 
 class RoundRectangle(Clutter.Actor):
-
     """
     RoundRectangle (Clutter.Actor)
 
     A simple actor drawing a rectangle with round angles using the Clutter.Cogl
     primitives.
     """
-    __gtype_name__ = 'RoundRectangle'
-    __gproperties__ = {
-        'color': (
-            str, 'color', 'Color', None, GObject.PARAM_READWRITE
-        ),
-        'radius': (
-            GObject.TYPE_FLOAT, 'Radius', 'Radius of the round angles',
-            0.0, sys.maxint, 0.0, GObject.PARAM_READWRITE
-        ),
-        'border_color': (
-            str, 'border color', 'Border color', None, GObject.PARAM_READWRITE
-        ),
-        'border_width': (
-            GObject.TYPE_FLOAT, 'border width', 'Border width',
-            0.0, sys.maxint, 0.0, GObject.PARAM_READWRITE
-        ),
-    }
 
     def __init__(self, texture=None):
-        Clutter.Actor.__init__(self)
-        self._allocation_box = (0, 0, 0, 0)
-        self._radius = 0.0
-        self._paint_radius_size = 0.
-        self._paint_radius = 0.
-        self._paint_double_border_width = 0.
-        self._paint_width_minus_border_width = 0.
-        self._paint_height_minus_border_width = 0.
-        self._paint_radius_minus_border_width = 0.
-        self._color = Clutter.color_from_string('Black')[1]
-        self._border_color = Clutter.color_from_string('Black')[1]
-        self._border_width = 0.0
-        self._texture = texture
+        super(RoundRectangle, self).__init__()
+        self.inner_color = get_rgb_color('black')
+        self.border_color = get_rgb_color('green')
+        self.border_width = 0.0
+        self.border_radius = 0.0
+        self.texture = texture
 
-    def get_Clutter_color(self, color):
-        if isinstance(color, Clutter.Color):
-            return color
-        elif isinstance(color, tuple):
-            return Clutter.color_from_string(*color)[1]
-        else:
-            return Clutter.color_from_string(color)[1]
+        self.canvas = Clutter.Canvas()
+        self.set_content(self.canvas)
+        self.canvas.connect('draw', self.draw)
+        self.connect('notify::allocation', self.on_allocation)
 
     def set_texture(self, texture):
-        self._texture = texture
-        self.queue_redraw()
+        self.texture = texture
+        # self.queue_redraw()
 
     def set_radius(self, radius):
-        self._radius = radius
-        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[
-                                     0], self._allocation_box[3] - self._allocation_box[1])
+        self.border_radius = radius
         self.queue_redraw()
 
     def set_inner_color(self, color):
-        self._color = self.get_Clutter_color(color)
+        self.inner_color = get_rgb_color(color)
         self.queue_redraw()
 
     def set_color(self, color):
         self.set_inner_color(color)
 
     def set_border_color(self, color):
-        self._border_color = self.get_Clutter_color(color)
+        self.border_color = get_rgb_color(color)
         self.queue_redraw()
 
     def set_border_width(self, width):
-        self._border_width = width
-        self._calculate_paint_values(self._allocation_box[2] - self._allocation_box[
-                                     0], self._allocation_box[3] - self._allocation_box[1])
+        self.border_width = width
         self.queue_redraw()
 
-    def do_set_property(self, pspec, value):
-        if pspec.name == 'border-color':
-            self.set_border_color(value)
-        elif pspec.name == 'border-width':
-            self.set_border_width(value)
-        elif pspec.name == 'color':
-            self.set_color(value)
-        elif pspec.name == 'radius':
-            self.set_radius(value)
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
+    def on_allocation(self, *kwargs):
+        GObject.idle_add(self.idle_resize)
 
-    def do_get_property(self, pspec):
-        if pspec.name == 'border-color':
-            return self._border_color
-        elif pspec.name == 'border-width':
-            return self._border_width
-        elif pspec.name == 'color':
-            return self._color
-        elif pspec.name == 'radius':
-            return self._radius
-        else:
-            raise TypeError('Unknown property ' + pspec.name)
+    def idle_resize(self):
+        self.canvas.set_size(*self.get_size())
 
-    def __paint_rectangle(self, width, height, color, border_color=None):
-        if border_color is not None and self._border_width > 0 and self._paint_double_border_width < width and self._paint_double_border_width < height:
-            Cogl.rectangle(0, 0, width, height)
-            # Cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
-            Cogl.path_close()
-            Cogl.set_source_color(border_color)
-            Cogl.path_fill()
+    def draw(self, canvas, ctx, width, height):
+        radius = self.border_radius
+        if width <= radius * 2 or height <= radius * 2:
+            radius = min((width, height)) / 2
 
-            Cogl.rectangle(0, 0, width, height)
-            # Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
-            Cogl.path_close()
-            Cogl.set_source_color(color)
-            Cogl.path_fill()
+        # clear the previous frame
+        ctx.set_operator(cairo.OPERATOR_CLEAR)
+        ctx.paint()
 
-            # texture
-            if self._texture:
-                Cogl.rectangle(self._border_width, self._border_width, self._border_width + self._paint_width_minus_border_width, self._border_width + self._paint_height_minus_border_width)
-                # Cogl.path_round_rectangle(self._border_width, self._border_width, self._paint_width_minus_border_width, self._paint_height_minus_border_width, self._paint_radius_minus_border_width, 1)
-                Cogl.path_close()
-                Cogl.set_source_texture(self._texture)
-                Cogl.path_fill()
-        else:
-            Cogl.rectangle(0, 0, width, height)
-            # Cogl.path_round_rectangle(0, 0, width, height, self._paint_radius, 1)
-            Cogl.path_close()
-            Cogl.set_source_color(color)
-            Cogl.path_fill()
+        ctx.set_operator(cairo.OPERATOR_OVER)
+        x = self.border_width
+        y = self.border_width
+        w = width - self.border_width * 2
+        h = height - self.border_width * 2
+        ctx.new_sub_path()
+        ctx.arc(x + w - radius, y + h - radius, radius, 0, math.pi / 2)
+        ctx.arc(x + radius, y + h - radius, radius, math.pi / 2, math.pi)
+        ctx.arc(x + radius, y + radius, radius, math.pi, math.pi * 3 / 2)
+        ctx.arc(x + w - radius, y + radius, radius, math.pi * 3 / 2, math.pi * 2)
+        ctx.close_path()
 
-    def do_paint(self):
-        abox = self.get_allocation_box()
-        x1, y1, x2, y2 = abox.x1, abox.y1, abox.x2, abox.y2
-        width = x2 - x1
-        height = y2 - y1
-        if self._allocation_box != (x1, y1, x2, y2):
-            self._calculate_paint_values(width, height)
-            self._allocation_box = (x1, y1, x2, y2)
-
-        paint_color = self._color.copy()
-        real_alpha = self.get_paint_opacity() * paint_color.alpha / 255
-        paint_color.alpha = real_alpha
-
-        border_color = self._border_color.copy()
-        real_alpha = self.get_paint_opacity() * border_color.alpha / 255
-        border_color.alpha = real_alpha
-
-        self.__paint_rectangle(width, height, paint_color, border_color)
-
-    def _calculate_paint_values(self, width, height):
-        self._paint_radius_size = 2 * self._radius
-        if self._paint_radius_size <= width and self._paint_radius_size <= height:
-            self._paint_radius = self._radius
-        elif self._paint_radius_size > width and self._paint_radius_size <= height:
-            self._paint_radius = width / 2.0
-        elif self._paint_radius_size <= width and self._paint_radius_size > height:
-            self._paint_radius = height / 2.0
-        else:
-            self._paint_radius = min(width, height) / 2.0
-        self._paint_double_border_width = 2 * self._border_width
-        self._paint_width_minus_border_width = width - self._border_width
-        self._paint_height_minus_border_width = height - self._border_width
-        self._paint_radius_minus_border_width = self._paint_radius - \
-            self._border_width
-
-    def do_destroy(self):
-        self.unparent()
+        ctx.set_source_rgb(*self.inner_color)
+        ctx.fill_preserve()  # fill but keep the rectangle
+        ctx.set_line_width(self.border_width)
+        ctx.set_source_rgb(*self.border_color)
+        ctx.stroke()
 
 
 def tester(stage):
