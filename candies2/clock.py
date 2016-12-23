@@ -7,10 +7,9 @@ import math
 
 
 class Clock(Clutter.Actor):
-    __gtype_name__ = 'Clock'
-    """
+    '''
     A clock widget
-    """
+    '''
 
     def __init__(self, date=None, texture=None):
         Clutter.Actor.__init__(self)

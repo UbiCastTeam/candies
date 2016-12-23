@@ -8,7 +8,6 @@ from container import BaseContainer
 
 
 class Scrollbar(Clutter.Actor, Clutter.Container):
-
     '''
     Scrollbar class :
         variables :
@@ -26,9 +25,7 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
             .do_paint
             .do_pick
     '''
-    __gtype_name__ = 'Scrollbar'
-    __gsignals__ = {'scroll_position': (
-        GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, [GObject.TYPE_FLOAT])}
+    __gsignals__ = {'scroll_position': (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, [GObject.TYPE_FLOAT])}
 
     def __init__(self, padding=8, position='center', bar_image_path=None, scroller_image_path=None, scroller_press_image_path=None, horizontal=False, reallocate=False, label=None, value=0, scale=None):
         Clutter.Actor.__init__(self)
@@ -357,7 +354,6 @@ class Scrollbar(Clutter.Actor, Clutter.Container):
 
 
 class Clipper(Clutter.Actor, Clutter.Container):
-
     '''
     Clipper class
         need Clutter.Actor
@@ -370,7 +366,6 @@ class Clipper(Clutter.Actor, Clutter.Container):
             .do_paint
             .do_pick
     '''
-    __gtype_name__ = 'Clipper'
 
     def __init__(self, actor=None, expand=False):
         Clutter.Actor.__init__(self)
@@ -462,7 +457,8 @@ def tester(stage):
     label = Clutter.Text()
     label.set_text('test')
 
-    image = Clutter.Texture.new_from_file('/sources/candies/tests/candies.png')
+    texture_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'candies.png')
+    image = Clutter.Texture.new_from_file(texture_path)
     image.set_size(460, 1000)
 
     clipper = Clipper(image)

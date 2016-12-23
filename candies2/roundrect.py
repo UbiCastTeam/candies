@@ -11,12 +11,10 @@ from candies2.utils import get_rgb_color
 
 
 class RoundRectangle(Clutter.Actor):
-    """
-    RoundRectangle (Clutter.Actor)
-
+    '''
     A simple actor drawing a rectangle with round angles using the Clutter.Cogl
     primitives.
-    """
+    '''
 
     def __init__(self, **params):
         super(RoundRectangle, self).__init__()

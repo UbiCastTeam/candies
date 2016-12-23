@@ -5,13 +5,12 @@ from gi.repository import Clutter
 
 
 class BaseContainer(Clutter.Actor, Clutter.Container):
-
-    """A container class wich implements all standard container functions."""
-
-    __gtype_name__ = 'BaseContainer'
+    '''
+    A container class wich implements all standard container functions.
+    '''
 
     def __init__(self, allow_add=False, allow_remove=False, pick_enabled=True):
-        Clutter.Actor.__init__(self)
+        super(BaseContainer, self).__init__()
         self._children = list()
         self.__allow_add = allow_add
         self.__allow_remove = allow_remove
