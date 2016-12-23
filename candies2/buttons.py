@@ -3,6 +3,7 @@
 
 import gi
 gi.require_version('Clutter', '1.0')
+import os
 from gi.repository import GObject
 from gi.repository import Clutter
 from text import TextContainer
@@ -132,7 +133,7 @@ GObject.type_register(ImageButton)
 
 
 def tester(stage):
-    texture_path = '/home/aviolo/easycast/easycast/images/buttons/copy.png'
+    texture_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'candies.png')
     texture = Clutter.Texture()
     # texture.set_cogl_texture(texture_path)
     # texture = Clutter.cogl.texture_new_from_file(
@@ -141,6 +142,7 @@ def tester(stage):
     # stage.add(toto)
     # texture = Clutter.Texture()
     texture.set_from_file(texture_path)
+    texture.set_size(460, 1000)
     t = ClassicButton(
         'test efopkzekfopzf opfzeopfkz opfzegjzeh guzehiug ezhgiozeghizeogh eziogzeoighze oigzeiogzeig opg jzeopgjzepogzzeogjze zeigergre ergerg', texture=texture, rounded=True)
     t.set_size(640, 480)
@@ -228,7 +230,7 @@ def tester(stage):
 
     stage.add(box0)
     '''
-
+    '''
     test_memory_usage = False
     if test_memory_usage:
         import gc
@@ -272,6 +274,7 @@ def tester(stage):
             return False
 
         GObject.timeout_add(10, test_memory, stage, 0, max_count)
+        '''
     stage.show()
     Clutter.main()
 
