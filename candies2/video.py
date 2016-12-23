@@ -6,8 +6,10 @@ Video player: ClutterGst.VideoTexture wrapper
 
 Copyright 2008, Florent Thiery, UbiCast
 '''
+import gi
 from gi.repository import GObject
 # import gst
+gi.require_version('ClutterGst', '2.0')
 from gi.repository import Clutter
 from gi.repository import ClutterGst
 

@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import gi
+gi.require_version('Clutter', '1.0')
+
 from gi.repository import GObject
 import common
 from gi.repository import Clutter
@@ -9,7 +12,6 @@ from roundrect import RoundRectangle
 
 
 class TextContainer(Clutter.Actor, Clutter.Container):
-    __gtype_name__ = 'TextContainer'
     __gproperties__ = {
         'text': (
             str, 'text', 'Text', None, GObject.PARAM_READWRITE
@@ -248,6 +250,7 @@ def tester(stage):
 
     t = TextContainer(
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra adipiscing posuere. Proin fringilla nisl non dui consectetur aliquet. Integer et elit sem, faucibus fringilla urna. Suspendisse vel ipsum nunc, sed malesuada urna. Nunc bibendum imperdiet tellus vitae tempus. Vivamus sodales feugiat cursus. Maecenas accumsan est ac lorem consequat sed aliquam justo sollicitudin. Vivamus congue dignissim ligula, a malesuada enim sagittis et. Nam fringilla nisl quis nisi ultrices tincidunt. Cras ut magna eu nunc adipiscing rhoncus. Donec at leo vel magna congue auctor id ut eros. Praesent sodales fringilla lacus quis congue. Quisque a nunc urna. Donec euismod sagittis bibendum.', margin=40, padding=(20, 10))
+
     t.set_size(400, 300)
     t.set_position(20, 20)
     t.set_line_wrap(True)
