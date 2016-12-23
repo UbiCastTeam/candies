@@ -642,6 +642,7 @@ class Select(Clutter.Actor, Clutter.Container):
 
 
 if __name__ == '__main__':
+    Clutter.init()
     stage_width = 640
     stage_height = 480
     stage = Clutter.Stage()

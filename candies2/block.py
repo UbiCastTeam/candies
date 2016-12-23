@@ -445,6 +445,7 @@ class TexturedBlock(BaseContainer):
 
 if __name__ == '__main__':
     # stage
+    Clutter.init()
     stage = Clutter.Stage()
     stage_width = 1200
     stage_height = 600
@@ -472,11 +473,13 @@ if __name__ == '__main__':
     textures_package = dict()
 
     content = Clutter.Rectangle()
-    content.set_color('#00000088')
+    color = Clutter.color_from_string('#00000088')[1]
+    content.set_color(color)
 
     title = Clutter.Rectangle()
     title.set_height(50)
-    title.set_color('#ff000088')
+    color = Clutter.color_from_string('#ff000088')[1]
+    title.set_color(color)
 
     global_bg = TexturedBlock(
         'Nouveau block', content_actor=content, textures_package=textures_package, margin=8, padding=5)
@@ -484,7 +487,7 @@ if __name__ == '__main__':
     # content_actor=content, textures_package=textures_package)
     global_bg.set_position(50, 50)
     global_bg.set_size(800, 300)
-    stage.add(global_bg)
+    stage.add_child(global_bg)
 
     test_memory_usage = False
     if test_memory_usage:
@@ -529,7 +532,7 @@ if __name__ == '__main__':
                 counter += 1
                 print counter
                 tested_object = create_test_object(textures_package)
-                stage.add(tested_object)
+                stage.add_child(tested_object)
                 GObject.timeout_add(
                     2, remove_tested_object, tested_object, stage, counter, textures_package)
             return False
