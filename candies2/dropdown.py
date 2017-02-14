@@ -18,7 +18,7 @@ class OptionLine(BaseContainer):
 
     INDENT_WIDTH = 24
 
-    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=True, crypted=False, indent_level=0):
+    def __init__(self, name, text, icon_height=32, icon_path=None, padding=8, spacing=8, enable_background=True, font='14', font_color='Black', color='LightGray', border_color='Gray', texture=None, rounded=False, crypted=False, indent_level=0):
         BaseContainer.__init__(self)
         self._padding = common.Padding(padding)
         self._spacing = common.Spacing(spacing)
@@ -288,7 +288,7 @@ class Select(clutter.Actor, clutter.Container):
         self._background.set_color(self.default_color)
         self._background.set_border_color(self.default_border_color)
         self._background.set_border_width(3)
-        self._background.set_radius(10)
+        #self._background.set_radius(10)
         self._background.set_parent(self)
         # list of options displayed when the select input is opened
         self._list = VBox(padding=0, spacing=0)
